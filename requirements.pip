@@ -1,0 +1,4 @@
+anyjson==0.3.3
+distribute==0.6.15
+tweetstream==1.1.1
+wsgiref==0.1.2
