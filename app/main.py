@@ -1,24 +1,68 @@
 from twython import Twython
+from classes.streaming import Streamer
 
 APP_KEY = 'gRzKIUiLxS51aO58Ucx7PA'
 APP_SECRET = 'x4JGhz5aQVJTdxS8zzsENZhZyYW5TVbBbaiCt65aXU'
 
-#twitter = Twython(APP_KEY, APP_SECRET)
-#auth = twitter.get_authentication_tokens(callback_url='oob')
+# Token de acceso para OAUTH 2.0 (apps)
+ACCESS_TOKEN = 'AAAAAAAAAAAAAAAAAAAAAEHnRQAAAAAAPfgHk1BwUf9d5voSCWoQDPZ0KAQ%3DfyyndJwI0ETaidlgheWjxTfc7JnqPHvXzm8LGjIiZM'
 
-OAUTH_TOKEN = '1525868684-NY3YQFwsJel7vSSknG29AHo2VNX2IaWlQSvGGLZ'
-OAUTH_TOKEN_SECRET = '7K1tawZ8GyRCFpxzqT2v8OvKGEkemAWOyuDP7YPr5jQ'
 
+#
+# Prueba para obtener los permisos
+#
+
+# Step 1
 """
-print "Auth URL = %s" % auth['auth_url']
-print "OAUTH_TOKEN = %s" % OAUTH_TOKEN
-print "OAUTH_SECRET = %s" % OAUTH_TOKEN_SECRET
+twitter = Twython(APP_KEY, APP_SECRET)
+auth = twitter.get_authentication_tokens(callback_url='oob')
+
+print "OAUTH_TOKEN = %s" % auth['oauth_token']
+print "OAUTH_TOKEN_SECRET = %s" % auth['oauth_token_secret']
+
+print "URL = %s" % auth['auth_url']
 """
 
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-print twitter.get_home_timeline()
+
+# Write down the tokens from the previous step
+"""
+OAUTH_TOKEN = 'jk7OpbiWMs9Tri5cuLSKsMhfbVQoQLDj8et4AKsWbU'
+OAUTH_TOKEN_SECRET = 'qUuNGghPZBOCKUylgzQiKPMjY9Ua8ttfBfsJpOnPZc'
+PIN = '8155285'    # Get the PIN
+"""
+
+# Step 2
+"""
+twitter = Twython(APP_KEY, APP_SECRET,
+    OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+
+final_step = twitter.get_authorized_tokens(PIN)
+print "OAUTH_TOKEN = %s" % final_step['oauth_token']
+print "OAUTH_TOKEN_SECRET = %s" % final_step['oauth_token_secret']
+"""
 
 
-#twitter.update_status(status='holaaaa :)')
-#tl = twitter.get_home_timeline()
-#print tl
+# Final Tokens (OAUTH 1.0)
+OAUTH_TOKEN = '1525868684-gYBZ43RKYCIJ6fAHujNlP5L9p14K5KXkaMXCsFQ'
+OAUTH_TOKEN_SECRET = 'FJTAK576ZT5bQYNnG5VpmRorZLPeZnMgbAl9ExA0'
+
+
+#
+# Prueba de leer twitter stream
+#
+
+stream = Streamer(APP_KEY, APP_SECRET,
+    OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+stream.statuses.filter(track="Boobs")
+
+
+
+#
+# Prueba de posteo
+#
+"""
+twitter = Twython(APP_KEY, APP_SECRET,
+    OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+
+twitter.update_status(status='Holiiiiiis!!! =D :D :P')
+"""
