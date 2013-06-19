@@ -51,18 +51,16 @@ OAUTH_TOKEN_SECRET = 'FJTAK576ZT5bQYNnG5VpmRorZLPeZnMgbAl9ExA0'
 # Prueba de leer twitter stream
 #
 
+TRACK_WORDS = 'TweetMaster5555'
 stream = Streamer(APP_KEY, APP_SECRET,
     OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-stream.statuses.filter(track="Boobs")
+stream.filter_mode = 'low'
+stream.statuses.filter(track=TRACK_WORDS)
 
-
-
-#
-# Prueba de posteo
-#
 """
-twitter = Twython(APP_KEY, APP_SECRET,
+TRACK_WORDS2 = 'estoesunapruebadelapidetwitter'
+stream2 = Streamer(APP_KEY, APP_SECRET,
     OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-
-twitter.update_status(status='Holiiiiiis!!! =D :D :P')
+#stream2.filter_mode = 'none'
+stream2.statuses.filter(track=TRACK_WORDS2)
 """
