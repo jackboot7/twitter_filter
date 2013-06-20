@@ -42,3 +42,9 @@ class Twitter():
 
     def get_messages(self):
         return self.connector.get_direct_messages()
+
+    def tweet(self, txt):
+        if len(txt) <= 140:
+            self.connector.update_status(status=txt)
+        else:
+            raise Exception('message over 140 characters')
