@@ -1,4 +1,5 @@
 # Django settings for tweetfilter project.
+import os
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -9,10 +10,18 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+PROJECT_DIR, SITE_ROOT = os.path.split(
+    os.path.dirname(os.path.realpath(__file__))
+)
+
+VAR_ROOT = os.path.join(PROJECT_DIR, 'var')
+if not os.path.exists(VAR_ROOT):
+    os.mkdir(VAR_ROOT)
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '',                      # Or path to database file if using sqlite3.
+        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': os.path.join(VAR_ROOT, 'twitter.db'),                    # Or path to database file if using sqlite3.
         # The following settings are not used with sqlite3:
         'USER': '',
         'PASSWORD': '',

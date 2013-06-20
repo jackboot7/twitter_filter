@@ -53,13 +53,15 @@ OAUTH_TOKEN_SECRET = 'FJTAK576ZT5bQYNnG5VpmRorZLPeZnMgbAl9ExA0'
 #
 # Prueba de leer twitter stream
 #
+
 """
 TRACK_WORDS = 'estoesunapruebacartelua'
 print "tracking: %s" % TRACK_WORDS
 
 stream = Streamer(APP_KEY, APP_SECRET,
     OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-stream.statuses.filter(track=TRACK_WORDS)
+stream.filter_mode = 'medium'
+stream.statuses.sample()
 """
 
 """
@@ -73,5 +75,5 @@ stream2.statuses.filter(track=TRACK_WORDS2)
 
 # ---------------Testing------------------#
 
-twitter = Twitter(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-tl = twitter.tweet('este texto es demasiado largo para twittear, no sé por qué no dejan que uno escriba más de 140 caracteres. Twitter es para maricas! (no se ofendan las maricas, pero es que es muy gay (no es que haya nada de malo con eso, no no...))')
+#twitter = Twitter(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+#tl = twitter.tweet('este texto es demasiado largo para twittear, no sé por qué no dejan que uno escriba más de 140 caracteres. Twitter es para maricas! (no se ofendan las maricas, pero es que es muy gay (no es que haya nada de malo con eso, no no...))')

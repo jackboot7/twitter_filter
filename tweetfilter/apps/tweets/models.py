@@ -1,5 +1,4 @@
 from django.db import models
-from twython.streaming.api import TwythonStreamer
 
 
 class Tweet(models.Model):

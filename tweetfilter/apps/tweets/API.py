@@ -37,6 +37,9 @@ class Twitter():
     def get_timeline(self):
         return self.connector.get_user_timeline()
 
+    def get_mentions_since(self, since):
+        return self.connector.get_mentions_timeline(since_id=since)
+
     def get_mentions(self):
         return self.connector.get_mentions_timeline()
 
