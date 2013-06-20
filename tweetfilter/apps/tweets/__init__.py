@@ -1,5 +1,6 @@
 from twython import Twython
-from classes.streaming import Streamer
+from apps.tweets.API import Streamer, Twitter
+
 
 APP_KEY = 'gRzKIUiLxS51aO58Ucx7PA'
 APP_SECRET = 'x4JGhz5aQVJTdxS8zzsENZhZyYW5TVbBbaiCt65aXU'
@@ -50,12 +51,14 @@ OAUTH_TOKEN_SECRET = 'FJTAK576ZT5bQYNnG5VpmRorZLPeZnMgbAl9ExA0'
 #
 # Prueba de leer twitter stream
 #
+"""
+TRACK_WORDS = 'estoesunapruebacartelua'
+print "tracking: %s" % TRACK_WORDS
 
-TRACK_WORDS = 'TweetMaster5555'
 stream = Streamer(APP_KEY, APP_SECRET,
     OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-stream.filter_mode = 'low'
 stream.statuses.filter(track=TRACK_WORDS)
+"""
 
 """
 TRACK_WORDS2 = 'estoesunapruebadelapidetwitter'
@@ -64,3 +67,10 @@ stream2 = Streamer(APP_KEY, APP_SECRET,
 #stream2.filter_mode = 'none'
 stream2.statuses.filter(track=TRACK_WORDS2)
 """
+
+
+# ---------------Testing------------------#
+
+twitter = Twitter(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+tl = twitter.get_messages()
+print tl

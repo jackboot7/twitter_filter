@@ -1,13 +1,12 @@
+from django.db import models
 from twython.streaming.api import TwythonStreamer
 
-class Streamer(TwythonStreamer):
-    filter_mode = ''
 
-    def on_success(self, data):
-        if 'text' in data:
-            print data['text'].encode('utf-8')
-
-    def on_error(self, status_code, data):
-        print status_code
-        print data
-        self.disconnect()   # ???
+class Tweet(models.Model):
+    text = models.TextField(max_length=140)
+    screen_name = models.TextField(max_length=16)
+    tweet_id = models.TextField(max_length=32)
+    source = models.TextField(max_length=128)
+    date_time = models.DateTimeField(auto_now_add=True, blank=True)
+    hashtags = models.TextField(max_length=140, blank=True)
+    media_urls = models.TextField(max_length=140, blank=True)
