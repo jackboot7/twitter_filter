@@ -88,6 +88,7 @@ class StreamLoop(Thread):
     def __init__(self, twitterAPI):
         Thread.__init__(self)
         self.twitter = twitterAPI
+        print "Streamloop initialized"
 
     def store(self, mention_list):
         for mention in mention_list:
@@ -98,6 +99,7 @@ class StreamLoop(Thread):
                 tw.tweet_id = mention['id']
                 tw.source = mention['source']
                 tw.save()
+                print "stored tweet %s as PENDING" % mention['id']
             except:
                 pass
 
@@ -113,6 +115,7 @@ class FilterLoop(Thread):
     def __init__(self, words):
         Thread.__init__(self)
         self.banned_words = words
+        print "FilterLoop initialized"
 
     def passes_filter(self, txt):
         for word in self.banned_words:
@@ -126,9 +129,11 @@ class FilterLoop(Thread):
             for tw in lista:
                 if self.passes_filter(tw.text):
                     tw.status = "APPROVED"
+                    print "changed status of tweet %s as APPROVED" % tw.tweet_id
                     tw.save()
                 else:
                     tw.status = "BLOCKED"
+                    print "changed status of tweet %s as BLOCKED" % tw.tweet_id
                     tw.save()
             time.sleep(self.delay)
 
@@ -139,6 +144,7 @@ class RetweetLoop(Thread):
     def __init__(self, twitterAPI):
         Thread.__init__(self)
         self.API = twitterAPI
+        print "RetweetLoop initialized"
 
     def run(self):
         while True:
@@ -147,6 +153,7 @@ class RetweetLoop(Thread):
                 self.API.tweet(tw.text)
                 tw.status="SENT"
                 tw.save()
+                print "successfully retweeted tweet %s" % tw.tweet_id
             time.delay(self.delay)
 
 
@@ -154,6 +161,8 @@ class RetweetLoop(Thread):
 
 twitterAPI = Twitter(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
 #tl = twitter.tweet('este texto es demasiado largo para twittear, no sé por qué no dejan que uno escriba más de 140 caracteres. Twitter es para maricas! (no se ofendan las maricas, pero es que es muy gay (no es que haya nada de malo con eso, no no...))')
+
+print "Comenzando flujo de prueba"
 
 stream_loop = StreamLoop(twitterAPI)
 stream_loop.start()
