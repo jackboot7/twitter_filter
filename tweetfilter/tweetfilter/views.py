@@ -2,6 +2,7 @@
 from threading import Thread
 import time
 import sys
+from django.views.generic.base import TemplateView
 
 from apps.twitter.API import  Twitter
 from apps.twitter.models import Tweet
@@ -83,7 +84,7 @@ class RetweetLoop(Thread):
 
 
 
-def home(request):
+def test(request):
 
     APP_KEY = 'gRzKIUiLxS51aO58Ucx7PA'
     APP_SECRET = 'x4JGhz5aQVJTdxS8zzsENZhZyYW5TVbBbaiCt65aXU'
@@ -174,3 +175,7 @@ def home(request):
 
 
     return None
+
+
+class HomeView(TemplateView):
+    template_name = "home/index.html"

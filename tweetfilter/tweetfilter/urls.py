@@ -1,4 +1,5 @@
 from django.conf.urls import patterns, include, url
+from views import HomeView
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -6,7 +7,8 @@ from django.conf.urls import patterns, include, url
 
 urlpatterns = patterns('',
     # Examples:
-    url(r'^$', 'tweetfilter.views.home', name='home'),
+    url(r'^$', HomeView.as_view()),
+    url(r'^auth/', include('apps.auth.urls'))
     # url(r'^tweetfilter/', include('tweetfilter.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
