@@ -14,8 +14,8 @@ PROJECT_DIR, SITE_ROOT = os.path.split(
     os.path.dirname(os.path.realpath(__file__))
 )
 
-print "project = %s" % PROJECT_DIR
-print "site = %s" % SITE_ROOT
+#print "project = %s" % PROJECT_DIR
+#print "site = %s" % SITE_ROOT
 
 VAR_ROOT = os.path.join(PROJECT_DIR, 'var')
 if not os.path.exists(VAR_ROOT):
@@ -178,3 +178,10 @@ LOGGING = {
         },
     }
 }
+
+#==============================================================================
+# Twitter settings
+#==============================================================================
+
+TWITTER_APP_KEY = 'gRzKIUiLxS51aO58Ucx7PA'
+TWITTER_APP_SECRET = 'x4JGhz5aQVJTdxS8zzsENZhZyYW5TVbBbaiCt65aXU'

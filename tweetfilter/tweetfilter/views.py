@@ -3,6 +3,7 @@ from threading import Thread
 import time
 import sys
 from django.views.generic.base import TemplateView
+from twython.api import Twython
 
 from apps.twitter.API import  Twitter
 from apps.twitter.models import Tweet
@@ -98,7 +99,7 @@ def test(request):
     #
 
     # Step 1
-    """
+
     twitter = Twython(APP_KEY, APP_SECRET)
     auth = twitter.get_authentication_tokens(callback_url='oob')
 
@@ -106,7 +107,7 @@ def test(request):
     print "OAUTH_TOKEN_SECRET = %s" % auth['oauth_token_secret']
 
     print "URL = %s" % auth['auth_url']
-    """
+
 
 
     # Write down the tokens from the previous step
@@ -143,7 +144,7 @@ def test(request):
     stream = Streamer(APP_KEY, APP_SECRET,
         OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
     stream.filter_mode = 'medium'
-    stream.statuses.sample()
+    stream.user(**{"with": "followings"})
     """
 
     """
@@ -158,7 +159,7 @@ def test(request):
 
 
     # ---------------Testing------------------#
-
+    """
     twitterAPI = Twitter(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
     #tl = twitter.tweet('este texto es demasiado largo para twittear, no sé por qué no dejan que uno escriba más de 140 caracteres. Twitter es para maricas! (no se ofendan las maricas, pero es que es muy gay (no es que haya nada de malo con eso, no no...))')
 
@@ -173,7 +174,7 @@ def test(request):
         filter_loop.run()
         retweet_loop.run()
 
-
+    """
     return None
 
 

@@ -8,6 +8,7 @@ from views import HomeView
 urlpatterns = patterns('',
     # Examples:
     url(r'^$', HomeView.as_view()),
+    url(r'^test$', 'tweetfilter.views.test'),
     url(r'^auth/', include('apps.auth.urls'))
     # url(r'^tweetfilter/', include('tweetfilter.foo.urls')),
 
