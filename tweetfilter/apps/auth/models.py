@@ -11,8 +11,7 @@ class Channel(models.Model):
         (1, 'Activo'),
         (2, 'Inactivo')
     ))
-    verified = models.BooleanField(default=False)
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, blank=True)
 
 
 #
