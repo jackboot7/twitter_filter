@@ -1,5 +1,7 @@
 from twython.api import Twython
 from twython.streaming.api import TwythonStreamer
+from apps.channels.models import Channel
+from tweetfilter import settings
 
 
 class Streamer(TwythonStreamer):
@@ -51,3 +53,9 @@ class Twitter():
             self.connector.update_status(status=txt)
         else:
             raise Exception('message over 140 characters')
+
+class ChannelAPI(Twitter):
+    def __init__(self, name):
+        chan = Channel.objects.filter(screen_name=name)[0]
+        super(ChannelAPI, self).__init__(settings.TWITTER_APP_KEY, settings.TWITTER_APP_SECRET,
+            chan.oauth_token, chan.oauth_secret)

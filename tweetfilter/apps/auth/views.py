@@ -1,11 +1,8 @@
 # Create your views here.
-from django.contrib.sites.models import Site
 from django.http.response import HttpResponseRedirect, HttpResponse
-from django.views.generic.base import TemplateView, RedirectView, View
-from django.views.generic.list import ListView
-import requests
+from django.views.generic.base import TemplateView
 from twython.api import Twython
-from apps.auth.models import Channel
+from apps.channels.models import Channel
 from tweetfilter import settings
 from tweetfilter.settings import TWITTER_APP_KEY, TWITTER_APP_SECRET
 
@@ -48,9 +45,6 @@ def auth_callback(request):
     chan.oauth_secret = final_secret
     chan.save()
 
-    return HttpResponse()
+    return HttpResponse('/') # &success=true
 
 
-class ChannelListView(ListView):
-    model = Channel
-    context_object_name = "channel_list"

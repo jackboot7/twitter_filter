@@ -1,6 +1,17 @@
-/*global $, document, window*/
+/*global $, document, window, alert*/
+
+var
+    load_channel_table = function () {
+        "use strict";
+        $.get("/channels/list", function (data) {
+            if (data.length > 0) {
+                // populate table
+            }
+        });
+    };
 
 $(document).ready(function () {
+    load_channel_table();
 
     $('#call_twitter_auth').click(function () {
         var

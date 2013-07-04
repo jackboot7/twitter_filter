@@ -21,4 +21,10 @@ class Tweet(models.Model):
     date_time = models.DateTimeField(auto_now_add=True, blank=True)
     hashtags = models.CharField(max_length=140, blank=True)
     media_urls = models.CharField(max_length=140, blank=True)
+    mention_to = models.CharField(max_length=16)
     status = models.SmallIntegerField(max_length=16, choices=STATUS_CHOICES, default=PENDING_STATUS)
+
+    def get_excerpt(self):
+        max_chars = 30
+
+        return "%s %s..." % (self.date_time, self.text[0:max_chars])

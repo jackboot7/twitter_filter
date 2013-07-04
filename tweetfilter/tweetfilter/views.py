@@ -4,7 +4,7 @@ import time
 import sys
 from django.views.generic.base import TemplateView
 from twython.api import Twython
-from apps.auth.models import Channel
+from apps.channels.models import Channel
 
 from apps.twitter.API import  Twitter
 from apps.twitter.models import Tweet

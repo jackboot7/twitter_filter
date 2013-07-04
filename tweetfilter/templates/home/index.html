@@ -5,42 +5,80 @@
 {% endblock %}
 
 {% block section_body %}
-<table class="table">
-    <thead>
-    <tr>
-        <th>
-            Canal
-        </th>
-        <th>
-            Último tweet
-        </th>
-        <th>
-            Status
-        </th>
-        <th>
-            &nbsp;
-        </th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr class="success">
-        <td>
-            <a href="#">@trafficVzla</a>
-        </td>
-        <td>
-            17/09/13 15:30:05   "Ola ke ase?..."
-        </td>
-        <td>
-            <a title="Haga click para desactivar" class="channel_row" id="chan_9_row" href="#"><span class="label label-success">activo</span></a>
-        </td>
-        <td>
-            <a title="Haga click para eliminar canal" href="#"><span id="channel_9_delete" class="badge badge-important" contenteditable="false">x</span></a>
-        </td>
 
-    </tr>
+    {% if channel_list.count > 0 %}
 
-    </tbody>
-</table>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>
+                Canal
+            </th>
+            <th>
+                Último tweet
+            </th>
+            <th>
+                Status
+            </th>
+            <th>
+                &nbsp;
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+
+        {% for chan in channel_list %}
+            {% if chan.status == 1 %}
+                <tr class="success">
+            {% else %}
+                <tr class="error">
+            {% endif %}
+                <td>
+                    <a href="#">{{ chan.screen_name }}</a>
+                </td>
+            <td>
+                ...
+            </td>
+            <td>
+                <a title="Haga click para desactivar" class="channel_row" id="chan_{{ chan.id }}_row" href="#">
+                    {% if chan.status == 1 %}
+                        <span class="label label-success">
+                    {% else %}
+                        <span class="label label-important">
+                    {% endif %}
+                        {{ chan.get_status_display }}
+                    </span></a>
+
+
+            </td>
+            <td>
+                <a title="Haga click para eliminar canal" href="#"><span id="channel_{{ chan.id }}_delete" class="badge badge-important delete-chan" contenteditable="false">x</span></a>
+            </td>
+            </tr>
+        {% endfor %}
+        <!--
+        <tr class="success">
+            <td>
+                <a href="#">@trafficVzla</a>
+            </td>
+            <td>
+                17/09/13 15:30:05   "Ola ke ase?..."
+            </td>
+            <td>
+                <a title="Haga click para desactivar" class="channel_row" id="chan_9_row" href="#"><span class="label label-success">activo</span></a>
+            </td>
+            <td>
+                <a title="Haga click para eliminar canal" href="#"><span id="channel_9_delete" class="badge badge-important" contenteditable="false">x</span></a>
+            </td>
+
+        </tr>
+        -->
+        </tbody>
+    </table>
+    {% else %}
+    No hay canales suscritos <br><br>
+    {% endif %}
+
 <a id="modal-206857" href="#modal-container-206857" role="button" class="btn btn-primary" data-toggle="modal">Agregar canal</a>
 {% endblock %}
 

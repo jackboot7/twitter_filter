@@ -142,7 +142,7 @@ INSTALLED_APPS = (
     'apps.notifications',
     'apps.statistics',
     'apps.twitter',
-
+    'apps.channels',
 
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
