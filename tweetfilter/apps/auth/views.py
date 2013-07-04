@@ -2,6 +2,7 @@
 from django.contrib.sites.models import Site
 from django.http.response import HttpResponseRedirect, HttpResponse
 from django.views.generic.base import TemplateView, RedirectView, View
+from django.views.generic.list import ListView
 import requests
 from twython.api import Twython
 from apps.auth.models import Channel
@@ -18,20 +19,11 @@ def authenticate(request, screen_name):
                "auth/callback"
 
     auth = twitter.get_authentication_tokens(callback_url=callback)
-    """
-    print "verifying"
-    verification = twitter.verify_credentials()
 
-    for k in verification:
-        print "%s => %s" % (k,  verification[k])
-    """
-    redirect_url = auth['auth_url']+"&force_login=true"
+    redirect_url = auth['auth_url']+"&force_login=true&screen_name="+screen_name
     request.session['AUTH'] = {}
     request.session['AUTH']['OAUTH_TOKEN'] = auth['oauth_token']
     request.session['AUTH']['OAUTH_TOKEN_SECRET'] = auth['oauth_token_secret']
-
-    print "TOKEN = %s" % request.session['AUTH']['OAUTH_TOKEN']
-    print "SECRET = %s" % request.session['AUTH']['OAUTH_TOKEN_SECRET']
 
     return HttpResponseRedirect(redirect_url)
 
@@ -41,25 +33,24 @@ def auth_callback(request):
     token = request.session['AUTH']['OAUTH_TOKEN']
     secret = request.session['AUTH']['OAUTH_TOKEN_SECRET']
 
-    twitter = Twython(settings.TWITTER_APP_KEY, settings.TWITTER_APP_SECRET,
-        token, secret)
-
-    #final_step = twitter.get_authorized_tokens(oauth_verifier) # esta mierda no me retorna el screen_name
-
-    # hacer el get (o post) a mano con requests para ver
-    client = requests.Session()
-    response = client.post(url="https://api.twitter.com/oauth/access_token", params={'oauth_verifier': oauth_verifier})
-    print "response = %s" % response    # me retorna 401 (unauthorized)
+    twitter = Twython(settings.TWITTER_APP_KEY, settings.TWITTER_APP_SECRET, token, secret)
+    final_step = twitter.get_authorized_tokens(oauth_verifier) # esta mierda no me retorna el screen_name
 
     # obtener tokens finales
-    # final_token = final_step['oauth_token']
-    # final_secret = final_step['oauth_token_secret']
+    final_token = final_step['oauth_token']
+    final_secret = final_step['oauth_token_secret']
+    name = final_step['screen_name']
 
-    """
+    # Guardar canal en base de datos
     chan = Channel()
     chan.screen_name = name
     chan.oauth_token = final_token
     chan.oauth_secret = final_secret
-    """
+    chan.save()
 
     return HttpResponse()
+
+
+class ChannelListView(ListView):
+    model = Channel
+    context_object_name = "channel_list"

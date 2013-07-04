@@ -4,6 +4,7 @@ import time
 import sys
 from django.views.generic.base import TemplateView
 from twython.api import Twython
+from apps.auth.models import Channel
 
 from apps.twitter.API import  Twitter
 from apps.twitter.models import Tweet
@@ -183,5 +184,6 @@ class HomeView(TemplateView):
 
     def get(self, request, *args, **kwargs):
 
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)
+        #context = self.get_context_data(**kwargs)
+        channels = Channel.objects.all()
+        return self.render_to_response({'channel_list': channels})
