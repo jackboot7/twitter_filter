@@ -1,10 +1,11 @@
-# Create your views here.
+# -*- encoding: utf-8 -*-
+
 import json
 from braces.views import AjaxResponseMixin, JSONResponseMixin
 from django.http.response import HttpResponse
 from django.views.generic import ListView
 from apps.channels.models import Channel
-from django.views.generic.edit import DeleteView
+from django.views.generic.edit import DeleteView, UpdateView
 #from django.utils import simplejson as json
 
 class ChannelListView(JSONResponseMixin, AjaxResponseMixin, ListView):
@@ -35,18 +36,32 @@ class DeleteChannelView(DeleteView):
         return obj
 
     def dispatch(self, *args, **kwargs):
-        # maybe do some checks here for permissions ...
-
         resp = super(DeleteChannelView, self).dispatch(*args, **kwargs)
-        print "resp = %s" % resp
         if self.request.is_ajax():
-            print "it's ajax"
             response_data = {"result": "ok"}
             return HttpResponse(json.dumps(response_data),
                 content_type="application/json")
         else:
-            print "it is not ajax"
-            # POST request (not ajax) will do a redirect to success_url
+            # redirige al success_url (no debería entrar por acá)
+            return resp
+
+class ChangeStatusView(UpdateView):
+    model = Channel
+    fields = ['status']
+
+    def dispatch(self, *args, **kwargs):
+        resp = super(ChangeStatusView, self).dispatch(*args, **kwargs)
+        if self.request.is_ajax():
+            obj = self.get_object()
+            if obj.switch_status():
+                response_data = {'result': "ok"}
+            else:
+                response_data = {'result': "fail"}
+
+            return HttpResponse(json.dumps(response_data),
+                content_type="application/json")
+        else:
+            # redirige al success_url (no debería entrar por acá)
             return resp
 
 

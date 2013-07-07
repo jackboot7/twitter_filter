@@ -34,3 +34,17 @@ class Channel(models.Model):
     def deactivate(self):
         self.status = self.DISABLED_STATUS
         self.save()
+
+    def is_active(self):
+        return self.status == self.ENABLED_STATUS
+
+    def switch_status(self):
+        try:
+            if self.is_active():
+                self.deactivate()
+            else:
+                self.activate()
+            return True
+        except Exception, e:
+            print e
+            return False
