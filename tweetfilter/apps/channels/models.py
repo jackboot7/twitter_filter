@@ -14,14 +14,18 @@ class Channel(models.Model):
         (ENABLED_STATUS, 'Activo')
     )
 
-    screen_name = models.CharField(max_length=16)
+    screen_name = models.CharField(max_length=16, unique=True, primary_key=True)
     oauth_token = models.CharField(max_length=128)
     oauth_secret = models.CharField(max_length=128)
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=ENABLED_STATUS)
     user = models.ForeignKey(User, blank=True, null=True)
 
     def get_last_update(self):
-        update = Tweet.objects.filter(status=Tweet.SENT_STATUS, mention_to=self.screen_name).order_by('-id')[0]
+        try:
+            update = Tweet.objects.filter(status=Tweet.SENT_STATUS, mention_to=self.screen_name).order_by('-id')[0]
+            return update
+        except Exception, e:
+            return None
 
     def activate(self):
         self.status = self.ENABLED_STATUS

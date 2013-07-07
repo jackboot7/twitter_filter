@@ -9,7 +9,7 @@ from tweetfilter.settings import TWITTER_APP_KEY, TWITTER_APP_SECRET
 class AuthConfigView(TemplateView):
     template_name = 'auth/config.html'
 
-def authenticate(request, screen_name):
+def authenticate(request):
     twitter = Twython(TWITTER_APP_KEY, TWITTER_APP_SECRET)
 
     callback = request.META.get('HTTP_REFERER', "") +\
@@ -17,7 +17,7 @@ def authenticate(request, screen_name):
 
     auth = twitter.get_authentication_tokens(callback_url=callback)
 
-    redirect_url = auth['auth_url']+"&force_login=true&screen_name="+screen_name
+    redirect_url = auth['auth_url']+"&force_login=true"
     request.session['AUTH'] = {}
     request.session['AUTH']['OAUTH_TOKEN'] = auth['oauth_token']
     request.session['AUTH']['OAUTH_TOKEN_SECRET'] = auth['oauth_token_secret']
@@ -45,6 +45,7 @@ def auth_callback(request):
     chan.oauth_secret = final_secret
     chan.save()
 
-    return HttpResponse('/') # &success=true
+    # hacer bien el redirect!
+    return HttpResponseRedirect('/') # &success=true
 
 

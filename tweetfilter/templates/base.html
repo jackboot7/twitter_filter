@@ -42,13 +42,17 @@
                     {% block page_title %}Twitter Channels{% endblock %} <small>{% block page_subtitle %}Sistema de filtrado automático{% endblock %}</small>
                 </h1>
             </div>
-            <div class="alert alert-success" style="display: none">
+            <div class="alert alert-success" id="alert_success" style="display: none">
                 <button type="button" class="close" data-dismiss="alert">×</button>
-                {% block page_alert %}
                 <h4>
-                    Alert!
-                </h4> <strong>Warning!</strong> Best check yo self, you're not looking too good.
-                {% endblock %} <!-- endblock page_alert -->
+                    <span id="alert_success_title"></span>
+                </h4><span id="alert_success_body"></span>
+            </div>
+            <div class="alert alert-warning" id="alert_warning" style="display: none">
+                <button type="button" class="close" data-dismiss="alert">×</button>
+                <h4>
+                    <span id="alert_warning_title"></span>
+                </h4><span id="alert_warning_body"></span>
             </div>
             <ul class="nav nav-tabs">
                 {% block nav_bar %}
