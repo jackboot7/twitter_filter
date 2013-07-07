@@ -54,6 +54,10 @@ $(document).ready(function () {
     $('#channel_list_table').hide();
     $('#no_channels_message').hide();
 
+    if($('#channel_added').val() === "true") {
+        channel_add_success();
+    }
+
     load_channel_table();
 
     $('#call_twitter_auth').click(function () {

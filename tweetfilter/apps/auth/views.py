@@ -1,5 +1,7 @@
 # Create your views here.
 from django.http.response import HttpResponseRedirect, HttpResponse
+from django.shortcuts import render_to_response
+from django.template.context import RequestContext
 from django.views.generic.base import TemplateView
 from twython.api import Twython
 from apps.channels.models import Channel
@@ -45,7 +47,7 @@ def auth_callback(request):
     chan.oauth_secret = final_secret
     chan.save()
 
-    # hacer bien el redirect!
-    return HttpResponseRedirect('/') # &success=true
+    return render_to_response("home/index.html", {'channel_added': 'true'},
+        context_instance=RequestContext(request))
 
 
