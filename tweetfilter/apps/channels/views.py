@@ -39,7 +39,8 @@ class DeleteChannelView(CsrfExemptMixin, JSONResponseMixin,
             content_type="application/json")
 
 
-class ChangeStatusView(JSONResponseMixin, AjaxResponseMixin, UpdateView):
+class ChangeStatusView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
     model = Channel
     fields = ['status']
 

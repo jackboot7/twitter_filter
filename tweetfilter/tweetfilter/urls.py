@@ -1,4 +1,5 @@
 from django.conf.urls import patterns, include, url
+from tweetfilter.views import ChannelAddedView
 from views import HomeView
 
 # Uncomment the next two lines to enable the admin:
@@ -7,7 +8,8 @@ from views import HomeView
 
 urlpatterns = patterns('',
     # Examples:
-    url(r'^$', HomeView.as_view()),
+    url(r'^$', HomeView.as_view(), name="home"),
+    url(r'^success$', ChannelAddedView.as_view(), name="channel_added"),
     url(r'^test$', 'tweetfilter.views.test'),
     url(r'^auth/', include('apps.auth.urls')),
     url(r'^channels/', include('apps.channels.urls'))

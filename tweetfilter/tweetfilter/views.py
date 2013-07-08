@@ -183,7 +183,13 @@ class HomeView(TemplateView):
     template_name = "home/index.html"
 
     def get(self, request, *args, **kwargs):
-
-        #context = self.get_context_data(**kwargs)
         channels = Channel.objects.all()
         return self.render_to_response({'channel_list': channels})
+
+
+class ChannelAddedView(TemplateView):
+    template_name = "home/index.html"
+
+    def get(self, request, *args, **kwargs):
+        channels = Channel.objects.all()
+        return self.render_to_response({'channel_list': channels, 'channel_added': "true"})
