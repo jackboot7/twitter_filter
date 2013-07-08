@@ -2,6 +2,8 @@
 
 var
     switch_row_style = function (name) {
+        "use strict";
+
         var
             row = $('#channel_row_' + name),
             label = $('#label_status_' + name),
@@ -10,15 +12,19 @@ var
         if(row.hasClass('success')){
             row.removeClass('success').addClass('error');
             label.removeClass('label-success').addClass('label-important');
+            label.text("Inactivo");
             link.attr('title', "Haga click para activar el canal");
         }else{
             row.removeClass('error').addClass('success');
             label.removeClass('label-important').addClass('label-success');
+            label.text("Activo");
             link.attr('title', "Haga click para desactivar el canal");
         }
     },
 
     load_channel_table = function () {
+        "use strict";
+
         var
             row_class,
             label_class,
@@ -72,17 +78,23 @@ var
     },
 
     channel_add_success = function () {
+        "use strict";
+
         $('#alert_success_body').text("El canal fue suscrito exitosamente.");
         $('#alert_success').show();
     },
 
     channel_delete_success = function () {
+        "use strict";
+
         $('#alert_success_body').text("El canal fue eliminado exitosamente.");
         $('#alert_success').show();
     };
 
 
 $(document).ready(function () {
+    "use strict";
+
     $('#channel_list_table').hide();
     $('#no_channels_message').hide();
 
