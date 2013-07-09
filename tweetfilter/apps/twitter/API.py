@@ -1,6 +1,8 @@
+import sys
 from twython.api import Twython
 from twython.streaming.api import TwythonStreamer
 from apps.channels.models import Channel
+from apps.twitter.models import Tweet
 from tweetfilter import settings
 
 
@@ -59,3 +61,25 @@ class ChannelAPI(Twitter):
         chan = Channel.objects.filter(screen_name=name)[0]
         super(ChannelAPI, self).__init__(settings.TWITTER_APP_KEY, settings.TWITTER_APP_SECRET,
             chan.oauth_token, chan.oauth_secret)
+
+class ChannelStreamer(TwythonStreamer):
+    def on_success(self, data):
+        if 'text' in data:
+            self.store(data)
+
+    def on_error(self, status_code, data):
+        print status_code
+        print data
+        self.disconnect()   # ???
+
+    def store(self, data):
+        try:
+            tweet = Tweet()
+            tweet.screen_name = data['user']['screen_name']
+            tweet.text = data['text']
+            tweet.tweet_id = data['id']
+            tweet.source = data['source']
+            tweet.save()
+            print "stored tweet %s as PENDING" % data['id']
+        except Exception, e:
+            print e

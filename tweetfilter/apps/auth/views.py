@@ -45,6 +45,7 @@ def auth_callback(request):
     chan.oauth_token = final_token
     chan.oauth_secret = final_secret
     chan.save()
+    chan.init_streaming()
 
     return HttpResponseRedirect(reverse("channel_added"))
     #return render_to_response("home/index.html", {'channel_added': 'true'},

@@ -5,6 +5,7 @@ from django.db import models
 import django.db.models
 from apps.twitter.models import Tweet
 
+
 class Channel(models.Model):
     DISABLED_STATUS = 0
     ENABLED_STATUS = 1
@@ -30,6 +31,7 @@ class Channel(models.Model):
     def activate(self):
         self.status = self.ENABLED_STATUS
         self.save()
+        self.init_streaming()
 
     def deactivate(self):
         self.status = self.DISABLED_STATUS
@@ -48,3 +50,7 @@ class Channel(models.Model):
         except Exception, e:
             print e
             return False
+
+    def init_streaming(self):
+        from apps.twitter.tasks import stream_channel
+        stream_channel.delay(self)

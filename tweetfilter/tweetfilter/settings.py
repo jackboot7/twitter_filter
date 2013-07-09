@@ -144,6 +144,9 @@ INSTALLED_APPS = (
     'apps.twitter',
     'apps.channels',
 
+    # Third party modules
+    'djcelery',
+
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
@@ -185,3 +188,13 @@ LOGGING = {
 
 TWITTER_APP_KEY = 'gRzKIUiLxS51aO58Ucx7PA'
 TWITTER_APP_SECRET = 'x4JGhz5aQVJTdxS8zzsENZhZyYW5TVbBbaiCt65aXU'
+
+
+#==============================================================================
+# Celery
+#==============================================================================
+
+import djcelery
+djcelery.setup_loader()
+
+BROKER_URL = 'amqp://guest:guest@localhost:5672/'
