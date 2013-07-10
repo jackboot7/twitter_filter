@@ -15,6 +15,7 @@ class Streamer(TwythonStreamer):
             print data
             #print data['text'].encode('utf-8')
             print "-------------------"
+            print ""
 
     def on_error(self, status_code, data):
         print status_code
@@ -63,9 +64,30 @@ class ChannelAPI(Twitter):
             chan.oauth_token, chan.oauth_secret)
 
 class ChannelStreamer(TwythonStreamer):
+    channel = {}
+
+    def __init__(self, channel):
+        super(ChannelStreamer, self).__init__(
+            app_key=settings.TWITTER_APP_KEY,
+            app_secret=settings.TWITTER_APP_SECRET,
+            oauth_token=channel.oauth_token,
+            oauth_token_secret=channel.oauth_secret)
+        self.channel = channel
+
     def on_success(self, data):
-        if 'text' in data:
+        # stores mentions only
+        #print "is %s in %s?" % ((self.channel.screen_name).lower(), data['text'].lower())
+#        print "============================"
+#        print "new data from twitter!"
+#        print "data = %s" % data
+#        print "============================"
+#        print ""
+
+        if 'text' in data and \
+           "@" + (self.channel.screen_name).lower() in data['text'].lower():
             self.store(data)
+#        if 'text' in data:
+#            self.store(data)
 
     def on_error(self, status_code, data):
         print status_code
@@ -79,7 +101,8 @@ class ChannelStreamer(TwythonStreamer):
             tweet.text = data['text']
             tweet.tweet_id = data['id']
             tweet.source = data['source']
+            tweet.mention_to = self.channel.screen_name
             tweet.save()
             print "stored tweet %s as PENDING" % data['id']
         except Exception, e:
-            print e
+            print "Error trying to save tweet #%s: %s" % (data['id'], e)

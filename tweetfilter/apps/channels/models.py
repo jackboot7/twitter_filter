@@ -1,3 +1,4 @@
+from celery.worker.control import Panel
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -20,6 +21,7 @@ class Channel(models.Model):
     oauth_secret = models.CharField(max_length=128)
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=ENABLED_STATUS)
     user = models.ForeignKey(User, blank=True, null=True)
+    streaming_task_id = models.CharField(max_length=64)
 
     def get_last_update(self):
         try:
@@ -36,6 +38,7 @@ class Channel(models.Model):
     def deactivate(self):
         self.status = self.DISABLED_STATUS
         self.save()
+        self.stop_streaming()
 
     def is_active(self):
         return self.status == self.ENABLED_STATUS
@@ -53,4 +56,10 @@ class Channel(models.Model):
 
     def init_streaming(self):
         from apps.twitter.tasks import stream_channel
-        stream_channel.delay(self)
+        task = stream_channel.delay(self)
+        self.streaming_task_id = task.id
+        self.save()
+
+    def stop_streaming(self):
+        from celery.worker.control import revoke
+        revoke(panel=Panel(), task_id=self.streaming_task_id, terminate=True)
