@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 import sys
 from twython.api import Twython
 from twython.streaming.api import TwythonStreamer
 from apps.channels.models import Channel
 from apps.twitter.models import Tweet
-from tweetfilter import settings
+from django.conf import settings
 
 
 class Streamer(TwythonStreamer):
@@ -58,13 +59,12 @@ class Twitter():
             raise Exception('message over 140 characters')
 
 class ChannelAPI(Twitter):
-    def __init__(self, name):
-        chan = Channel.objects.filter(screen_name=name)[0]
-        super(ChannelAPI, self).__init__(settings.TWITTER_APP_KEY, settings.TWITTER_APP_SECRET,
-            chan.oauth_token, chan.oauth_secret)
+    def __init__(self, chan):
+        super(ChannelAPI, self).__init__(settings.TWITTER_APP_KEY, settings.TWITTER_APP_SECRET, chan.oauth_token, chan.oauth_secret)
 
 class ChannelStreamer(TwythonStreamer):
     channel = {}
+    twitter_api = {}
 
     def __init__(self, channel):
         super(ChannelStreamer, self).__init__(
@@ -72,6 +72,12 @@ class ChannelStreamer(TwythonStreamer):
             app_secret=settings.TWITTER_APP_SECRET,
             oauth_token=channel.oauth_token,
             oauth_token_secret=channel.oauth_secret)
+        self.twitter_api = Twitter(
+            key=settings.TWITTER_APP_KEY,
+            secret=settings.TWITTER_APP_SECRET,
+            token=channel.oauth_token,
+            token_secret=channel.oauth_secret
+        )
         self.channel = channel
 
     def on_success(self, data):
@@ -86,8 +92,24 @@ class ChannelStreamer(TwythonStreamer):
         if 'text' in data and \
            "@" + (self.channel.screen_name).lower() in data['text'].lower():
             self.store(data)
-#        if 'text' in data:
-#            self.store(data)
+            #self.trigger_update(data)
+
+    def trigger_update(self, tweet):
+
+        TRIGGER_WORDS = [u"trafico", u"tráfico"]
+        try:
+            for word in TRIGGER_WORDS:
+                if word in tweet.text:
+                    import re
+                    regular_exp = re.compile(re.escape("@" + tweet.mention_to), re.IGNORECASE)
+                    text = "via @" + tweet.screen_name + ":" + regular_exp.sub('', tweet.text)
+                    self.twitter_api.tweet(text)
+                    break
+
+        except Exception, e:
+            print "error en trigger update: %s" % e
+
+
 
     def on_error(self, status_code, data):
         print status_code
@@ -104,5 +126,7 @@ class ChannelStreamer(TwythonStreamer):
             tweet.mention_to = self.channel.screen_name
             tweet.save()
             print "stored tweet %s as PENDING" % data['id']
+            self.trigger_update(tweet)
+
         except Exception, e:
             print "Error trying to save tweet #%s: %s" % (data['id'], e)

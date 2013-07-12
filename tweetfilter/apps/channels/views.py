@@ -33,6 +33,7 @@ class DeleteChannelView(CsrfExemptMixin, JSONResponseMixin,
     success_url = "/"
 
     def post_ajax(self, request, *args, **kwargs):
+        self.get_object().stop_streaming()
         self.delete(request)
         response_data = {"result": "ok"}
         return HttpResponse(json.dumps(response_data),

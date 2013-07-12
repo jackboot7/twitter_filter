@@ -4,6 +4,7 @@ from django.db import models
 
 # Create your models here.
 import django.db.models
+from picklefield.fields import PickledObjectField
 from apps.twitter.models import Tweet
 
 
@@ -21,7 +22,7 @@ class Channel(models.Model):
     oauth_secret = models.CharField(max_length=128)
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=ENABLED_STATUS)
     user = models.ForeignKey(User, blank=True, null=True)
-    streaming_task_id = models.CharField(max_length=64)
+    streaming_task = PickledObjectField()
 
     def get_last_update(self):
         try:
@@ -57,9 +58,11 @@ class Channel(models.Model):
     def init_streaming(self):
         from apps.twitter.tasks import stream_channel
         task = stream_channel.delay(self)
-        self.streaming_task_id = task.id
+        #self.streaming_task_id = task.id
+        self.streaming_task = task
         self.save()
 
     def stop_streaming(self):
-        from celery.worker.control import revoke
-        revoke(panel=Panel(), task_id=self.streaming_task_id, terminate=True)
+        #from celery.worker.control import revoke
+        self.streaming_task.revoke(terminate=True)
+        #revoke(panel=Panel(), task_id=self.streaming_task_id, terminate=True, signal='SIGTERM') #SIGKILL
