@@ -7,3 +7,8 @@ requests-oauthlib==0.3.2
 twython==3.0.0
 wsgiref==0.1.2
 django-braces==1.0.0
+amqp==1.0.12
+celery==3.0.21
+django-braces==1.0.0
+django-celery==3.0.17
+django-picklefield==0.3.0
