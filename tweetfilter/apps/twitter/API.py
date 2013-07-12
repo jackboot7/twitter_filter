@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+
 import sys
+from celery.canvas import chain
 from twython.api import Twython
 from twython.streaming.api import TwythonStreamer
 from apps.channels.models import Channel
@@ -90,43 +92,17 @@ class ChannelStreamer(TwythonStreamer):
 #        print ""
 
         if 'text' in data and \
-           "@" + (self.channel.screen_name).lower() in data['text'].lower():
-            self.store(data)
-            #self.trigger_update(data)
+           "@" + self.channel.screen_name.lower() in data['text'].lower():
+            from apps.twitter import tasks
+            res = chain(
+                tasks.store_tweet.s(data, self.channel.screen_name),
+                tasks.trigger_update.s(twitterAPI=self.twitter_api)).apply_async()
+            #res.get()
 
-    def trigger_update(self, tweet):
-
-        TRIGGER_WORDS = [u"trafico", u"tráfico"]
-        try:
-            for word in TRIGGER_WORDS:
-                if word in tweet.text:
-                    import re
-                    regular_exp = re.compile(re.escape("@" + tweet.mention_to), re.IGNORECASE)
-                    text = "via @" + tweet.screen_name + ":" + regular_exp.sub('', tweet.text)
-                    self.twitter_api.tweet(text)
-                    break
-
-        except Exception, e:
-            print "error en trigger update: %s" % e
-
-
+            #self.store(data)
+            #store_tweet.apply_async((data, self.channel.screen_name), link=)
 
     def on_error(self, status_code, data):
         print status_code
         print data
         self.disconnect()   # ???
-
-    def store(self, data):
-        try:
-            tweet = Tweet()
-            tweet.screen_name = data['user']['screen_name']
-            tweet.text = data['text']
-            tweet.tweet_id = data['id']
-            tweet.source = data['source']
-            tweet.mention_to = self.channel.screen_name
-            tweet.save()
-            print "stored tweet %s as PENDING" % data['id']
-            self.trigger_update(tweet)
-
-        except Exception, e:
-            print "Error trying to save tweet #%s: %s" % (data['id'], e)
