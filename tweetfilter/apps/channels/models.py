@@ -64,5 +64,8 @@ class Channel(models.Model):
 
     def stop_streaming(self):
         #from celery.worker.control import revoke
-        self.streaming_task.revoke(terminate=True)
+        try:
+            self.streaming_task.revoke(terminate=True)
+        except Exception, e:
+            print "streaming task doesn't exist yet (%s)" % e
         #revoke(panel=Panel(), task_id=self.streaming_task_id, terminate=True, signal='SIGTERM') #SIGKILL
