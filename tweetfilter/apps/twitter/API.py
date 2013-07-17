@@ -62,7 +62,11 @@ class Twitter():
 
 class ChannelAPI(Twitter):
     def __init__(self, chan):
-        super(ChannelAPI, self).__init__(settings.TWITTER_APP_KEY, settings.TWITTER_APP_SECRET, chan.oauth_token, chan.oauth_secret)
+        super(ChannelAPI, self).__init__(
+            settings.TWITTER_APP_KEY,
+            settings.TWITTER_APP_SECRET,
+            chan.oauth_token,
+            chan.oauth_secret)
 
 class ChannelStreamer(TwythonStreamer):
     channel = {}
@@ -84,25 +88,35 @@ class ChannelStreamer(TwythonStreamer):
 
     def on_success(self, data):
         # stores mentions only
-        #print "is %s in %s?" % ((self.channel.screen_name).lower(), data['text'].lower())
-#        print "============================"
-#        print "new data from twitter!"
-#        print "data = %s" % data
-#        print "============================"
-#        print ""
+        print ""
+        print "============================"
+        print "new data from twitter!"
+        print "data = %s" % data
+        print "============================"
+        print ""
 
         if 'text' in data and \
            "@" + self.channel.screen_name.lower() in data['text'].lower():
             from apps.twitter import tasks
+            # Invokes subtask chain for storing and retweeting
+            #print "hubo mention (%s)" % self.channel.screen_name
             res = chain(
                 tasks.store_tweet.s(data, self.channel.screen_name),
                 tasks.trigger_update.s(twitterAPI=self.twitter_api)).apply_async()
-            #res.get()
+
+        if 'direct_message' in data:
+            from apps.twitter import tasks
+            # Invokes subtask chain for storing and retweeting
+            #print "hubo mention (%s)" % self.channel.screen_name
+            res = chain(
+                tasks.store_dm.s(data, self.channel.screen_name),
+                tasks.trigger_update.s(twitterAPI=self.twitter_api)).apply_async()
 
             #self.store(data)
             #store_tweet.apply_async((data, self.channel.screen_name), link=)
 
     def on_error(self, status_code, data):
+        print "Error en streaming"
         print status_code
         print data
         self.disconnect()   # ???

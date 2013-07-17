@@ -1,6 +1,8 @@
 # Django settings for tweetfilter project.
 import os
 
+ALLOWED_HOSTS = ['192.168.0.103']
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -143,12 +145,13 @@ INSTALLED_APPS = (
     'apps.statistics',
     'apps.twitter',
     'apps.channels',
+    'apps.control',
 
     # Third party modules
     'djcelery',
 
     # Uncomment the next line to enable the admin:
-    # 'django.contrib.admin',
+    'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )
@@ -186,8 +189,8 @@ LOGGING = {
 # Twitter settings
 #==============================================================================
 
-TWITTER_APP_KEY = 'gRzKIUiLxS51aO58Ucx7PA'
-TWITTER_APP_SECRET = 'x4JGhz5aQVJTdxS8zzsENZhZyYW5TVbBbaiCt65aXU'
+TWITTER_APP_KEY = '50MA0itOv5os7GYVFG6cKA'
+TWITTER_APP_SECRET = 'MRDXuA2IWgHZt08YVFHva3gxj6SxZevLnyrH4I0Q'
 
 
 #==============================================================================
@@ -199,3 +202,5 @@ djcelery.setup_loader()
 
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
 CELERY_RESULT_BACKEND = "amqp"
+CELERYD_CONCURRENCY = 1
+#CELERY_ALWAYS_EAGER = True
