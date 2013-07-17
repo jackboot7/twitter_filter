@@ -98,6 +98,7 @@ class ChannelStreamer(TwythonStreamer):
         if 'text' in data and \
            "@" + self.channel.screen_name.lower() in data['text'].lower():
             from apps.twitter import tasks
+            print "\nGot mention!!!\n"
             # Invokes subtask chain for storing and retweeting
             #print "hubo mention (%s)" % self.channel.screen_name
             res = chain(
@@ -105,6 +106,7 @@ class ChannelStreamer(TwythonStreamer):
                 tasks.trigger_update.s(twitterAPI=self.twitter_api)).apply_async()
 
         if 'direct_message' in data:
+            print "\nGot DM!!!\n"
             from apps.twitter import tasks
             # Invokes subtask chain for storing and retweeting
             #print "hubo mention (%s)" % self.channel.screen_name
