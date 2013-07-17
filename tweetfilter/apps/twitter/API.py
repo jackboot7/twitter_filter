@@ -88,7 +88,7 @@ class ChannelStreamer(TwythonStreamer):
 
     def on_success(self, data):
         # stores mentions only
-
+        print ""
         print "============================"
         print "new data from twitter!"
         print "data = %s" % data
@@ -99,15 +99,24 @@ class ChannelStreamer(TwythonStreamer):
            "@" + self.channel.screen_name.lower() in data['text'].lower():
             from apps.twitter import tasks
             # Invokes subtask chain for storing and retweeting
+            #print "hubo mention (%s)" % self.channel.screen_name
             res = chain(
                 tasks.store_tweet.s(data, self.channel.screen_name),
                 tasks.trigger_update.s(twitterAPI=self.twitter_api)).apply_async()
-            #res.get()
+
+        if 'direct_message' in data:
+            from apps.twitter import tasks
+            # Invokes subtask chain for storing and retweeting
+            #print "hubo mention (%s)" % self.channel.screen_name
+            res = chain(
+                tasks.store_dm.s(data, self.channel.screen_name),
+                tasks.trigger_update.s(twitterAPI=self.twitter_api)).apply_async()
 
             #self.store(data)
             #store_tweet.apply_async((data, self.channel.screen_name), link=)
 
     def on_error(self, status_code, data):
+        print "Error en streaming"
         print status_code
         print data
         self.disconnect()   # ???

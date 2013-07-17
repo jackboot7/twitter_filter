@@ -2,16 +2,24 @@ from django.db import models
 
 
 class Tweet(models.Model):
-    PENDING_STATUS = 0
-    APPROVED_STATUS = 1
-    BLOCKED_STATUS = 2
-    SENT_STATUS = 3
+    STATUS_PENDING = 0
+    STATUS_APPROVED = 1
+    STATUS_BLOCKED = 2
+    STATUS_SENT = 3
+
+    TYPE_MENTION = 0
+    TYPE_DM = 1
+
+    TYPE_CHOICES = (
+        (TYPE_MENTION, "Mention"),
+        (TYPE_DM, "DM")
+    )
 
     STATUS_CHOICES = (
-        (PENDING_STATUS, 'Pendiente'),
-        (APPROVED_STATUS, 'Aprobado'),
-        (BLOCKED_STATUS, 'Bloqueado'),
-        (SENT_STATUS, 'Enviado')
+        (STATUS_PENDING, 'Pendiente'),
+        (STATUS_APPROVED, 'Aprobado'),
+        (STATUS_BLOCKED, 'Bloqueado'),
+        (STATUS_SENT, 'Enviado')
     )
 
     text = models.CharField(max_length=140)
@@ -22,7 +30,8 @@ class Tweet(models.Model):
     hashtags = models.CharField(max_length=140, blank=True)
     media_urls = models.CharField(max_length=140, blank=True)
     mention_to = models.CharField(max_length=16)
-    status = models.SmallIntegerField(max_length=16, choices=STATUS_CHOICES, default=PENDING_STATUS)
+    status = models.SmallIntegerField(max_length=16, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    type = models.SmallIntegerField(max_length=2, choices=TYPE_CHOICES)
 
     def get_excerpt(self):
         max_chars = 30

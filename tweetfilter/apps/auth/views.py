@@ -7,13 +7,16 @@ from django.template.context import RequestContext
 from django.views.generic.base import TemplateView
 from twython.api import Twython
 from apps.channels.models import Channel
-from tweetfilter import settings
+from django.conf import settings
 from tweetfilter.settings import TWITTER_APP_KEY, TWITTER_APP_SECRET
 
 class AuthConfigView(TemplateView):
     template_name = 'auth/config.html'
 
 def authenticate(request):
+    """
+    Calls the twitter endpoint for authentication
+    """
     twitter = Twython(TWITTER_APP_KEY, TWITTER_APP_SECRET)
     callback = "http://" + RequestSite(request).domain + "/auth/callback"
     auth = twitter.get_authentication_tokens(callback_url=callback)
@@ -26,29 +29,29 @@ def authenticate(request):
     return HttpResponseRedirect(redirect_url)
 
 def auth_callback(request):
+    """
+    Callback function when returning from twitter authentication form
+    """
 
+    # Gets the provisional tokens
     oauth_verifier = request.GET['oauth_verifier']
     token = request.session['AUTH']['OAUTH_TOKEN']
     secret = request.session['AUTH']['OAUTH_TOKEN_SECRET']
 
     twitter = Twython(settings.TWITTER_APP_KEY, settings.TWITTER_APP_SECRET, token, secret)
-    final_step = twitter.get_authorized_tokens(oauth_verifier) # esta mierda no me retorna el screen_name
+    final_step = twitter.get_authorized_tokens(oauth_verifier)
 
-    # obtener tokens finales
+    # Gets the final tokens
     final_token = final_step['oauth_token']
     final_secret = final_step['oauth_token_secret']
     name = final_step['screen_name']
 
-    # Guardar canal en base de datos
+    # Create and saves channel
     chan = Channel()
     chan.screen_name = name
     chan.oauth_token = final_token
     chan.oauth_secret = final_secret
     chan.save()
-    chan.init_streaming()
+    chan.init_streaming()   #initializes streaming process
 
     return HttpResponseRedirect(reverse("channel_added"))
-    #return render_to_response("home/index.html", {'channel_added': 'true'},
-    #    context_instance=RequestContext(request))
-
-

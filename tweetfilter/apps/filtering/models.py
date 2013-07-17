@@ -4,10 +4,10 @@ from django.db import models
 from apps.channels.models import Channel
 
 class Trigger(models.Model):
-    RETWEET = 1
+    ACTION_RETWEET = 1
 
     ACTION_CHOICES = (
-        (RETWEET, "Retweet"),
+        (ACTION_RETWEET, "Retweet"),
     )
 
     text = models.CharField(max_length=32)

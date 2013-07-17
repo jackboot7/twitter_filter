@@ -9,6 +9,9 @@ from django.views.generic.edit import DeleteView, UpdateView
 #from django.utils import simplejson as json
 
 class ChannelListView(JSONResponseMixin, AjaxResponseMixin, ListView):
+    """
+    Return json list with all existing channels
+    """
     model = Channel
     context_object_name = "channel_list"
 
@@ -29,6 +32,9 @@ class ChannelListView(JSONResponseMixin, AjaxResponseMixin, ListView):
 
 class DeleteChannelView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DeleteView):
+    """
+    Deletes a channel via Ajax
+    """
     model = Channel
     success_url = "/"
 
@@ -42,6 +48,9 @@ class DeleteChannelView(CsrfExemptMixin, JSONResponseMixin,
 
 class ChangeStatusView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, UpdateView):
+    """
+    Switches a channel status: if it's enabled, it becomes disabled, and viceversa.
+    """
     model = Channel
     fields = ['status']
 
