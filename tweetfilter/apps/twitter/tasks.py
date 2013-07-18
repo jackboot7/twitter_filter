@@ -9,7 +9,7 @@ from apps.twitter.API import ChannelStreamer
 from apps.twitter.models import Tweet
 
 
-@task()
+@task(queue="streaming")
 def stream_channel(chan):
     print "Starting streaming for channel %s" % chan.screen_name
     try:
@@ -17,13 +17,14 @@ def stream_channel(chan):
         stream.user(**{"with": "followings"})
 
         #print "Streaming started"
-        #return True
+        return True
         #current_task.update_state(state=states.STARTED) # no parece funcionar
     except Exception, e:    # ?????
         #print "Stopped streaming for channel %s" % chan.screen_name
         print "Error al iniciar streaming: %s" % e
+        return False
 
-@task()
+@task(queue="tweets")
 def store_tweet(data, mentioned):
     try:
         tweet = Tweet()
@@ -41,7 +42,7 @@ def store_tweet(data, mentioned):
         print "Error trying to save tweet #%s: %s" % (data['id'], e)
         return None
 
-@task()
+@task(queue="tweets")
 def store_dm(dm, mentioned):
     data = dm['direct_message']
     try:
@@ -60,7 +61,7 @@ def store_dm(dm, mentioned):
         return None
 
 
-@task()
+@task(queue="tweets")
 def trigger_update(tweet, twitterAPI):
     TRIGGER_WORDS = [u"trafico", u"tráfico"]
     try:
@@ -69,7 +70,11 @@ def trigger_update(tweet, twitterAPI):
                 import re
                 regular_exp = re.compile(re.escape("@" + tweet.mention_to), re.IGNORECASE)
                 text = "via @" + tweet.screen_name + ":" + regular_exp.sub('', tweet.text)
-                twitterAPI.tweet(text)
+                if len(text) <= 140:
+                    twitterAPI.tweet(text)
+                else:
+                    twitterAPI.tweet("%s.." % text[0:137])
+                print "Retweeted #%s (found the word '%s')" % (tweet.tweet_id, word)
                 break
     except Exception, e:
         print "error en trigger update: %s" % e

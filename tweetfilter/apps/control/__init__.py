@@ -1,6 +1,5 @@
 from apps.channels.models import Channel
 from apps.control.tasks import init_channels
-print "initializing processes..."
 
 #init_channels.delay()
 """
