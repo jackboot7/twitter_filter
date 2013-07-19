@@ -87,7 +87,7 @@ class ChannelStreamer(TwythonStreamer):
         self.channel = channel
 
     def on_success(self, data):
-        # stores mentions only
+        # stores mentions and DMs only
         print ""
         print "============================"
         print "new data from twitter!"
@@ -95,17 +95,18 @@ class ChannelStreamer(TwythonStreamer):
         print "============================"
         print ""
 
-        if 'text' in data and \
-           "@" + self.channel.screen_name.lower() in data['text'].lower():
-            from apps.twitter import tasks
-            print "\nGot mention!!!\n"
-            # Invokes subtask chain for storing and retweeting
-            #print "hubo mention (%s)" % self.channel.screen_name
-            res = chain(
-                tasks.store_tweet.s(data, self.channel.screen_name),
-                tasks.trigger_update.s(twitterAPI=self.twitter_api)).apply_async()
+        if 'text' in data:      # regular tweet
+            for mention in data['entities']['user_mentions']:
+                if self.channel.screen_name.lower() == mention['screen_name'].lower():
+                    #current channel is mentioned
+                    from apps.twitter import tasks
+                    print "\nGot mention!!!\n"
+                    # Invokes subtask chain for storing and retweeting
+                    res = chain(
+                        tasks.store_tweet.s(data, self.channel.screen_name),
+                        tasks.trigger_update.s(twitterAPI=self.twitter_api)).apply_async()
 
-        if 'direct_message' in data:
+        if 'direct_message' in data:    # DM
             print "\nGot DM!!!\n"
             from apps.twitter import tasks
             # Invokes subtask chain for storing and retweeting
@@ -114,8 +115,6 @@ class ChannelStreamer(TwythonStreamer):
                 tasks.store_dm.s(data, self.channel.screen_name),
                 tasks.trigger_update.s(twitterAPI=self.twitter_api)).apply_async()
 
-            #self.store(data)
-            #store_tweet.apply_async((data, self.channel.screen_name), link=)
 
     def on_error(self, status_code, data):
         print "Error en streaming"

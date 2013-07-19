@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block section_title %}
+    Opciones de canal: @{{ channel.screen_name }}
+{% endblock %}
+
+{% block section_body %}
+<h4>Disparadores</h4>
+
+<table class="table" id="trigger_list_table">
+    <thead>
+        <tr>
+            <th>Texto</th>
+            <th>Acción</th>
+            <th>Eliminar</th>
+        </tr>
+    </thead>
+    <tbody id="trigger_list_tbody">
+    </tbody>
+</table>
+
+<span id="no_triggers_message">No hay disparadores asociados al canal</span> <br><br>
+
+<input type="text" id="add_trigger_text">&nbsp;<a id="add_trigger_btn" href="#" role="button" class="btn btn-primary" data-toggle="modal">Agregar disparador</a>
+
+{% endblock %} <!-- endblock section_body -->
+
+{% block page_scripts %}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/channels/script.js"></script>
+{% endblock %}
+
+{% block modal_header %}
+    <!-- hola -->
+{% endblock %}
+
+{% block modal_body %}
+{% endblock %}
+
+{% block right_column %}
+{% endblock %}
