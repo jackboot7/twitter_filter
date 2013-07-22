@@ -2,8 +2,7 @@ from celery import chain
 from django.conf import settings
 from twython import TwythonStreamer
 from apps.twitter.api import Twitter
-from apps.channels import tasks as channel_tasks
-from apps.twitter import tasks as twitter_tasks
+
 
 
 class ChannelStreamer(TwythonStreamer):
@@ -40,7 +39,8 @@ class ChannelStreamer(TwythonStreamer):
 
                     print "\nGot mention!!!\n"
                     # Invokes subtask chain for storing and retweeting
-
+                    from . import tasks as channel_tasks
+                    from apps.twitter import tasks as twitter_tasks
                     res = chain(
                         twitter_tasks.store_tweet.s(data, self.channel.screen_name),
                         channel_tasks.trigger_update.s(twitterAPI=self.twitter_api, channel=self.channel)).apply_async()
@@ -49,7 +49,8 @@ class ChannelStreamer(TwythonStreamer):
         if 'direct_message' in data:    # DM
             print "\nGot DM!!!\n"
             # Invokes subtask chain for storing and retweeting
-            #print "hubo mention (%s)" % self.channel.screen_name
+            from . import tasks as channel_tasks
+            from apps.twitter import tasks as twitter_tasks
             res = chain(
                 twitter_tasks.store_dm.s(data, self.channel.screen_name),
                 channel_tasks.trigger_update.s(twitterAPI=self.twitter_api, channel=self.channel)).apply_async()

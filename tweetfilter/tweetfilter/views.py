@@ -1,14 +1,8 @@
 # -*- coding: utf-8 -*-
-from threading import Thread
-import time
-import sys
-from django.shortcuts import render
+
 from django.views.generic.base import TemplateView
 from twython.api import Twython
 from apps.channels.models import Channel
-
-from apps.twitter.API import  Twitter
-from apps.twitter.models import Tweet
 
 def test(request):
 

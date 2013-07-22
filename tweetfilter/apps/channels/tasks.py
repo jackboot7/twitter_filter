@@ -1,8 +1,8 @@
 from exceptions import Exception
-import celery
+from celery import task
 from apps.channels.backends import ChannelStreamer
 
-@celery.task(queue="streaming")
+@task(queue="streaming")
 def stream_channel(chan):
     print "Starting streaming for channel %s" % chan.screen_name
     try:
@@ -18,7 +18,7 @@ def stream_channel(chan):
         return False
 
 
-@celery.task(queue="tweets")
+@task(queue="tweets")
 def trigger_update(tweet, twitterAPI, channel):
     triggers = channel.get_triggers()
     try:
