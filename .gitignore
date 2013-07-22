@@ -2,8 +2,8 @@
 docs/_build/*
 uploads
 
-*/settings/local.py
-*local/*.py
+*local.py
+local/*.py
 
 */media/*
 dev.db
