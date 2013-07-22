@@ -104,7 +104,7 @@ class ChannelStreamer(TwythonStreamer):
                     # Invokes subtask chain for storing and retweeting
                     res = chain(
                         tasks.store_tweet.s(data, self.channel.screen_name),
-                        tasks.trigger_update.s(twitterAPI=self.twitter_api)).apply_async()
+                        tasks.trigger_update.s(twitterAPI=self.twitter_api, channel=self.channel)).apply_async()
 
         if 'direct_message' in data:    # DM
             print "\nGot DM!!!\n"
@@ -113,7 +113,7 @@ class ChannelStreamer(TwythonStreamer):
             #print "hubo mention (%s)" % self.channel.screen_name
             res = chain(
                 tasks.store_dm.s(data, self.channel.screen_name),
-                tasks.trigger_update.s(twitterAPI=self.twitter_api)).apply_async()
+                tasks.trigger_update.s(twitterAPI=self.twitter_api, channel=self.channel)).apply_async()
 
 
     def on_error(self, status_code, data):

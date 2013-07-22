@@ -62,10 +62,11 @@ def store_dm(dm, mentioned):
 
 
 @task(queue="tweets")
-def trigger_update(tweet, twitterAPI):
-    TRIGGER_WORDS = [u"trafico", u"tráfico"]
+def trigger_update(tweet, twitterAPI, channel):
+    triggers = channel.get_triggers()
     try:
-        for word in TRIGGER_WORDS:
+        for tr in triggers:
+            word = tr.text
             if word in tweet.text:
                 import re
                 regular_exp = re.compile(re.escape("@" + tweet.mention_to), re.IGNORECASE)

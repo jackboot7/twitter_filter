@@ -84,4 +84,6 @@ class Channel(models.Model):
         """
         Returns a list of this channel's trigger words
         """
-        return self.trigger_set
+        from apps.filtering.models import Trigger
+        triggers = Trigger.objects.filter(channel=self)
+        return triggers

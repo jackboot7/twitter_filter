@@ -3,7 +3,7 @@ from apps.filtering.views import TriggerDeleteView, TriggerCreateView, TriggerLi
 
 urlpatterns = patterns('apps.filtering.views',
 
-    url(r'^trigger/list', TriggerListView.as_view()),
+    url(r'^trigger/list/(?P<pk>\w+)', TriggerListView.as_view()),
     url(r'^trigger/delete/(?P<pk>\w+)', TriggerDeleteView.as_view()),
     url(r'^trigger/add', TriggerCreateView.as_view())
 
