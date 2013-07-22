@@ -2,10 +2,12 @@
 docs/_build/*
 uploads
 
+settings/local.py
 *local/*.py
-webapp/media/
+
+*/media/*
 dev.db
-var/
+*var/*
 env/
 *.swp
 
