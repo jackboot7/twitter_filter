@@ -4,6 +4,7 @@ from django.db import models
 #
 # Singleton config table-row
 #
+"""
 class Config(models.Model):
     class Meta:
         abstract = True
@@ -22,3 +23,4 @@ class Config(models.Model):
     app_key = models.CharField(max_length=64)
     app_secret = models.CharField(max_length=64)
     access_token = models.CharField(max_length=128)     # for OAUTH 2.0
+"""
