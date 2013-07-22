@@ -203,4 +203,3 @@ djcelery.setup_loader()
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
 CELERY_RESULT_BACKEND = "amqp"
 CELERYD_CONCURRENCY = 4
-#CELERY_ALWAYS_EAGER = True
