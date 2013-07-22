@@ -186,8 +186,8 @@ LOGGING = {
 # Twitter settings
 #==============================================================================
 
-TWITTER_APP_KEY = '50MA0itOv5os7GYVFG6cKA'
-TWITTER_APP_SECRET = 'MRDXuA2IWgHZt08YVFHva3gxj6SxZevLnyrH4I0Q'
+TWITTER_APP_KEY = ''
+TWITTER_APP_SECRET = ''
 
 
 #==============================================================================
