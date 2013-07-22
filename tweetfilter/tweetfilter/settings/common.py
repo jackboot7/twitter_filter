@@ -12,14 +12,11 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-PROJECT_DIR, SITE_ROOT = os.path.split(
-    os.path.dirname(os.path.realpath(__file__))
-)
+TEMP_DIR = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
 
-#print "project = %s" % PROJECT_DIR
-#print "site = %s" % SITE_ROOT
+PROJECT_DIR, SITE_ROOT = os.path.split(TEMP_DIR)
 
-VAR_ROOT = os.path.join(PROJECT_DIR, 'var')
+VAR_ROOT = os.path.join(os.path.split(PROJECT_DIR)[0], 'var')
 if not os.path.exists(VAR_ROOT):
     os.mkdir(VAR_ROOT)
 
