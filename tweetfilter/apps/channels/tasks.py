@@ -1,6 +1,7 @@
 from exceptions import Exception
 from celery import task
 from apps.channels.backends import ChannelStreamer
+from apps.twitter.models import Tweet
 
 @task(queue="streaming")
 def stream_channel(chan):
@@ -32,6 +33,8 @@ def trigger_update(tweet, twitterAPI, channel):
                     twitterAPI.tweet(text)
                 else:
                     twitterAPI.tweet("%s.." % text[0:137])
+                tweet.status = Tweet.STATUS_SENT
+                tweet.save()
                 print "Retweeted #%s (found the word '%s')" % (tweet.tweet_id, word)
                 break
     except Exception, e:
