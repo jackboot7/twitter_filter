@@ -2,7 +2,7 @@
 docs/_build/*
 uploads
 
-settings/local.py
+*/settings/local.py
 *local/*.py
 
 */media/*
