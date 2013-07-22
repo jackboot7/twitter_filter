@@ -1,14 +1,12 @@
 # Create your views here.
 from django.contrib.sites.models import RequestSite
 from django.core.urlresolvers import reverse
-from django.http.response import HttpResponseRedirect, HttpResponse
-from django.shortcuts import render_to_response, redirect
-from django.template.context import RequestContext
+from django.http.response import HttpResponseRedirect
 from django.views.generic.base import TemplateView
 from twython.api import Twython
 from apps.channels.models import Channel
 from django.conf import settings
-from tweetfilter.settings import TWITTER_APP_KEY, TWITTER_APP_SECRET
+
 
 class AuthConfigView(TemplateView):
     template_name = 'auth/config.html'
@@ -17,7 +15,8 @@ def authenticate(request):
     """
     Calls the twitter endpoint for authentication
     """
-    twitter = Twython(TWITTER_APP_KEY, TWITTER_APP_SECRET, auth_endpoint='authorize')
+    twitter = Twython(settings.TWITTER_APP_KEY, settings.TWITTER_APP_SECRET,
+        auth_endpoint='authorize')
     callback = "http://" + RequestSite(request).domain + "/auth/callback"
     auth = twitter.get_authentication_tokens(callback_url=callback)
     redirect_url = auth['auth_url']+"&force_login=true"

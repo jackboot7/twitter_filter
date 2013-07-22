@@ -1,10 +1,7 @@
-from celery.worker.control import Panel
 from django.contrib.auth.models import User
 from django.db import models
-
-
-import django.db.models
 from picklefield.fields import PickledObjectField
+from apps.channels.tasks import stream_channel
 from apps.twitter.models import Tweet
 
 
@@ -56,7 +53,6 @@ class Channel(models.Model):
             return False
 
     def init_streaming(self):
-        from apps.twitter.tasks import stream_channel
         task = stream_channel.delay(self)
         #self.streaming_task_id = task.id
         self.streaming_task = task
@@ -71,14 +67,17 @@ class Channel(models.Model):
             print "streaming task doesn't exist yet (%s)" % e
         #revoke(panel=Panel(), task_id=self.streaming_task_id, terminate=True, signal='SIGTERM') #SIGKILL
 
+    """
+    # pendiente por implementar
     def is_streaming(self):
         task = self.streaming_task
         print "is %s streaming? %s" % (self.screen_name, task.state)
-        """
+
         return task.state == "PENDING" or \
                task.state == "STARTED" or \
                task.state == "RETRY"
-        """
+    """
+
 
     def get_triggers(self):
         """
@@ -87,3 +86,4 @@ class Channel(models.Model):
         from apps.filtering.models import Trigger
         triggers = Trigger.objects.filter(channel=self)
         return triggers
+        #return self.trigger_set.all()

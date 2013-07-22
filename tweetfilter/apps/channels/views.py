@@ -62,6 +62,7 @@ class ChangeStatusView(CsrfExemptMixin, JSONResponseMixin,
         else:
             response_data = {'result': "fail"}
 
+
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
 
