@@ -15,6 +15,7 @@ urlpatterns = patterns('',
     url(r'^auth/', include('apps.auth.urls')),
     url(r'^channels/', include('apps.channels.urls')),
     url(r'^tasks/', include('djcelery.urls')),
+    url(r'^filtering/', include('apps.filtering.urls')),
     # url(r'^tweetfilter/', include('tweetfilter.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:

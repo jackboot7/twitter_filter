@@ -2,6 +2,7 @@
 from threading import Thread
 import time
 import sys
+from django.shortcuts import render
 from django.views.generic.base import TemplateView
 from twython.api import Twython
 from apps.channels.models import Channel

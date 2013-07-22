@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block section_title %}
+    Opciones de canal: @{{ channel.screen_name }}
+{% endblock %}
+
+{% block section_body %}
+<input type="hidden" id="current_channel" value="{{ channel.screen_name }}">
+<h4>Disparadores</h4>
+
+<table class="table" id="trigger_list_table">
+    <thead>
+        <tr>
+            <th>Texto</th>
+            <!--<th>Acción</th>-->
+            <th>Eliminar</th>
+        </tr>
+    </thead>
+    <tbody id="trigger_list_tbody">
+    </tbody>
+</table>
+
+<span id="no_triggers_message">No hay disparadores asociados al canal</span> <br><br>
+
+<table><tr>
+    <td><input type="text" id="add_trigger_text"></td>
+    <td style="padding-bottom: 10px">&nbsp;<a id="add_trigger_btn" href="#" class="btn btn-primary btn-small">Agregar disparador</a></td>
+</tr></table>
+
+<div id="delete_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">
+            Eliminar Disparador
+        </h3>
+    </div>
+    <div class="modal-body">
+        <input type="hidden" id="deleting_trigger_id" value="">
+        <p>
+            Está seguro de que desea eliminar el disparador &quot;<span id="deleting_trigger_text"></span>&quot; ?
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_trigger_confirmed">Sí, eliminar</button>
+    </div>
+</div>
+{% endblock %} <!-- endblock section_body -->
+
+{% block page_scripts %}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/channels/script.js"></script>
+{% endblock %}
+
+{% block modal_header %}
+    <!-- hola -->
+{% endblock %}
+
+{% block modal_body %}
+{% endblock %}
+
+{% block right_column %}
+{% endblock %}

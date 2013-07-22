@@ -17,7 +17,7 @@ def authenticate(request):
     """
     Calls the twitter endpoint for authentication
     """
-    twitter = Twython(TWITTER_APP_KEY, TWITTER_APP_SECRET)
+    twitter = Twython(TWITTER_APP_KEY, TWITTER_APP_SECRET, auth_endpoint='authorize')
     callback = "http://" + RequestSite(request).domain + "/auth/callback"
     auth = twitter.get_authentication_tokens(callback_url=callback)
     redirect_url = auth['auth_url']+"&force_login=true"

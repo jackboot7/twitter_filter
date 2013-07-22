@@ -4,6 +4,7 @@ import json
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
 from django.http.response import HttpResponse
 from django.views.generic import ListView
+from django.views.generic.detail import DetailView
 from apps.channels.models import Channel
 from django.views.generic.edit import DeleteView, UpdateView
 #from django.utils import simplejson as json
@@ -63,3 +64,9 @@ class ChangeStatusView(CsrfExemptMixin, JSONResponseMixin,
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
+
+
+class ChannelDetailView(DetailView):
+    model = Channel
+    template_name = "channels/index.html"
+    context_object_name = "channel"

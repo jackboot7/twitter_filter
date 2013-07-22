@@ -31,6 +31,8 @@ var
             link_title;
 
         $.get("/channels/list", function (data) {
+            $('#channel_list_tbody').empty();
+
             if (data.length > 0) {
                 $('#no_channels_message').hide();
                 $('#channel_list_table').show();
@@ -48,7 +50,7 @@ var
 
                     $('#channel_list_tbody').append(
                         "<tr class='" + row_class + "' id='channel_row_" + elem.screen_name + "'>"+
-                        "<td><a href='#'>" + elem.screen_name + "</a></td>" +
+                        "<td><a href='/channels/edit/" + elem.screen_name + "/'>" + elem.screen_name + "</a></td>" +
                         "<td>" + elem.last_tweet + "</td>" +
                         "<td><a title='" + link_title + "' class='channel_row' id='change_status_" +
                         elem.screen_name + "' href='#'>" +

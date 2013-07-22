@@ -79,3 +79,11 @@ class Channel(models.Model):
                task.state == "STARTED" or \
                task.state == "RETRY"
         """
+
+    def get_triggers(self):
+        """
+        Returns a list of this channel's trigger words
+        """
+        from apps.filtering.models import Trigger
+        triggers = Trigger.objects.filter(channel=self)
+        return triggers

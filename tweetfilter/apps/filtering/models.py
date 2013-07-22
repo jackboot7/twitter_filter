@@ -11,5 +11,5 @@ class Trigger(models.Model):
     )
 
     text = models.CharField(max_length=32)
-    action = models.IntegerField(choices=ACTION_CHOICES)
+    action = models.IntegerField(choices=ACTION_CHOICES, default=ACTION_RETWEET)
     channel = models.ForeignKey(Channel)
