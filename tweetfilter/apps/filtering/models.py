@@ -16,7 +16,7 @@ class Trigger(models.Model):
     channel = models.ForeignKey(Channel)
 
 
-class BannedWord(models.Model):
+class Filter(models.Model):
     ACTION_BLOCK_TWEET = 1
     ACTION_BLOCK_USER = 2
 

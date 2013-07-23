@@ -69,94 +69,24 @@
 				</li>
 				-->
                 {% endblock %} <!-- endblock nav_bar -->
-
             </ul>
+
             <div class="row-fluid">
-                <div class="span8">
+                <div class="span12">
                     <h3>
                         {% block section_title %}
                         Dashboard
                         {% endblock %}
                     </h3>
                     {% block section_body %}
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th>
-                                #
-                            </th>
-                            <th>
-                                Usuario
-                            </th>
-                            <th>
-                                Texto
-                            </th>
-                            <th>
-                                Fecha
-                            </th>
-                            <th>
-                                Status
-                            </th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr class="warning">
-                            <td>
-                                1
-                            </td>
-                            <td>
-                                @TweetMaster5555
-                            </td>
-                            <td>
-                                Esto es una prueba lalalala...
-                            </td>
-                            <td>
-                                01/04/2012
-                            </td>
-                            <td>
-                                Pending
-                            </td>
-                        </tr>
-                        <tr class="success">
-                            <td>
-                                1
-                            </td>
-                            <td>
-                                @jackboot7
-                            </td>
-                            <td>
-                                Tráfico fuerte en la libertador
-                            </td>
-                            <td>
-                                01/04/2012
-                            </td>
-                            <td>
-                                Approved
-                            </td>
-                        </tr>
-                        <tr class="error">
-                            <td>
-                                2
-                            </td>
-                            <td>
-                                @trollFace
-                            </td>
-                            <td>
-                                Muera chávez no joda!!!
-                            </td>
-                            <td>
-                                02/04/2012
-                            </td>
-                            <td>
-                                Declined
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+
                     {% endblock %}  <!-- endblock section_body -->
                 </div>
+
+                <!-- right column -->
+                <!--
                 <div class="span4">
-                    {% block right_column %}
+
                     <span class="label">Notificaciones</span>
                     <br><br>
                     <ul>
@@ -172,13 +102,11 @@
                     </ul>
 
                     <a style="float:right" href="#" class="btn btn-small btn-primary" type="button">Ver historial</a>
-                    {% endblock %} <!-- endblock right_column -->
+
                 </div>
-            </div>
-            <!-- MODAL DIALOG -->
-            <!--
-			<a id="modal-206857" href="#modal-container-206857" role="button" class="btn" data-toggle="modal">Launch demo modal</a>
-			-->
+                -->
+            </div> <!-- end row-fluid -->
+
             <div id="modal-container-206857" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -198,7 +126,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> <!-- end row-fluid -->
 </div>
 
 {% block page_scripts %}

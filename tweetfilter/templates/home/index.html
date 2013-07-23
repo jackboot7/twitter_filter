@@ -5,32 +5,38 @@
 {% endblock %}
 
 {% block section_body %}
-    <input type="hidden" id="channel_added" value="{{ channel_added }}">
-    <table class="table" id="channel_list_table">
-        <thead>
-        <tr>
-            <th>
-                Canal
-            </th>
-            <th>
-                Último tweet
-            </th>
-            <th>
-                Status
-            </th>
-            <th>
-                Eliminar
-            </th>
-        </tr>
-        </thead>
-        <tbody id="channel_list_tbody">
-        </tbody>
-    </table>
+<div class="row-fluid">
+    <div class="span8">
+        <input type="hidden" id="channel_added" value="{{ channel_added }}">
+        <table class="table" id="channel_list_table">
+            <thead>
+            <tr>
+                <th>
+                    Canal
+                </th>
+                <th>
+                    Último tweet
+                </th>
+                <th>
+                    Status
+                </th>
+                <th>
+                    Eliminar
+                </th>
+            </tr>
+            </thead>
+            <tbody id="channel_list_tbody">
+            </tbody>
+        </table>
 
-    <span id="no_channels_message">No hay canales suscritos</span> <br><br>
+        <span id="no_channels_message">No hay canales suscritos</span> <br><br>
+        <a id="call_twitter_auth" href="#" role="button" class="btn btn-primary" data-toggle="modal">Agregar canal</a>
 
-
-<a id="call_twitter_auth" href="#" role="button" class="btn btn-primary" data-toggle="modal">Agregar canal</a>
+    </div> <!-- end span8 -->
+    <div class="span4">
+        &nbsp;
+    </div>
+</div>  <!-- end row-fluid -->
 
 <div id="delete_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-header">
