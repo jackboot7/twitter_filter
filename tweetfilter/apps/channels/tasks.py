@@ -39,3 +39,48 @@ def trigger_update(tweet, twitterAPI, channel):
                 break
     except Exception, e:
         print "error en trigger update: %s" % e
+
+
+@task(queue="tweets")
+def triggers_filter(tweet, channel):
+    triggers = channel.get_triggers()
+    try:
+        for tr in triggers:
+            word = tr.text
+            if word in tweet.text:
+
+                tweet.status = Tweet.STATUS_RELEVANT
+                tweet.save()
+                print "Marked #%s as RELEVANT (found the trigger '%s')" % (tweet.tweet_id, word)
+                break
+        return tweet
+    except Exception, e:
+        print "error en trigger update: %s" % e
+
+
+@task(queue="tweets")
+def banned_words_filter(channel, tweet):
+    filters = channel.get_filters()
+    blocked = False
+    try:
+        for filter in filters:
+            word = filter.text
+            if word in tweet.text:
+                tweet.status = Tweet.STATUS_BLOCKED
+                tweet.save()
+                blocked = True
+                print "Blocked #%s (found the word '%s')" % (tweet.tweet_id, word)
+                break
+
+        if not blocked:
+            tweet.status = Tweet.STATUS_APPROVED
+            tweet.save()
+
+        return tweet
+    except Exception, e:
+        print "error en banned_words_filter: %s" % e
+    pass
+
+@task(queue="tweets")
+def filter_pipeline():
+    pass

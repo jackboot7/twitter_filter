@@ -2,3 +2,10 @@
     padding-bottom: 11px;
     padding-left: 7px
 }
+
+.rounded_box {
+    border-radius: 12px;
+    background-color: #F1F1F1;
+    padding-left: 13px;
+    padding-right: 13px;
+}
