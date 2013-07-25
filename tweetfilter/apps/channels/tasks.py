@@ -1,6 +1,7 @@
 from exceptions import Exception
 from celery import task
 from apps.channels.backends import ChannelStreamer
+from apps.twitter.api import ChannelAPI
 from apps.twitter.models import Tweet
 
 @task(queue="streaming")
@@ -19,6 +20,7 @@ def stream_channel(chan):
         return False
 
 
+"""
 @task(queue="tweets")
 def trigger_update(tweet, twitterAPI, channel):
     triggers = channel.get_triggers()
@@ -39,7 +41,7 @@ def trigger_update(tweet, twitterAPI, channel):
                 break
     except Exception, e:
         print "error en trigger update: %s" % e
-
+"""
 
 @task(queue="tweets")
 def triggers_filter(tweet, channel):
@@ -49,38 +51,77 @@ def triggers_filter(tweet, channel):
             word = tr.text
             if word in tweet.text:
 
-                tweet.status = Tweet.STATUS_RELEVANT
+                tweet.status = Tweet.STATUS_TRIGGERED
                 tweet.save()
-                print "Marked #%s as RELEVANT (found the trigger '%s')" % (tweet.tweet_id, word)
+                print "Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, word)
                 break
+        else:
+            tweet.status = Tweet.STATUS_NOT_TRIGGERED
+            tweet.save()
+
         return tweet
     except Exception, e:
         print "error en trigger update: %s" % e
 
 
 @task(queue="tweets")
-def banned_words_filter(channel, tweet):
+def banned_words_filter(tweet, channel):
     filters = channel.get_filters()
-    blocked = False
-    try:
-        for filter in filters:
-            word = filter.text
-            if word in tweet.text:
-                tweet.status = Tweet.STATUS_BLOCKED
+    if tweet.status == Tweet.STATUS_TRIGGERED:
+        try:
+            for filter in filters:
+                word = filter.text
+                if word in tweet.text:
+                    tweet.status = Tweet.STATUS_BLOCKED
+                    tweet.save()
+                    print "Blocked #%s (found the word '%s')" % (tweet.tweet_id, word)
+                    break
+            else:
+                tweet.status = Tweet.STATUS_APPROVED
                 tweet.save()
-                blocked = True
-                print "Blocked #%s (found the word '%s')" % (tweet.tweet_id, word)
-                break
 
-        if not blocked:
-            tweet.status = Tweet.STATUS_APPROVED
-            tweet.save()
+            return tweet
+        except Exception, e:
+            print "error en banned_words_filter: %s" % e
 
-        return tweet
-    except Exception, e:
-        print "error en banned_words_filter: %s" % e
-    pass
+    return tweet
 
 @task(queue="tweets")
-def filter_pipeline():
-    pass
+def filter_pipeline(data, chan):
+    from apps.twitter import tasks
+    res =(
+        tasks.store_tweet.s(data) |
+        triggers_filter.s(channel=chan) |
+        banned_words_filter.s(channel=chan) |
+        retweet.s(channel=chan)).apply_async()
+    return res
+
+@task(queue="tweets")
+def filter_pipeline_dm(data, chan):
+    from apps.twitter import tasks
+    res =(
+        tasks.store_dm.s(data) |
+        triggers_filter.s(channel=chan) |
+        banned_words_filter.s(channel=chan) |
+        retweet.s(channel=chan)).apply_async()
+    return res
+
+@task(queue="tweets")
+def retweet(tweet, channel):
+    if tweet.status == Tweet.STATUS_APPROVED:
+        twitterAPI = ChannelAPI(channel)
+
+        import re
+        regular_exp = re.compile(re.escape("@" + tweet.mention_to), re.IGNORECASE)
+        text = "via @" + tweet.screen_name + ":" + regular_exp.sub('', tweet.text)
+
+        if len(text) <= 140:
+            twitterAPI.tweet(text)
+        else:
+            twitterAPI.tweet("%s.." % text[0:137])
+
+        print "Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id
+        tweet.status = Tweet.STATUS_SENT
+        tweet.save()
+
+    return tweet

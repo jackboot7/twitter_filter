@@ -58,9 +58,9 @@ class Twitter():
 
 class ChannelAPI(Twitter):
     def __init__(self, chan):
-        super(ChannelAPI, self).__init__(
-            settings.TWITTER_APP_KEY,
-            settings.TWITTER_APP_SECRET,
-            chan.oauth_token,
-            chan.oauth_secret)
+        Twitter.__init__(self,
+            key=settings.TWITTER_APP_KEY,
+            secret=settings.TWITTER_APP_SECRET,
+            token=chan.oauth_token,
+            token_secret=chan.oauth_secret)
 

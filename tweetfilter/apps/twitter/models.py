@@ -6,7 +6,8 @@ class Tweet(models.Model):
     STATUS_APPROVED = 1
     STATUS_BLOCKED = 2
     STATUS_SENT = 3
-    STATUS_RELEVANT = 4
+    STATUS_TRIGGERED = 4
+    STATUS_NOT_TRIGGERED = 5
 
     TYPE_MENTION = 0
     TYPE_DM = 1

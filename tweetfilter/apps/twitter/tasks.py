@@ -7,14 +7,14 @@ from apps.twitter.models import Tweet
 
 
 @task(queue="tweets")
-def store_tweet(data, mentioned):
+def store_tweet(data):
     try:
         tweet = Tweet()
         tweet.screen_name = data['user']['screen_name']
         tweet.text = data['text']
         tweet.tweet_id = data['id']
         tweet.source = data['source']
-        tweet.mention_to = mentioned
+        tweet.mention_to = data['in_reply_to_screen_name']
         tweet.type = Tweet.TYPE_MENTION
         tweet.save()
         print "stored tweet %s as PENDING" % data['id']
@@ -43,4 +43,13 @@ def store_dm(dm):
         return None
 
 
-
+@task(queue="tweets")
+def send_tweet(tweet, twitterAPI):
+    text = tweet.text
+    if len(text) <= 140:
+        twitterAPI.tweet(text)
+    else:
+        twitterAPI.tweet("%s.." % text[0:137])
+    tweet.status = Tweet.STATUS_SENT
+    tweet.save()
+    return tweet

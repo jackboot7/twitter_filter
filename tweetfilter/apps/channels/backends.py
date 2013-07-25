@@ -39,21 +39,14 @@ class ChannelStreamer(TwythonStreamer):
 
                     print "\nGot mention!!!\n"
                     # Invokes subtask chain for storing and retweeting
-                    from . import tasks as channel_tasks
-                    from apps.twitter import tasks as twitter_tasks
-                    res = chain(
-                        twitter_tasks.store_tweet.s(data, self.channel.screen_name),
-                        channel_tasks.trigger_update.s(twitterAPI=self.twitter_api, channel=self.channel)).apply_async()
-
+                    from . import tasks
+                    res = tasks.filter_pipeline.apply_async([data, self.channel])
 
         if 'direct_message' in data:    # DM
             print "\nGot DM!!!\n"
             # Invokes subtask chain for storing and retweeting
-            from . import tasks as channel_tasks
-            from apps.twitter import tasks as twitter_tasks
-            res = chain(
-                twitter_tasks.store_dm.s(data, self.channel.screen_name),
-                channel_tasks.trigger_update.s(twitterAPI=self.twitter_api, channel=self.channel)).apply_async()
+            from . import tasks
+            res = tasks.filter_pipeline_dm.apply_async([data, self.channel])
 
 
     def on_error(self, status_code, data):
