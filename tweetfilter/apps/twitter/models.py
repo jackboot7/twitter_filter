@@ -35,8 +35,9 @@ class Tweet(models.Model):
     mention_to = models.CharField(max_length=16)
     status = models.SmallIntegerField(max_length=16, choices=STATUS_CHOICES, default=STATUS_PENDING)
     type = models.SmallIntegerField(max_length=2, choices=TYPE_CHOICES)
+    retweeted_text = models.CharField(max_length=140, blank=True)
 
     def get_excerpt(self):
         max_chars = 32
         date_time = self.date_time.strftime('%d/%m/%y %H:%M:%S')
-        return "%s %s..." % (date_time, self.text[0:max_chars])
+        return "%s %s..." % (date_time, self.retweeted_text[0:max_chars])

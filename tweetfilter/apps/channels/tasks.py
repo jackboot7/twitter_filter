@@ -117,13 +117,13 @@ def retweet(tweet, channel):
         regular_exp = re.compile(re.escape("@" + tweet.mention_to), re.IGNORECASE)
         text = "via @" + tweet.screen_name + ":" + regular_exp.sub('', tweet.text)
 
-        if len(text) <= 140:
-            twitterAPI.tweet(text)
-        else:
-            twitterAPI.tweet("%s.." % text[0:137])
+        if len(text) > 140:
+            text = "%s.." % text[0:137]
 
+        twitterAPI.tweet(text)
         print "Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id
         tweet.status = Tweet.STATUS_SENT
+        tweet.retweeted_text = text
         tweet.save()
 
     return tweet
