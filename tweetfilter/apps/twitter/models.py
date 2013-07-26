@@ -1,4 +1,5 @@
 from django.db import models
+import time
 
 
 class Tweet(models.Model):
@@ -36,6 +37,6 @@ class Tweet(models.Model):
     type = models.SmallIntegerField(max_length=2, choices=TYPE_CHOICES)
 
     def get_excerpt(self):
-        max_chars = 30
-
-        return "%s %s..." % (self.date_time, self.text[0:max_chars])
+        max_chars = 32
+        date_time = self.date_time.strftime('%d/%m/%y %H:%M:%S')
+        return "%s %s..." % (date_time, self.text[0:max_chars])
