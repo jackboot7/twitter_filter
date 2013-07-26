@@ -45,11 +45,12 @@ def trigger_update(tweet, twitterAPI, channel):
 
 @task(queue="tweets")
 def triggers_filter(tweet, channel):
+    from unidecode import unidecode
     triggers = channel.get_triggers()
     try:
         for tr in triggers:
-            word = tr.text
-            if word in tweet.text:
+            word = unidecode(tr.text.lower())
+            if word in unidecode(tweet.text.lower()):
 
                 tweet.status = Tweet.STATUS_TRIGGERED
                 tweet.save()
@@ -66,12 +67,13 @@ def triggers_filter(tweet, channel):
 
 @task(queue="tweets")
 def banned_words_filter(tweet, channel):
+    from unidecode import unidecode
     filters = channel.get_filters()
     if tweet.status == Tweet.STATUS_TRIGGERED:
         try:
             for filter in filters:
-                word = filter.text
-                if word in tweet.text:
+                word = unidecode(filter.text.lower())
+                if word in unidecode(tweet.text.lower()):
                     tweet.status = Tweet.STATUS_BLOCKED
                     tweet.save()
                     print "Blocked #%s (found the word '%s')" % (tweet.tweet_id, word)
