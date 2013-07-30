@@ -49,7 +49,7 @@ def triggers_filter(tweet, channel):
     triggers = channel.get_triggers()
     try:
         for tr in triggers:
-            word = unidecode(tr.text.lower())
+            word = " %s " % unidecode(tr.text.lower())  # hace match con la palabra rodeada de espacios
             if word in unidecode(tweet.text.lower()):
 
                 tweet.status = Tweet.STATUS_TRIGGERED
