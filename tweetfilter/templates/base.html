@@ -42,6 +42,91 @@
                     {% block page_title %}<a href="/">Twitter Channels</a>{% endblock %} <small>{% block page_subtitle %}Sistema de filtrado automático{% endblock %}</small>
                 </h1>
             </div>
+
+            <div class="navbar">
+                <div class="navbar-inner">
+                    <div class="container-fluid">
+                        <a data-target=".navbar-responsive-collapse" data-toggle="collapse" class="btn btn-navbar"><!--<span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>--></a><!-- <a href="#" class="brand">Canales</a>-->
+                        <div class="nav-collapse collapse navbar-responsive-collapse">
+                            <ul class="nav">
+
+                                <li class="active">
+                                    <a href="/">Home</a>
+                                </li>
+                                <li>
+                                    <a href="#">Configuración</a>
+                                </li>
+                                <li>
+                                    <!--<a href="#">Link</a>-->
+                                </li>
+                                <!--
+                                <li class="dropdown">
+                                    <a data-toggle="dropdown" class="dropdown-toggle" href="#">Dropdown<strong class="caret"></strong></a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a href="#">Action</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">Another action</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">Something else here</a>
+                                        </li>
+                                        <li class="divider">
+                                        </li>
+                                        <li class="nav-header">
+                                            Nav header
+                                        </li>
+                                        <li>
+                                            <a href="#">Separated link</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">One more separated link</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                -->
+                            </ul>
+                            <ul class="nav pull-right">
+                                <!--<li>
+                                    <a href="#">Configuración</a>
+                                </li>-->
+                                <li class="divider-vertical">
+                                </li>
+                                <li>
+                                    <a>Buscar:</a>
+                                </li>
+                                <li>
+                                    <input class="input-medium search-query center-search" type="text" /> <!--<button type="submit" class="btn">Search</button>-->
+                                </li>
+                                <!--
+                                <li class="dropdown">
+                                    <a data-toggle="dropdown" class="dropdown-toggle" href="#">Dropdown<strong class="caret"></strong></a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a href="#">Action</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">Another action</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">Something else here</a>
+                                        </li>
+                                        <li class="divider">
+                                        </li>
+                                        <li>
+                                            <a href="#">Separated link</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                -->
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div> <!-- end navbar -->
+
             <div class="alert alert-success" id="alert_success" style="display: none">
                 <button type="button" class="close" data-dismiss="alert">×</button>
                 <h4>
@@ -54,22 +139,7 @@
                     <span id="alert_warning_title"></span>
                 </h4><span id="alert_warning_body"></span>
             </div>
-            <ul class="nav nav-tabs">
-                {% block nav_bar %}
-                <li id="nav_tab_home" class="active">
-                    <a href="#">Home</a>
-                </li>
 
-
-                <li class="disabled" id="nav_tab_config">
-                    <a href="#">Configuración</a>
-                </li><!--
-				<li class="disabled">
-					<a href="#">Messages</a>
-				</li>
-				-->
-                {% endblock %} <!-- endblock nav_bar -->
-            </ul>
 
             <div class="row-fluid">
                 <div class="span12">
