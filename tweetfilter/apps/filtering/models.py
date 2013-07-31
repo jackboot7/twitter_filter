@@ -14,6 +14,8 @@ class Trigger(models.Model):
     text = models.CharField(max_length=32)
     action = models.IntegerField(choices=ACTION_CHOICES, default=ACTION_RETWEET)
     channel = models.ForeignKey(Channel)
+    enabled_mentions = models.BooleanField(default=True)
+    enabled_dm = models.BooleanField(default=True)
 
 
 class Filter(models.Model):
@@ -28,6 +30,8 @@ class Filter(models.Model):
     text = models.CharField(max_length=32)
     action = models.SmallIntegerField(choices=ACTION_CHOICES, default=ACTION_BLOCK_TWEET)
     channel = models.ForeignKey(Channel)
+    enabled_mentions = models.BooleanField(default=True)
+    enabled_dm = models.BooleanField(default=True)
 
 # Lista "negra"
 class BlockedUser(models.Model):

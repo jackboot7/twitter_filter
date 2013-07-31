@@ -1,5 +1,5 @@
-from apps.channels.models import Channel
-from apps.control.tasks import init_channels
+#from apps.channels.models import Channel
+#from apps.control.tasks import init_channels
 
 #init_channels.delay()
 """

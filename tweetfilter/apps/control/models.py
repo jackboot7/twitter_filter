@@ -1,8 +1,8 @@
-from django.db import models
-from apps.channels.models import Channel
-from picklefield.fields import PickledObjectField
+#from django.db import models
+#from apps.channels.models import Channel
+#from picklefield.fields import PickledObjectField
 
-
+"""
 class Process(models.Model):
     TYPE_STREAMING = 1
     TYPE_DM_FETCH = 2
@@ -16,3 +16,4 @@ class Process(models.Model):
     channel = models.ForeignKey(Channel)
     running_since = models.DateTimeField(auto_now=True)
     type = models.IntegerField(choices=TYPE_CHOICES)
+"""
