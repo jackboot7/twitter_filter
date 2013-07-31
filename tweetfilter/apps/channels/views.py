@@ -5,7 +5,7 @@ from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
 from django.http.response import HttpResponse
 from django.views.generic import ListView
 from django.views.generic.detail import DetailView
-from apps.channels.models import Channel
+from apps.channels.models import Channel, ChannelTimeBlock
 from django.views.generic.edit import DeleteView, UpdateView
 #from django.utils import simplejson as json
 
@@ -71,3 +71,22 @@ class ChannelDetailView(DetailView):
     model = Channel
     template_name = "channels/index.html"
     context_object_name = "channel"
+
+class TimeblockListView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, DetailView):
+    model = Channel
+    context_object_name = "timeblock_list"
+
+    def get_ajax(self, request, *args, **kwargs):
+        objs = ChannelTimeBlock.objects.filter(channel=self.get_object())
+        json_list = []
+
+        for timeblock in objs:
+
+            json_list.append({
+                'start': timeblock.start,
+                'end': timeblock.end,
+                #'days' : ????
+            })
+
+        return self.render_json_response(json_list)
