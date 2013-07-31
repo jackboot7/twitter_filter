@@ -26,28 +26,31 @@ class ChannelStreamer(TwythonStreamer):
     def on_success(self, data):
         # stores mentions and DMs only
         print ""
-        print "============================"
+        print ""
+        print ""
         print "new data from twitter!"
         print "data = %s" % data
-        print "============================"
-        print ""
 
         if 'text' in data:      # regular tweet
-            for mention in data['entities']['user_mentions']:
-                if self.channel.screen_name.lower() == mention['screen_name'].lower():
-                    #current channel is mentioned
-
-                    print "\nGot mention!!!\n"
-                    # Invokes subtask chain for storing and retweeting
-                    from . import tasks
-                    res = tasks.filter_pipeline.apply_async([data, self.channel])
+            self.handle_mention(data)
 
         if 'direct_message' in data:    # DM
-            print "\nGot DM!!!\n"
-            # Invokes subtask chain for storing and retweeting
-            from . import tasks
-            res = tasks.filter_pipeline_dm.apply_async([data, self.channel])
+            self.handle_dm(data)
 
+    def handle_mention(self, data):
+        for mention in data['entities']['user_mentions']:
+            if self.channel.screen_name.lower() == mention['screen_name'].lower():
+                #current channel is mentioned
+                print "\nGot mention!!!\n"
+                # Invokes subtask chain for storing and retweeting
+                from . import tasks
+                res = tasks.filter_pipeline.apply_async([data, self.channel])
+
+    def handle_dm(self, data):
+        print "\nGot DM!!!\n"
+        # Invokes subtask chain for storing and retweeting
+        from . import tasks
+        res = tasks.filter_pipeline_dm.apply_async([data, self.channel])
 
     def on_error(self, status_code, data):
         print "Error en streaming"
