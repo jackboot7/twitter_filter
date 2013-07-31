@@ -19,7 +19,7 @@ def authenticate(request):
         auth_endpoint='authorize')
     callback = "http://" + RequestSite(request).domain + "/auth/callback"
     auth = twitter.get_authentication_tokens(callback_url=callback)
-    redirect_url = auth['auth_url']+"&force_login=true"
+    redirect_url = auth['auth_url']+"&force_login=true&screen_name="
 
     request.session['AUTH'] = {}
     request.session['AUTH']['OAUTH_TOKEN'] = auth['oauth_token']
