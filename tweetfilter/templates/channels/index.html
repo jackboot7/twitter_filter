@@ -9,18 +9,21 @@
 
 <ul class="nav nav-tabs" id="channel_nav">
     {% block nav_bar %}
+        <!--
         <li>
-            <a>Dashboard</a>
-        </li>
+            <a>Monitor</a>
+        </li>-->
+        <!--
         <li>
             <a href="#">Seguidores</a>
-        </li>
+        </li>-->
         <li id="nav_tab_home" class="active">
             <a href="#">Retweets automáticos</a>
         </li>
+        <!--
         <li>
             <a>Tweets programados</a>
-        </li>
+        </li>-->
 
         <!--
         <li>
@@ -65,8 +68,52 @@
                 Actualmente se publican los tweets sin restricción de horario
             </span>
             <br><br>
-            <a id="add_timeblock_btn" href="#" class="btn btn-primary btn-small">Agregar horario</a>
+            <a id="add_timeblock_btn" href="#add_timeblock_modal" class="btn btn-primary btn-small" data-toggle='modal'>Agregar horario</a>
 
+            <div id="add_timeblock_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3>
+                        Añadir horario
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <div class="span6">
+                        <table>
+                            <tr>
+                                <td><label>Hora de inicio: </label></td>
+                                <td><!--<select class="input-mini" id="start_hour_select"></select>-->
+                                    <!--<select class="input-mini" id="start_minute_select"></select>-->
+                                    <input type="text" class="input-mini" id="start_timepicker">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><label>Hora de fin: </label></td>
+                                <td>
+                                    <input type="text" class="input-mini" id="end_timepicker">
+                                </td>
+                            </tr>
+                        </table>
+                        <br>
+                        <label class="radio"><input type="radio" name="days_select" id="timeblock_everyday_radio" checked="checked"> Todos los días</label>
+                        <label class="radio"><input type="radio" name="days_select" id="timeblock_selectdays_radio"> Días específicos</label>
+                    </div>
+
+                    <div class="span6" id="weekdays_select_div">
+                        <label class="checkbox"><input type="checkbox"> Lunes</label>
+                        <label class="checkbox"><input type="checkbox"> Martes</label>
+                        <label class="checkbox"><input type="checkbox"> Miércoles</label>
+                        <label class="checkbox"><input type="checkbox"> Jueves</label>
+                        <label class="checkbox"><input type="checkbox"> Viernes</label>
+                        <label class="checkbox"><input type="checkbox"> Sábado</label>
+                        <label class="checkbox"><input type="checkbox"> Domingo</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_timeblock_btn">Guardar</button>
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+                </div>
+            </div>
         </div>
     </div>
 

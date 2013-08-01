@@ -64,8 +64,30 @@ $(document).ready(function () {
 
     $('#timeblock_list').hide();
     $('#no_timeblocks_message').hide();
+    $('#weekdays_select_div').hide();
 
     load_timeblock_table();
+
+    $('#start_timepicker').timepicker({
+        hourText: 'Hora',
+        minuteText: 'Minutos'
+    });
+
+    $('#end_timepicker').timepicker({
+        hourText: 'Hora',
+        minuteText: 'Minutos'
+    });
+
+    $('#timeblock_selectdays_radio').click(function () {    // click????????
+        $('#weekdays_select_div').show();
+    });
+
+    $('#timeblock_everyday_radio').click(function () {    // click????????
+        $('#weekdays_select_div').hide();
+    });
+
+
+
 
     $('#delete_timeblock_confirmed').click(function () {
         $.post("/channels/timeblock/delete/" + $('#deleting_timeblock_id').val(), function (data) {
@@ -75,7 +97,7 @@ $(document).ready(function () {
         });
     });
 
-    $('#add_timeblock_btn').click(function () {
+    $('#save_timeblock_btn').click(function () {
         submit_new_timeblock();
     });
 });
