@@ -1,3 +1,4 @@
+
 var
 
     load_timeblock_table = function () {
@@ -9,24 +10,27 @@ var
             if (data.length > 0) {
                 $('#no_timeblocks_message').hide();
                 $('#timeblock_list_table').show();
+
                 //alert(JSON.stringify(data));
                 $.each(data, function (idx, elem) {
-                    /*
+
                     $('#timeblock_list_tbody').append(
                         "<tr>" +
-                            "<td>" + elem.text + "</td>" +
+                            "<td>" + elem.start + "</td>" +
+                            "<td>" + elem.end + "</td>" +
+                            "<td>" + elem.days + "</td>" +
                             "<td><a id='delete_timeblock_" + elem.id +"' class='delete_filter' " +
-                            "title='Haga click para eliminar filtro' href='#delete_filter_confirm_modal' data-toggle='modal'>" +
+                            "title='Haga click para eliminar filtro' href='#delete_timeblock_confirm_modal' data-toggle='modal'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td>" +
                             "</tr>"
                     );
 
-                    $('#delete_filter_' + elem.id).click(function () {
-                        $('#deleting_filter_text').text(elem.text);
-                        $('#deleting_filter_id').val(elem.id);
+                    $('#delete_timeblock_' + elem.id).click(function () {
+                        $('#deleting_timeblock_id').val(elem.id);
                     });
-                    */
+
                 });
+                $('#timeblock_list').show();
             }else{
                 $('#timeblock_list').hide();
                 $('#no_timeblocks_message').show();
@@ -45,27 +49,54 @@ var
         "use strict";
 
         $.post("/channels/timeblock/add/", {
-            /*
-            'start': $('#').val(),
-            'end': $('#').val()
-            */
+            'start': $('#start_timepicker').val(),
+            'end': $('#end_timepicker').val(),
+            'monday': $('#monday_check').is(':checked') ? 1 : 0,
+            'tuesday': $('#tuesday_check').is(':checked') ? 1 : 0,
+            'wednesday': $('#wednesday_check').is(':checked') ? 1 : 0,
+            'thursday': $('#thursday_check').is(':checked') ? 1 : 0,
+            'friday': $('#friday_check').is(':checked') ? 1 : 0,
+            'saturday': $('#saturday_check').is(':checked') ? 1 : 0,
+            'sunday': $('#sunday_check').is(':checked') ? 1 : 0,
+            'timeblock_channel': $('#current_channel').val()
         }, function (data) {
 
             if(data.result === "ok") {
                 load_timeblock_table();
+                clear_add_timeblock_form();
             }else{
                 timeblock_add_error(data.result);
             }
         });
+    },
+
+    check_all_days = function () {
+        "use strict";
+
+        $('#monday_check').attr('checked', true);
+        $('#tuesday_check').attr('checked', true);
+        $('#wednesday_check').attr('checked', true);
+        $('#thursday_check').attr('checked', true);
+        $('#friday_check').attr('checked', true);
+        $('#saturday_check').attr('checked', true);
+        $('#sunday_check').attr('checked', true);
+    },
+
+    clear_add_timeblock_form = function () {
+        $('#start_timepicker').val('');
+        $('#end_timepicker').val('');
+        check_all_days();
     };
+
 
 $(document).ready(function () {
     "use strict";
 
     $('#timeblock_list').hide();
     $('#no_timeblocks_message').hide();
-    $('#weekdays_select_div').hide();
+    $('#weekdays_select_div').show();
 
+    clear_add_timeblock_form();
     load_timeblock_table();
 
     $('#start_timepicker').timepicker({
@@ -78,18 +109,7 @@ $(document).ready(function () {
         minuteText: 'Minutos'
     });
 
-    $('#timeblock_selectdays_radio').click(function () {    // click????????
-        $('#weekdays_select_div').show();
-    });
-
-    $('#timeblock_everyday_radio').click(function () {    // click????????
-        $('#weekdays_select_div').hide();
-    });
-
-
-
-
-    $('#delete_timeblock_confirmed').click(function () {
+      $('#delete_timeblock_confirmed').click(function () {
         $.post("/channels/timeblock/delete/" + $('#deleting_timeblock_id').val(), function (data) {
             if(data.result === "ok") {
                 load_timeblock_table();

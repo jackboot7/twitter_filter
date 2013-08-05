@@ -54,7 +54,7 @@
                 <table class="table" id="timeblock_list_table">
                     <thead>
                         <tr>
-                            <th>Hora de inicio</th><th>Hora de fin</th><th>Días</th>
+                            <th>Hora de inicio</th><th>Hora de fin</th><th>Días</th><th>Eliminar</th>
                         </tr>
                     </thead>
                     <tbody id="timeblock_list_tbody">
@@ -95,25 +95,43 @@
                             </tr>
                         </table>
                         <br>
-                        <label class="radio"><input type="radio" name="days_select" id="timeblock_everyday_radio" checked="checked"> Todos los días</label>
-                        <label class="radio"><input type="radio" name="days_select" id="timeblock_selectdays_radio"> Días específicos</label>
+
                     </div>
 
                     <div class="span6" id="weekdays_select_div">
-                        <label class="checkbox"><input type="checkbox"> Lunes</label>
-                        <label class="checkbox"><input type="checkbox"> Martes</label>
-                        <label class="checkbox"><input type="checkbox"> Miércoles</label>
-                        <label class="checkbox"><input type="checkbox"> Jueves</label>
-                        <label class="checkbox"><input type="checkbox"> Viernes</label>
-                        <label class="checkbox"><input type="checkbox"> Sábado</label>
-                        <label class="checkbox"><input type="checkbox"> Domingo</label>
+                        <label class="checkbox"><input type="checkbox" id="monday_check"> Lunes</label>
+                        <label class="checkbox"><input type="checkbox" id="tuesday_check"> Martes</label>
+                        <label class="checkbox"><input type="checkbox" id="wednesday_check"> Miércoles</label>
+                        <label class="checkbox"><input type="checkbox" id="thursday_check"> Jueves</label>
+                        <label class="checkbox"><input type="checkbox" id="friday_check"> Viernes</label>
+                        <label class="checkbox"><input type="checkbox" id="saturday_check"> Sábado</label>
+                        <label class="checkbox"><input type="checkbox" id="sunday_check"> Domingo</label>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_timeblock_btn">Guardar</button>
                     <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
                 </div>
-            </div>
+            </div> <!-- Add timeblock modal -->
+
+            <div id="delete_timeblock_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3>
+                        Eliminar Horario
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="deleting_timeblock_id" value="">
+                    <p>
+                        Está seguro de que desea eliminar el horario seleccionado ?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+                    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_timeblock_confirmed">Sí, eliminar</button>
+                </div>
+            </div> <!-- delete timeblock modal -->
         </div>
     </div>
 
