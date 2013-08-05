@@ -68,6 +68,7 @@ var
                 timeblock_add_error(data.result);
             }
         });
+
     },
 
     check_all_days = function () {
@@ -83,9 +84,33 @@ var
     },
 
     clear_add_timeblock_form = function () {
+        "use strict";
+
         $('#start_timepicker').val('');
         $('#end_timepicker').val('');
         check_all_days();
+    },
+
+    validate_add_timeblock_form = function () {
+        "use strict";
+        if ($('#start_timepicker').val() >= $('#end_timepicker').val()){
+            alert("El tiempo de inicio debe ser menor al tiempo de fin");
+            return false;
+        }
+
+        if (!($('#monday_check').is(':checked') ||
+            $('#tuesday_check').is(':checked') ||
+            $('#wednesday_check').is(':checked') ||
+            $('#thursday_check').is(':checked') ||
+            $('#friday_check').is(':checked') ||
+            $('#saturday_check').is(':checked') ||
+            $('#sunday_check').is(':checked'))){
+            //Si no está chequeado ningún día
+            alert("Debe seleccionar al menos un día de la semana");
+            return false;
+        }else{
+            return true;
+        }
     };
 
 
@@ -118,6 +143,10 @@ $(document).ready(function () {
     });
 
     $('#save_timeblock_btn').click(function () {
-        submit_new_timeblock();
+        if(validate_add_timeblock_form()){
+            submit_new_timeblock();
+        }else{
+            return false;
+        }
     });
 });
