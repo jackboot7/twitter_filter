@@ -199,4 +199,6 @@ djcelery.setup_loader()
 
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
 CELERY_RESULT_BACKEND = "amqp"
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 CELERYD_CONCURRENCY = 4
+CELERY_TIMEZONE = 'America/Caracas'
