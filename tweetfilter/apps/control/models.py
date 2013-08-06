@@ -20,6 +20,7 @@ class TimeBlock(models.Model):
 
 class OneTimeTask(Task):
     start_time = models.DateTimeField()
+    rate_limit = ""
 
     def __init__(self, time):
         super(OneTimeTask, self).__init__()
@@ -37,6 +38,7 @@ class OneTimeTask(Task):
 
 class RepeatTask(PeriodicTask):
     start_time = models.TimeField()
+    rate_limit = ""
     start_crontab = {}
 
     monday = models.BooleanField(default=False)
@@ -57,7 +59,8 @@ class RepeatTask(PeriodicTask):
             hour=self.start_time.hour,
             minute=self.start_time.minute,
             day_of_week=self.days_of_week_list())
-        # add schedule with crontab
+
+        # add schedule with crontab !!!
 
         return self.run(*args, **kwargs)
 
@@ -87,6 +90,7 @@ class RepeatTask(PeriodicTask):
 
 class IntervalTask(RepeatTask):
     end_time = models.TimeField()
+    rate_limit = ""
     start_crontab = {}
     end_crontab = {}
     # associate with TimeBlock ???
@@ -96,7 +100,6 @@ class IntervalTask(RepeatTask):
         self.start = time
 
     def __call__(self, *args, **kwargs):
-        # calculate start_crontab and end_crontab
         if self.start_time <= now() <= self.end_time and now().day in self.days_of_week_list():
             return self.run(*args, **kwargs)
         else:
