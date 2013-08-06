@@ -1,8 +1,9 @@
-from celery.backends.database.models import Task
+# -*- coding: utf-8 -*-
+
 from celery.schedules import crontab
+from celery.task.base import PeriodicTask, Task
 from django.db import models
 from django.utils.timezone import now
-from djcelery.models import PeriodicTask
 
 
 class TimeBlock(models.Model):
@@ -17,59 +18,8 @@ class TimeBlock(models.Model):
     saturday = models.BooleanField(default=False)
     sunday = models.BooleanField(default=False)
 
-
-class OneTimeTask(Task):
-    start_time = models.DateTimeField()
-    rate_limit = ""
-
-    def __init__(self, time):
-        super(OneTimeTask, self).__init__()
-        self.track_started = True   # useful for streaming tasks (initializes as started instead of pending)
-        self.start = time
-
-    def __call__(self, *args, **kwargs):
-        # calculate eta to start_stime, self.delay(eta)
-        return self.run(*args, **kwargs)
-
-    def after_return(self, status, retval, task_id, args, kwargs, einfo):
-        #exit point
-        pass
-
-
-class RepeatTask(PeriodicTask):
-    start_time = models.TimeField()
-    rate_limit = ""
-    start_crontab = {}
-
-    monday = models.BooleanField(default=False)
-    tuesday = models.BooleanField(default=False)
-    wednesday = models.BooleanField(default=False)
-    thursday = models.BooleanField(default=False)
-    friday = models.BooleanField(default=False)
-    saturday = models.BooleanField(default=False)
-    sunday = models.BooleanField(default=False)
-
-    def __init__(self, time):
-        super(RepeatTask, self).__init__()
-        self.start = time
-
-    def __call__(self, *args, **kwargs):
-
-        self.start_crontab = crontab(
-            hour=self.start_time.hour,
-            minute=self.start_time.minute,
-            day_of_week=self.days_of_week_list())
-
-        # add schedule with crontab !!!
-
-        return self.run(*args, **kwargs)
-
-    def after_return(self, status, retval, task_id, args, kwargs, einfo):
-        pass
-
     def days_of_week_list(self):
         res = []
-
         if self.sunday:
             res.append(0)
         if self.monday:
@@ -88,6 +38,44 @@ class RepeatTask(PeriodicTask):
         return res
 
 
+class OneTimeTask(Task):
+    start_time = models.DateTimeField()
+    rate_limit = ""
+
+#    def __init__(self):
+#        super(OneTimeTask, self).__init__()
+#        self.track_started = True   # useful for streaming tasks (initializes as started instead of pending)
+
+    def __call__(self, *args, **kwargs):
+        # calculate eta to start_stime, self.delay(eta)
+        return self.run(*args, **kwargs)
+
+    def after_return(self, status, retval, task_id, args, kwargs, einfo):
+        #exit point
+        pass
+
+
+class RepeatTask(PeriodicTask):
+    timeblock = models.ForeignKey(TimeBlock)
+
+    def __init__(self):
+        #super(RepeatTask, self).__init__()
+        self.run_every = crontab(
+            hour=self.timeblock.start.hour,
+            minute=self.timeblock.start.minute,
+            day_of_week=self.timeblock.days_of_week_list())
+
+    def __call__(self, *args, **kwargs):
+        # add schedule with crontab !!!
+
+        return self.run(*args, **kwargs)
+
+    def after_return(self, status, retval, task_id, args, kwargs, einfo):
+        pass
+
+
+
+
 class IntervalTask(RepeatTask):
     end_time = models.TimeField()
     rate_limit = ""
@@ -95,9 +83,12 @@ class IntervalTask(RepeatTask):
     end_crontab = {}
     # associate with TimeBlock ???
 
-    def __init__(self, time):
-        super(IntervalTask, self).__init__()
-        self.start = time
+    def __init__(self):
+        #super(IntervalTask, self).__init__()
+        self.run_every = crontab(
+            hour=self.start_time.hour,
+            minute=self.start_time.minute,
+            day_of_week=self.days_of_week_list())
 
     def __call__(self, *args, **kwargs):
         if self.start_time <= now() <= self.end_time and now().day in self.days_of_week_list():
@@ -105,7 +96,6 @@ class IntervalTask(RepeatTask):
         else:
             # delay until next start_time
             pass
-
 
     def after_return(self, status, retval, task_id, args, kwargs, einfo):
         pass

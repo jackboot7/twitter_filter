@@ -1,4 +1,5 @@
 from exceptions import Exception
+import re
 from celery import task
 from apps.channels.backends import ChannelStreamer
 from apps.twitter.api import ChannelAPI
@@ -113,7 +114,6 @@ def retweet(tweet, channel):
     if tweet.status == Tweet.STATUS_APPROVED:
         twitterAPI = ChannelAPI(channel)
 
-        import re
         regular_exp = re.compile(re.escape("@" + tweet.mention_to), re.IGNORECASE)
         text = "via @" + tweet.screen_name + ":" + regular_exp.sub('', tweet.text)
 
