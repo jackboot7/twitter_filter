@@ -1,9 +1,42 @@
+# -*- coding: utf-8 -*-
+
 from exceptions import Exception
+import datetime
+from celery.task.base import Task
 import re
 from celery import task
 from apps.channels.backends import ChannelStreamer
 from apps.twitter.api import ChannelAPI
 from apps.twitter.models import Tweet
+
+
+
+class TimeBlockTask(Task):
+    """
+    Defines a type of task that can only be executed during any of the channel's time-blocks
+    """
+
+    def __call__(self, *args, **kwargs):
+        #chan_id = kwargs['channel_id']
+        #blocks = TimeBlock.objects.filter(channel=chan_id)
+        if self.can_execute_now():
+            return self.run(*args, **kwargs)
+        else:
+            # calculates nearest ETA and delay self
+            pass
+
+    def can_execute_now(self):
+        today = datetime.date.today()
+        week_day = today.weekday()
+        print "today is %s (%s day)" % (today, week_day)
+        # recibir blocks y calcular, cuando se haya resuelto el método has_date_time de TimeBlock
+        # probablemente mover esta clase a otro lugar (control o channels.backends)
+        return False
+
+    def after_return(self, status, retval, task_id, args, kwargs, einfo):
+        print "la tarea %s terminó con status %s" % (task_id, status)
+        pass
+
 
 @task(queue="streaming")
 def stream_channel(chan):
@@ -127,3 +160,4 @@ def retweet(tweet, channel):
         tweet.save()
 
     return tweet
+

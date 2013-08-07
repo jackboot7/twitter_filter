@@ -1,6 +1,10 @@
-from celery import chain
+# -*- coding: utf-8 -*-
+
+from celery.task.base import Task
+import datetime
 from django.conf import settings
 from twython import TwythonStreamer
+from apps.control.models import TimeBlock
 from apps.twitter.api import Twitter
 
 
@@ -57,3 +61,4 @@ class ChannelStreamer(TwythonStreamer):
         print status_code
         print data
         self.disconnect()   # ???
+

@@ -2,6 +2,7 @@
 
 import json
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
+import datetime
 from django.http.response import HttpResponse
 from django.views.generic import ListView
 from django.views.generic.base import View
@@ -142,9 +143,10 @@ class TimeBlockCreateView(CsrfExemptMixin, JSONResponseMixin,
             block.sunday = True if request.POST['sunday'] == "1" else False
             block.channel = chan
             block.save()
+            print "is now appliable? %s" % block.has_date_time(datetime.datetime.now())   #####
             response_data = {'result': "ok"}
         except Exception, e:
-            print "Error al crear filter: %s" % e
+            print "Error al crear timeblock: %s" % e
             response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),

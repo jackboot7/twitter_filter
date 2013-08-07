@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+from time import strptime
 
 from celery.schedules import crontab
 from celery.task.base import PeriodicTask, Task
+import datetime
 from django.db import models
-from django.utils.timezone import now
 
 
 class TimeBlock(models.Model):
@@ -37,7 +38,17 @@ class TimeBlock(models.Model):
 
         return res
 
+    def has_day(self, day):
+        print "type(day) = %s" % type(day)
+        return day in self.days_of_week_list()
 
+    def has_date_time(self, date_time):
+        # ERROR de tipos en la conversión de str a time()
+        start = strptime(self.start, "%H:%M")
+        end = strptime(self.end, "%H:%M")
+        return self.has_day(date_time.weekday()) and start <= date_time.time() < end
+
+"""
 class OneTimeTask(Task):
     start_time = models.DateTimeField()
     rate_limit = ""
@@ -56,7 +67,7 @@ class OneTimeTask(Task):
 
 
 class RepeatTask(PeriodicTask):
-    timeblock = models.ForeignKey(TimeBlock)
+    timeblock = TimeBlock()
 
     def __init__(self):
         #super(RepeatTask, self).__init__()
@@ -72,33 +83,9 @@ class RepeatTask(PeriodicTask):
 
     def after_return(self, status, retval, task_id, args, kwargs, einfo):
         pass
+"""
 
 
-
-
-class IntervalTask(RepeatTask):
-    end_time = models.TimeField()
-    rate_limit = ""
-    start_crontab = {}
-    end_crontab = {}
-    # associate with TimeBlock ???
-
-    def __init__(self):
-        #super(IntervalTask, self).__init__()
-        self.run_every = crontab(
-            hour=self.start_time.hour,
-            minute=self.start_time.minute,
-            day_of_week=self.days_of_week_list())
-
-    def __call__(self, *args, **kwargs):
-        if self.start_time <= now() <= self.end_time and now().day in self.days_of_week_list():
-            return self.run(*args, **kwargs)
-        else:
-            # delay until next start_time
-            pass
-
-    def after_return(self, status, retval, task_id, args, kwargs, einfo):
-        pass
 
 """
 class ApplicationTask(models.Model):    # models.Model???
@@ -148,3 +135,4 @@ class ApplicationTask(models.Model):    # models.Model???
         self.save()
 
 """
+
