@@ -33,7 +33,7 @@ def auth_callback(request):
     Callback function when returning from twitter authentication form
     """
 
-    # Gets the provisional tokens
+    # Get the provisional tokens
     oauth_verifier = request.GET['oauth_verifier']
     token = request.session['AUTH']['OAUTH_TOKEN']
     secret = request.session['AUTH']['OAUTH_TOKEN_SECRET']
@@ -41,18 +41,20 @@ def auth_callback(request):
     twitter = Twython(settings.TWITTER_APP_KEY, settings.TWITTER_APP_SECRET, token, secret)
     final_step = twitter.get_authorized_tokens(oauth_verifier)
 
-    # Gets the final tokens
+    # Get the final tokens
     final_token = final_step['oauth_token']
     final_secret = final_step['oauth_token_secret']
     name = final_step['screen_name']
 
-    # Create and saves channel
+    # Create new channel object
     chan = Channel()
     chan.screen_name = name
     chan.oauth_token = final_token
     chan.oauth_secret = final_secret
+
+    #initializes streaming process
+    task = tasks.stream_channel.delay(chan.screen_name)
+    chan.streaming_task = task
     chan.save()
-    tasks.stream_channel.delay(chan.screen_name)
-    #chan.init_streaming()   #initializes streaming process
 
     return HttpResponseRedirect(reverse("channel_added"))

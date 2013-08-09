@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from exceptions import Exception
+
 import datetime
-from celery._state import current_task
 import re
+from exceptions import Exception
 from celery import task
+from celery._state import current_task
 from apps.channels.backends import ChannelStreamer
 from apps.channels.models import ChannelTimeBlock, Channel
 from apps.control.backends import DelayedTask
 from apps.twitter.api import ChannelAPI
 from apps.twitter.models import Tweet
+
+from unidecode import unidecode
 
 
 class RetweetDelayedTask(DelayedTask):
@@ -28,14 +31,15 @@ class RetweetDelayedTask(DelayedTask):
         else:
             # calculate nearest ETA and delay itself until then
             eta = self.calculate_eta()
-            current_task.apply_async(eta)
-            pass
+            print "Retweet task %s DELAYED until %s" % (current_task.request.id, eta)
+            current_task.retry(args=args, kwargs=kwargs, eta=eta)
 
     def set_channel_id(self, id):
         self.screen_name = id
 
     def can_execute_now(self):
         blocks = ChannelTimeBlock.objects.filter(channel=self.screen_name)
+
         now = datetime.datetime.now()
         for block in blocks:
             if block.has_datetime(now):
@@ -44,10 +48,15 @@ class RetweetDelayedTask(DelayedTask):
         else:
             return False
 
+        return True # since there are no time restrictions
+
     def calculate_eta(self):
-        eta = datetime.datetime.now()
-        eta.year = datetime.MAXYEAR
         blocks = ChannelTimeBlock.objects.filter(channel=self.screen_name)
+        if len(blocks) > 0:
+            eta = blocks[0].next_datetime()
+        else:
+            eta = datetime.datetime.now()
+
         for block in blocks:
             block_eta = block.next_datetime()
             if block_eta < eta:
@@ -59,8 +68,7 @@ class RetweetDelayedTask(DelayedTask):
 def stream_channel(chan_id):
     print "Starting streaming for channel %s" % chan_id
     try:
-        print "chan id = %s" %chan_id
-        chan = Channel.objects.get(screen_name=chan_id)
+        chan = Channel.objects.filter(screen_name=chan_id)[0]
         stream = ChannelStreamer(chan)
         stream.user(**{"with": "followings"})
         return True
@@ -71,7 +79,6 @@ def stream_channel(chan_id):
 
 @task(queue="tweets")
 def triggers_filter(tweet, channel):
-    from unidecode import unidecode
     triggers = channel.get_triggers()
     try:
         for tr in triggers:
@@ -135,10 +142,10 @@ def filter_pipeline_dm(data, chan):
     return res
 
 @task(queue="tweets", base=RetweetDelayedTask)
-def retweet(tweet, channel):
+def retweet(tweet, screen_name):
+    channel = Channel.objects.get(screen_name=screen_name)
     if tweet.status == Tweet.STATUS_APPROVED:
         twitterAPI = ChannelAPI(channel)
-
         regular_exp = re.compile(re.escape("@" + tweet.mention_to), re.IGNORECASE)
         text = "via @" + tweet.screen_name + ":" + regular_exp.sub('', tweet.text)
 

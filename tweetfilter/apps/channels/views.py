@@ -68,6 +68,8 @@ class ChangeStatusView(CsrfExemptMixin, JSONResponseMixin,
                 obj.streaming_task = task   # tiene que haber un mejor lugar para guardar el task
                 obj.save()
             else:
+                print "type(obj) = %s" % type(obj)
+                print "type(obj.streaming_task) = %s" % type(obj.streaming_task)
                 obj.streaming_task.revoke(terminate=True)
             response_data = {'result': "ok"}
         except Exception as e:
@@ -140,8 +142,9 @@ class TimeBlockCreateView(CsrfExemptMixin, JSONResponseMixin,
             print "saturday = %s" % request.POST['saturday']
             print "sunday = %s" % request.POST['sunday']
 
-            block.start = request.POST['start']
-            block.end = request.POST['end']
+            block.start = datetime.datetime.strptime(request.POST['start'], "%H:%M").time()
+            block.end = datetime.datetime.strptime(request.POST['end'], "%H:%M").time()
+
             block.monday = True if request.POST['monday'] == "1" else False
             block.tuesday = True if request.POST['tuesday'] == "1" else False
             block.wednesday = True if request.POST['wednesday'] == "1" else False

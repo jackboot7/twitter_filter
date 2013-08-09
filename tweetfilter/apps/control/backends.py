@@ -18,7 +18,7 @@ class DelayedTask(Task):
         else:
             # calculates nearest ETA and delay self
             eta = self.calculate_eta()
-            current_task.apply_async(eta)
+            current_task.apply_async(eta)   # retry?
             pass
 
     def after_return(self, status, retval, task_id, args, kwargs, einfo):

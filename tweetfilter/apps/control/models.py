@@ -43,7 +43,6 @@ class TimeBlock(models.Model):
         """
         Returns True if day is among the weekdays checked as True
         """
-        print "checking existence of day %s in list:" % day
         print self.days_of_week_list()
         return day in self.days_of_week_list()
 
@@ -51,17 +50,7 @@ class TimeBlock(models.Model):
         """
         Returns True if date_time occurs inside this time block
         """
-        print "now = %s" % date_time
-
-        start = datetime.datetime.strptime(self.start, "%H:%M").time()
-        end = datetime.datetime.strptime(self.end, "%H:%M").time()
-
-        print "checking time = %s" % date_time.time()
-        print "has week day? %s" % self.has_weekday(date_time.weekday())
-        print "start = %s" % start
-        print "end = %s" % end
-
-        return self.has_weekday(date_time.weekday()) and start <= date_time.time() < end
+        return self.has_weekday(date_time.weekday()) and self.start <= date_time.time() < self.end
 
     def get_next_weekday(self):
         """
@@ -84,12 +73,23 @@ class TimeBlock(models.Model):
         now = datetime.datetime.now()
         today = now.weekday()
         if self.has_datetime(now):
+            # if now is inside the timeblock
             return now
         else:
+            # calculate how many days until next available date
             next_day = self.get_next_weekday()
             if next_day > today:
                 days_delta = next_day - today
             else:
                 days_delta = (7 - today) + next_day
-            time_delta = self.start - now.time()    # does it work?
-            return now + datetime.timedelta(days=days_delta, hours=time_delta.hours, minutes=time_delta.minutes)
+
+            # calculate complete datetime until next available date
+            next_date = now + datetime.timedelta(days=days_delta)
+            next_datetime = datetime.datetime(
+                year=next_date.year,
+                month=next_date.month,
+                day=next_date.day,
+                hour=self.start.hour,
+                minute=self.start.minute)
+
+            return next_datetime

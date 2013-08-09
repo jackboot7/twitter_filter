@@ -103,7 +103,6 @@ class Channel(models.Model):
         """
         Returns a list of this channel's trigger words
         """
-        from apps.filtering.models import Trigger
         triggers = Trigger.objects.filter(channel=self)
         return triggers
         #return self.trigger_set.all()
@@ -112,7 +111,6 @@ class Channel(models.Model):
         """
         Returns a list of this channel's trigger words
         """
-        from apps.filtering.models import Filter
         filters = Filter.objects.filter(channel=self)
         return filters
         #return self.filter_set.all()
