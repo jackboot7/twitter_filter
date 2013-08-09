@@ -3,7 +3,6 @@
 from django.contrib.auth.models import User
 from django.db import models
 from picklefield.fields import PickledObjectField
-from apps.channels.tasks import stream_channel
 from apps.control.models import TimeBlock
 from apps.twitter.models import Tweet
 
@@ -52,12 +51,12 @@ class Channel(models.Model):
     def activate(self):
         self.status = self.STATUS_ENABLED
         self.save()
-        self.init_streaming()
+        #self.init_streaming()
 
     def deactivate(self):
         self.status = self.STATUS_DISABLED
         self.save()
-        self.stop_streaming()
+        #self.stop_streaming()
 
     def is_active(self):
         return self.status == self.STATUS_ENABLED
@@ -73,18 +72,21 @@ class Channel(models.Model):
             print e
             return False
 
+    """
     def init_streaming(self):
         task = stream_channel.delay(self)
         self.streaming_task = task
         print "Initializing task id = %s (%s)" % (task.id, self.screen_name)
         self.save()
+    """
 
+    """
     def stop_streaming(self):
         try:
             self.streaming_task.revoke(terminate=True)
         except Exception, e:
             print "streaming task doesn't exist yet (%s)" % e
-
+    """
     """
     # pendiente por implementar
     def is_streaming(self):
@@ -118,3 +120,34 @@ class Channel(models.Model):
 
 class ChannelTimeBlock(TimeBlock):
     channel = models.ForeignKey(Channel)
+
+
+class Trigger(models.Model):
+    ACTION_RETWEET = 1
+
+    ACTION_CHOICES = (
+        (ACTION_RETWEET, "Retweet"),
+    )
+
+    text = models.CharField(max_length=32)
+    action = models.IntegerField(choices=ACTION_CHOICES, default=ACTION_RETWEET)
+    channel = models.ForeignKey(Channel)
+    enabled_mentions = models.BooleanField(default=True)
+    enabled_dm = models.BooleanField(default=True)
+
+
+class Filter(models.Model):
+    ACTION_BLOCK_TWEET = 1
+    ACTION_BLOCK_USER = 2
+
+    ACTION_CHOICES = (
+        (ACTION_BLOCK_TWEET, "Bloquear tweet"),
+        (ACTION_BLOCK_USER, "Bloquear usuario"),
+        )
+
+    text = models.CharField(max_length=32)
+    action = models.SmallIntegerField(choices=ACTION_CHOICES, default=ACTION_BLOCK_TWEET)
+    channel = models.ForeignKey(Channel)
+    enabled_mentions = models.BooleanField(default=True)
+    enabled_dm = models.BooleanField(default=True)
+

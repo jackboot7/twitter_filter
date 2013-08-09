@@ -4,12 +4,14 @@ from celery.task.base import Task
 import datetime
 from django.conf import settings
 from twython import TwythonStreamer
-from apps.control.models import TimeBlock
 from apps.twitter.api import Twitter
 
 
-
 class ChannelStreamer(TwythonStreamer):
+    """
+    TwythonStreamer subclass for a specific channel.
+    Enables the stream, instantiating a filter_pipeline for each successful mention or DM to the current channel.
+    """
     channel = {}
     twitter_api = {}
 
@@ -61,4 +63,5 @@ class ChannelStreamer(TwythonStreamer):
         print status_code
         print data
         self.disconnect()   # ???
+
 

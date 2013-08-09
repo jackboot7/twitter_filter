@@ -7,6 +7,7 @@ from django.http.response import HttpResponse
 from django.views.generic import ListView
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
+from apps.channels import tasks
 from apps.channels.models import Channel, ChannelTimeBlock
 from django.views.generic.edit import DeleteView, UpdateView
 #from django.utils import simplejson as json
@@ -60,11 +61,18 @@ class ChangeStatusView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
-        if obj.switch_status():
+        obj.switch_status()
+        try:
+            if obj.status == Channel.STATUS_ENABLED:
+                task = tasks.stream_channel.delay(obj.screen_name)
+                obj.streaming_task = task   # tiene que haber un mejor lugar para guardar el task
+                obj.save()
+            else:
+                obj.streaming_task.revoke(terminate=True)
             response_data = {'result': "ok"}
-        else:
+        except Exception as e:
+            print "Error en ChangeStatus: %s" % e
             response_data = {'result': "fail"}
-
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
@@ -143,7 +151,7 @@ class TimeBlockCreateView(CsrfExemptMixin, JSONResponseMixin,
             block.sunday = True if request.POST['sunday'] == "1" else False
             block.channel = chan
             block.save()
-            print "is now appliable? %s" % block.has_date_time(datetime.datetime.now())   #####
+            print "is now appliable? %s" % block.has_datetime(datetime.datetime.now())   #####
             response_data = {'result': "ok"}
         except Exception, e:
             print "Error al crear timeblock: %s" % e

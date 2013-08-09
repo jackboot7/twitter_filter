@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from django.http.response import HttpResponseRedirect
 from django.views.generic.base import TemplateView
 from twython.api import Twython
+from apps.channels import tasks
 from apps.channels.models import Channel
 from django.conf import settings
 
@@ -51,6 +52,7 @@ def auth_callback(request):
     chan.oauth_token = final_token
     chan.oauth_secret = final_secret
     chan.save()
-    chan.init_streaming()   #initializes streaming process
+    tasks.stream_channel.delay(chan.screen_name)
+    #chan.init_streaming()   #initializes streaming process
 
     return HttpResponseRedirect(reverse("channel_added"))

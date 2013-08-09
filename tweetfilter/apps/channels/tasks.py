@@ -2,80 +2,72 @@
 
 from exceptions import Exception
 import datetime
-from celery.task.base import Task
+from celery._state import current_task
 import re
 from celery import task
 from apps.channels.backends import ChannelStreamer
+from apps.channels.models import ChannelTimeBlock, Channel
+from apps.control.backends import DelayedTask
 from apps.twitter.api import ChannelAPI
 from apps.twitter.models import Tweet
 
 
-
-class TimeBlockTask(Task):
+class RetweetDelayedTask(DelayedTask):
     """
-    Defines a type of task that can only be executed during any of the channel's time-blocks
+    DelayedTask class for the automatic retweet task.
+    It should only run if now() is inside any of the account's timeblocks.
+    It should delay execution until next available datetime otherwise.
     """
+    screen_name = ""    # How do I set this????
 
     def __call__(self, *args, **kwargs):
-        #chan_id = kwargs['channel_id']
-        #blocks = TimeBlock.objects.filter(channel=chan_id)
+        self.screen_name = kwargs['screen_name']
         if self.can_execute_now():
-            return self.run(*args, **kwargs)
+            # if "now" is in any of the channel related timeblocks
+            return self.run(*args, **kwargs)    # execute task
         else:
-            # calculates nearest ETA and delay self
+            # calculate nearest ETA and delay itself until then
+            eta = self.calculate_eta()
+            current_task.apply_async(eta)
             pass
 
-    def can_execute_now(self):
-        today = datetime.date.today()
-        week_day = today.weekday()
-        print "today is %s (%s day)" % (today, week_day)
-        # recibir blocks y calcular, cuando se haya resuelto el método has_date_time de TimeBlock
-        # probablemente mover esta clase a otro lugar (control o channels.backends)
-        return False
+    def set_channel_id(self, id):
+        self.screen_name = id
 
-    def after_return(self, status, retval, task_id, args, kwargs, einfo):
-        print "la tarea %s terminó con status %s" % (task_id, status)
-        pass
+    def can_execute_now(self):
+        blocks = ChannelTimeBlock.objects.filter(channel=self.screen_name)
+        now = datetime.datetime.now()
+        for block in blocks:
+            if block.has_datetime(now):
+                return True
+                break
+        else:
+            return False
+
+    def calculate_eta(self):
+        eta = datetime.datetime.now()
+        eta.year = datetime.MAXYEAR
+        blocks = ChannelTimeBlock.objects.filter(channel=self.screen_name)
+        for block in blocks:
+            block_eta = block.next_datetime()
+            if block_eta < eta:
+                eta = block_eta
+        return eta
 
 
 @task(queue="streaming")
-def stream_channel(chan):
-    print "Starting streaming for channel %s" % chan.screen_name
+def stream_channel(chan_id):
+    print "Starting streaming for channel %s" % chan_id
     try:
+        print "chan id = %s" %chan_id
+        chan = Channel.objects.get(screen_name=chan_id)
         stream = ChannelStreamer(chan)
         stream.user(**{"with": "followings"})
-
-        #print "Streaming started"
         return True
-        #current_task.update_state(state=states.STARTED) # no parece funcionar
-    except Exception, e:    # ?????
-        #print "Stopped streaming for channel %s" % chan.screen_name
+    except Exception as e:
         print "Error al iniciar streaming: %s" % e
         return False
 
-
-"""
-@task(queue="tweets")
-def trigger_update(tweet, twitterAPI, channel):
-    triggers = channel.get_triggers()
-    try:
-        for tr in triggers:
-            word = tr.text
-            if word in tweet.text:
-                import re
-                regular_exp = re.compile(re.escape("@" + tweet.mention_to), re.IGNORECASE)
-                text = "via @" + tweet.screen_name + ":" + regular_exp.sub('', tweet.text)
-                if len(text) <= 140:
-                    twitterAPI.tweet(text)
-                else:
-                    twitterAPI.tweet("%s.." % text[0:137])
-                tweet.status = Tweet.STATUS_SENT
-                tweet.save()
-                print "Retweeted #%s (found the word '%s')" % (tweet.tweet_id, word)
-                break
-    except Exception, e:
-        print "error en trigger update: %s" % e
-"""
 
 @task(queue="tweets")
 def triggers_filter(tweet, channel):
@@ -129,7 +121,7 @@ def filter_pipeline(data, chan):
         tasks.store_tweet.s(data) |
         triggers_filter.s(channel=chan) |
         banned_words_filter.s(channel=chan) |
-        retweet.s(channel=chan)).apply_async()
+        retweet.s(screen_name=chan.screen_name)).apply_async()
     return res
 
 @task(queue="tweets")
@@ -139,10 +131,10 @@ def filter_pipeline_dm(data, chan):
         tasks.store_dm.s(data) |
         triggers_filter.s(channel=chan) |
         banned_words_filter.s(channel=chan) |
-        retweet.s(channel=chan)).apply_async()
+        retweet.s(channel=chan)).apply_async()  #delayed
     return res
 
-@task(queue="tweets")
+@task(queue="tweets", base=RetweetDelayedTask)
 def retweet(tweet, channel):
     if tweet.status == Tweet.STATUS_APPROVED:
         twitterAPI = ChannelAPI(channel)

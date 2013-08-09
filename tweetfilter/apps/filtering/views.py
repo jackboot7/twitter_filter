@@ -5,8 +5,7 @@ from django.http.response import HttpResponse
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
-from apps.channels.models import Channel
-from apps.filtering.models import Trigger, Filter
+from apps.channels.models import Channel, Trigger, Filter
 
 class TriggerCreateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
