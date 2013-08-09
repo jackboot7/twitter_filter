@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 from time import strptime
-
-from celery.schedules import crontab
-from celery.task.base import PeriodicTask, Task
 import datetime
 from django.db import models
 
@@ -25,19 +22,19 @@ class TimeBlock(models.Model):
         Returns a list of ordered integers representing the weekdays marked as True
         """
         res = []
-        if self.sunday:
-            res.append(0)
         if self.monday:
-            res.append(1)
+            res.append(0)
         if self.tuesday:
-            res.append(2)
+            res.append(1)
         if self.wednesday:
-            res.append(3)
+            res.append(2)
         if self.thursday:
-            res.append(4)
+            res.append(3)
         if self.friday:
-            res.append(5)
+            res.append(4)
         if self.saturday:
+            res.append(5)
+        if self.sunday:
             res.append(6)
 
         return res
@@ -46,15 +43,24 @@ class TimeBlock(models.Model):
         """
         Returns True if day is among the weekdays checked as True
         """
+        print "checking existence of day %s in list:" % day
+        print self.days_of_week_list()
         return day in self.days_of_week_list()
 
     def has_datetime(self, date_time):
         """
-        Returns True if date_time happens inside this time block
+        Returns True if date_time occurs inside this time block
         """
-        # ERROR de tipos en la conversión de str a time()
-        start = strptime(self.start, "%H:%M")
-        end = strptime(self.end, "%H:%M")
+        print "now = %s" % date_time
+
+        start = datetime.datetime.strptime(self.start, "%H:%M").time()
+        end = datetime.datetime.strptime(self.end, "%H:%M").time()
+
+        print "checking time = %s" % date_time.time()
+        print "has week day? %s" % self.has_weekday(date_time.weekday())
+        print "start = %s" % start
+        print "end = %s" % end
+
         return self.has_weekday(date_time.weekday()) and start <= date_time.time() < end
 
     def get_next_weekday(self):
