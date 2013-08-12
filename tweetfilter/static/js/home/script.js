@@ -110,7 +110,7 @@ $(document).ready(function () {
         var
             screen_name = $("#screen_name").val();
 
-        window.location.href = "/auth/authenticate/";
+        window.location.href = "/channels/authenticate/";
         //window.open("/auth/authenticate/" + screen_name);
 
     });

@@ -4,6 +4,9 @@ from apps.channels.views import ChannelListView, DeleteChannelView, ChangeStatus
 
 urlpatterns = patterns('apps.channels.views',
 
+    url(r'^authenticate/', 'authenticate'),
+    url(r'^auth_callback', 'auth_callback'),
+
     url(r'^list', ChannelListView.as_view()),
     url(r'^delete/(?P<pk>\w+)', DeleteChannelView.as_view()),
     url(r'^changestatus/(?P<pk>\w+)', ChangeStatusView.as_view()),

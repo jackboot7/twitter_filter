@@ -135,11 +135,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     # Project modules
-    'apps.auth',
-    'apps.advertising',
     'apps.filtering',
-    'apps.notifications',
-    'apps.statistics',
     'apps.twitter',
     'apps.channels',
     'apps.control',
