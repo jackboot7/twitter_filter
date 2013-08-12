@@ -6,8 +6,8 @@ import re
 from exceptions import Exception
 from celery import task
 from celery._state import current_task
-from apps.channels.backends import ChannelStreamer
-from apps.channels.models import ChannelTimeBlock, Channel
+from apps.accounts.backends import ChannelStreamer
+from apps.accounts.models import ChannelTimeBlock, Channel
 from apps.control.backends import DelayedTask
 from apps.twitter.api import ChannelAPI
 from apps.twitter.models import Tweet

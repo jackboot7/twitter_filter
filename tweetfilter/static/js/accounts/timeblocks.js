@@ -4,7 +4,7 @@ var
     load_timeblock_table = function () {
         "use strict";
 
-        $.get("/channels/timeblock/list/"+$('#current_channel').val(), function (data) {
+        $.get("/accounts/timeblock/list/" + $('#current_channel').val(), function (data) {
             $('#timeblock_list_tbody').empty();
 
             if (data.length > 0) {
@@ -48,7 +48,7 @@ var
     submit_new_timeblock = function () {
         "use strict";
 
-        $.post("/channels/timeblock/add/", {
+        $.post("/accounts/timeblock/add/", {
             'start': $('#start_timepicker').val(),
             'end': $('#end_timepicker').val(),
             'monday': $('#monday_check').is(':checked') ? 1 : 0,
@@ -140,7 +140,7 @@ $(document).ready(function () {
     });
 
       $('#delete_timeblock_confirmed').click(function () {
-        $.post("/channels/timeblock/delete/" + $('#deleting_timeblock_id').val(), function (data) {
+        $.post("/accounts/timeblock/delete/" + $('#deleting_timeblock_id').val(), function (data) {
             if(data.result === "ok") {
                 load_timeblock_table();
             }

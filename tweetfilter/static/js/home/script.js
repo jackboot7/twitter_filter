@@ -30,7 +30,7 @@ var
             label_class,
             link_title;
 
-        $.get("/channels/list", function (data) {
+        $.get("/accounts/list", function (data) {
             $('#channel_list_tbody').empty();
 
             if (data.length > 0) {
@@ -50,7 +50,7 @@ var
 
                     $('#channel_list_tbody').append(
                         "<tr class='" + row_class + "' id='channel_row_" + elem.screen_name + "'>"+
-                        "<td><a href='/channels/edit/" + elem.screen_name + "/'>" + elem.screen_name + "</a></td>" +
+                        "<td><a href='/accounts/edit/" + elem.screen_name + "/'>" + elem.screen_name + "</a></td>" +
                         "<td>" + elem.last_tweet + "</td>" +
                         "<td><a title='" + link_title + "' class='channel_row' id='change_status_" +
                         elem.screen_name + "' href='#'>" +
@@ -65,7 +65,7 @@ var
                     });
 
                     $('#change_status_' + elem.screen_name).click(function () {
-                        $.post("/channels/changestatus/" + elem.screen_name, function (data) {
+                        $.post("/accounts/changestatus/" + elem.screen_name, function (data) {
                             if(data.result === "ok") {
                                 switch_row_style(elem.screen_name);
                             }
@@ -110,13 +110,13 @@ $(document).ready(function () {
         var
             screen_name = $("#screen_name").val();
 
-        window.location.href = "/channels/authenticate/";
+        window.location.href = "/accounts/authenticate/";
         //window.open("/auth/authenticate/" + screen_name);
 
     });
 
     $('#delete_channel_confirmed').click(function () {
-        $.post("/channels/delete/" + $('#deleting_channel_id').text(), function (data) {
+        $.post("/accounts/delete/" + $('#deleting_channel_id').text(), function (data) {
             if(data.result === "ok") {
                 channel_delete_success();
                 load_channel_table();

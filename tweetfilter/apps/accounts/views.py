@@ -11,8 +11,8 @@ from django.views.generic import ListView
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from twython.api import Twython
-from apps.channels import tasks
-from apps.channels.models import Channel, ChannelTimeBlock
+from apps.accounts import tasks
+from apps.accounts.models import Channel, ChannelTimeBlock
 from django.views.generic.edit import DeleteView, UpdateView
 #from django.utils import simplejson as json
 from apps.control.models import TimeBlock
@@ -24,7 +24,7 @@ def authenticate(request):
     """
     twitter = Twython(settings.TWITTER_APP_KEY, settings.TWITTER_APP_SECRET,
         auth_endpoint='authorize')
-    callback = "http://" + RequestSite(request).domain + "/channels/auth_callback"
+    callback = "http://" + RequestSite(request).domain + "/accounts/auth_callback"
     auth = twitter.get_authentication_tokens(callback_url=callback)
     redirect_url = auth['auth_url']+"&force_login=true&screen_name="
 
@@ -135,7 +135,7 @@ class ChangeStatusView(CsrfExemptMixin, JSONResponseMixin,
 
 class ChannelDetailView(DetailView):
     model = Channel
-    template_name = "channels/index.html"
+    template_name = "accounts/index.html"
     context_object_name = "channel"
 
 class TimeBlockListView(CsrfExemptMixin, JSONResponseMixin,

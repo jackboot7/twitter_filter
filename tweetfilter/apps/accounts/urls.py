@@ -1,8 +1,8 @@
 from django.conf.urls import *
-from apps.channels.views import ChannelListView, DeleteChannelView, ChangeStatusView, ChannelDetailView, TimeBlockListView, TimeBlockCreateView, TimeBlockDeleteView
+from apps.accounts.views import ChannelListView, DeleteChannelView, ChangeStatusView, ChannelDetailView, TimeBlockListView, TimeBlockCreateView, TimeBlockDeleteView
 
 
-urlpatterns = patterns('apps.channels.views',
+urlpatterns = patterns('apps.accounts.views',
 
     url(r'^authenticate/', 'authenticate'),
     url(r'^auth_callback', 'auth_callback'),

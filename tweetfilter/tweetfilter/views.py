@@ -2,7 +2,7 @@
 
 from django.views.generic.base import TemplateView
 from twython.api import Twython
-from apps.channels.models import Channel
+from apps.accounts.models import Channel
 
 def test(request):
 

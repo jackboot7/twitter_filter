@@ -137,7 +137,7 @@ INSTALLED_APPS = (
     # Project modules
     'apps.filtering',
     'apps.twitter',
-    'apps.channels',
+    'apps.accounts',
     'apps.control',
 
     # Third party modules
