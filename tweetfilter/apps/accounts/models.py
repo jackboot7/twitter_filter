@@ -3,7 +3,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from picklefield.fields import PickledObjectField
-from apps.control.models import TimeBlock
+from apps.control.models import ScheduleBlock
 from apps.twitter.models import Tweet
 
 
@@ -116,7 +116,7 @@ class Channel(models.Model):
         #return self.filter_set.all()
 
 
-class ChannelTimeBlock(TimeBlock):
+class ChannelScheduleBlock(ScheduleBlock):
     channel = models.ForeignKey(Channel)
 
 

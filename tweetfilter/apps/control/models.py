@@ -4,7 +4,20 @@ import datetime
 from django.db import models
 
 
-class TimeBlock(models.Model):
+class Schedule(models.Model):
+    time = models.TimeField()
+
+    # Appliable weekdays
+    monday = models.BooleanField(default=False)
+    tuesday = models.BooleanField(default=False)
+    wednesday = models.BooleanField(default=False)
+    thursday = models.BooleanField(default=False)
+    friday = models.BooleanField(default=False)
+    saturday = models.BooleanField(default=False)
+    sunday = models.BooleanField(default=False)
+
+
+class ScheduleBlock(models.Model):
     start = models.TimeField()  # start time of the day
     end = models.TimeField()    # end time of the day
 

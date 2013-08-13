@@ -7,7 +7,7 @@ from exceptions import Exception
 from celery import task
 from celery._state import current_task
 from apps.accounts.backends import ChannelStreamer
-from apps.accounts.models import ChannelTimeBlock, Channel
+from apps.accounts.models import ChannelScheduleBlock, Channel
 from apps.control.backends import DelayedTask
 from apps.twitter.api import ChannelAPI
 from apps.twitter.models import Tweet
@@ -38,7 +38,7 @@ class RetweetDelayedTask(DelayedTask):
         self.screen_name = id
 
     def can_execute_now(self):
-        blocks = ChannelTimeBlock.objects.filter(channel=self.screen_name)
+        blocks = ChannelScheduleBlock.objects.filter(channel=self.screen_name)
 
         now = datetime.datetime.now()
         for block in blocks:
@@ -51,7 +51,7 @@ class RetweetDelayedTask(DelayedTask):
         return True # since there are no time restrictions
 
     def calculate_eta(self):
-        blocks = ChannelTimeBlock.objects.filter(channel=self.screen_name)
+        blocks = ChannelScheduleBlock.objects.filter(channel=self.screen_name)
         if len(blocks) > 0:
             eta = blocks[0].next_datetime()
         else:

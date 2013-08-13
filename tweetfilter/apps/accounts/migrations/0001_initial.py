@@ -22,12 +22,12 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'accounts', ['Channel'])
 
-        # Adding model 'ChannelTimeBlock'
+        # Adding model 'ChannelScheduleBlock'
         db.create_table(u'accounts_channeltimeblock', (
-            (u'timeblock_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['control.TimeBlock'], unique=True, primary_key=True)),
+            (u'timeblock_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['control.ScheduleBlock'], unique=True, primary_key=True)),
             ('channel', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['accounts.Channel'])),
         ))
-        db.send_create_signal(u'accounts', ['ChannelTimeBlock'])
+        db.send_create_signal(u'accounts', ['ChannelScheduleBlock'])
 
         # Adding model 'Trigger'
         db.create_table(u'accounts_trigger', (
@@ -56,7 +56,7 @@ class Migration(SchemaMigration):
         # Deleting model 'Channel'
         db.delete_table(u'accounts_channel')
 
-        # Deleting model 'ChannelTimeBlock'
+        # Deleting model 'ChannelScheduleBlock'
         db.delete_table(u'accounts_channeltimeblock')
 
         # Deleting model 'Trigger'
@@ -80,9 +80,9 @@ class Migration(SchemaMigration):
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'blank': 'True'})
         },
         u'accounts.channeltimeblock': {
-            'Meta': {'object_name': 'ChannelTimeBlock', '_ormbases': [u'control.TimeBlock']},
+            'Meta': {'object_name': 'ChannelScheduleBlock', '_ormbases': [u'control.ScheduleBlock']},
             'channel': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['accounts.Channel']"}),
-            u'timeblock_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['control.TimeBlock']", 'unique': 'True', 'primary_key': 'True'})
+            u'timeblock_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['control.ScheduleBlock']", 'unique': 'True', 'primary_key': 'True'})
         },
         u'accounts.filter': {
             'Meta': {'object_name': 'Filter'},
@@ -139,7 +139,7 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
         u'control.timeblock': {
-            'Meta': {'object_name': 'TimeBlock'},
+            'Meta': {'object_name': 'ScheduleBlock'},
             'end': ('django.db.models.fields.TimeField', [], {}),
             'friday': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),

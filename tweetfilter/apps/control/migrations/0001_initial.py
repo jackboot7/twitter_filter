@@ -8,7 +8,7 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'TimeBlock'
+        # Adding model 'ScheduleBlock'
         db.create_table(u'control_timeblock', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('start', self.gf('django.db.models.fields.TimeField')()),
@@ -21,17 +21,17 @@ class Migration(SchemaMigration):
             ('saturday', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('sunday', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
-        db.send_create_signal(u'control', ['TimeBlock'])
+        db.send_create_signal(u'control', ['ScheduleBlock'])
 
 
     def backwards(self, orm):
-        # Deleting model 'TimeBlock'
+        # Deleting model 'ScheduleBlock'
         db.delete_table(u'control_timeblock')
 
 
     models = {
         u'control.timeblock': {
-            'Meta': {'object_name': 'TimeBlock'},
+            'Meta': {'object_name': 'ScheduleBlock'},
             'end': ('django.db.models.fields.TimeField', [], {}),
             'friday': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),

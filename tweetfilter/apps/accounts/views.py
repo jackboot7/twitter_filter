@@ -8,14 +8,14 @@ from django.contrib.sites.models import RequestSite
 from django.core.urlresolvers import reverse
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView
-from django.views.generic.base import View
+from django.views.generic.base import View, TemplateView
 from django.views.generic.detail import DetailView
 from twython.api import Twython
 from apps.accounts import tasks
-from apps.accounts.models import Channel, ChannelTimeBlock
+from apps.accounts.models import Channel, ChannelScheduleBlock
 from django.views.generic.edit import DeleteView, UpdateView
 #from django.utils import simplejson as json
-from apps.control.models import TimeBlock
+from apps.control.models import ScheduleBlock
 
 
 def authenticate(request):
@@ -144,7 +144,7 @@ class TimeBlockListView(CsrfExemptMixin, JSONResponseMixin,
     context_object_name = "timeblock_list"
 
     def get_ajax(self, request, *args, **kwargs):
-        objs = ChannelTimeBlock.objects.filter(channel=self.get_object())
+        objs = ChannelScheduleBlock.objects.filter(channel=self.get_object())
         json_list = []
 
         for timeblock in objs:
@@ -179,13 +179,13 @@ class TimeBlockListView(CsrfExemptMixin, JSONResponseMixin,
 
 class TimeBlockCreateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
-    model = TimeBlock
+    model = ScheduleBlock
 
     def post_ajax(self, request, *args, **kwargs):
 
         try:
             chan = Channel.objects.filter(screen_name=request.POST['timeblock_channel'])[0]
-            block = ChannelTimeBlock()
+            block = ChannelScheduleBlock()
 
             print "monday = %s" % request.POST['monday']
             print "tuesday = %s" % request.POST['tuesday']
@@ -218,7 +218,7 @@ class TimeBlockCreateView(CsrfExemptMixin, JSONResponseMixin,
 
 class TimeBlockDeleteView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DeleteView):
-    model = TimeBlock
+    model = ScheduleBlock
     success_url = "/"
 
     def post_ajax(self, request, *args, **kwargs):
@@ -228,3 +228,8 @@ class TimeBlockDeleteView(CsrfExemptMixin, JSONResponseMixin,
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
+
+class ScheduledPostsDetailView(DetailView):
+    model = Channel
+    template_name = "accounts/scheduled_posts.html"
+    context_object_name = "channel"

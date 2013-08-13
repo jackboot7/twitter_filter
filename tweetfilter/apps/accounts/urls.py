@@ -1,5 +1,5 @@
 from django.conf.urls import *
-from apps.accounts.views import ChannelListView, DeleteChannelView, ChangeStatusView, ChannelDetailView, TimeBlockListView, TimeBlockCreateView, TimeBlockDeleteView
+from apps.accounts.views import ChannelListView, DeleteChannelView, ChangeStatusView, ChannelDetailView, TimeBlockListView, TimeBlockCreateView, TimeBlockDeleteView, scheduled_postsDetailView, ScheduledPostsDetailView
 
 
 urlpatterns = patterns('apps.accounts.views',
@@ -10,7 +10,10 @@ urlpatterns = patterns('apps.accounts.views',
     url(r'^list', ChannelListView.as_view()),
     url(r'^delete/(?P<pk>\w+)', DeleteChannelView.as_view()),
     url(r'^changestatus/(?P<pk>\w+)', ChangeStatusView.as_view()),
+
+    # Estas dos siguientes rutas deben estar en sus respectivos módulos
     url(r'^edit/(?P<pk>\w+)', ChannelDetailView.as_view()),
+    url(r'scheduled_posts/(?P<pk>\w+)', ScheduledPostsDetailView.as_view()),
 
     url(r'^timeblock/list/(?P<pk>\w+)', TimeBlockListView.as_view()),
     url(r'^timeblock/add/', TimeBlockCreateView.as_view()),
