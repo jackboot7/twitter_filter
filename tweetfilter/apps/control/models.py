@@ -56,7 +56,6 @@ class ScheduleBlock(models.Model):
         """
         Returns True if day is among the weekdays checked as True
         """
-        print self.days_of_week_list()
         return day in self.days_of_week_list()
 
     def has_datetime(self, date_time):
@@ -93,6 +92,8 @@ class ScheduleBlock(models.Model):
             next_day = self.get_next_weekday()
             if next_day > today:
                 days_delta = next_day - today
+            elif next_day == today:
+                days_delta = 0
             else:
                 days_delta = (7 - today) + next_day
 

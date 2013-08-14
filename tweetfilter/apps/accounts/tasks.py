@@ -9,6 +9,7 @@ from celery._state import current_task
 from apps.accounts.backends import ChannelStreamer
 from apps.accounts.models import ChannelScheduleBlock, Channel
 from apps.control.tasks import DelayedTask
+from apps.filtering.models import BlockedUser
 from apps.twitter.api import ChannelAPI
 from apps.twitter.models import Tweet
 
@@ -21,34 +22,48 @@ class RetweetDelayedTask(DelayedTask):
     It should only run if now() is inside any of the account's timeblocks.
     It should delay execution until next available datetime otherwise.
     """
-    screen_name = ""    # How do I set this????
+    screen_name = ""
+    max_retries = 0     # I don't like this
 
     def __call__(self, *args, **kwargs):
         self.screen_name = kwargs['screen_name']
-        if self.can_execute_now():
-            # if "now" is in any of the channel related timeblocks
-            return self.run(*args, **kwargs)    # execute task
-        else:
+        tweet = args[0]     # Tweet object
+
+        if tweet.status == Tweet.STATUS_APPROVED:
             # calculate nearest ETA and delay itself until then
             eta = self.calculate_eta()
-            print "Retweet task %s DELAYED until %s" % (current_task.request.id, eta)
-            current_task.retry(args=args, kwargs=kwargs, eta=eta)
+            print "Retweet task %s will execute on %s" % (current_task.request.id, eta)
+            print "now is %s" % datetime.datetime.now()
+            """try:
+                current_task.retry(args=args, kwargs=kwargs, eta=eta)
+            except Exception:
+                pass    # all cool"""
+            retweet.s().apply_async(args=args, kwargs=kwargs, eta=eta)
+            return self.run(*args, **kwargs)
+        else:
+            pass    # nothing happens, tweet shouldn't be retweeted
 
     def set_channel_id(self, id):
         self.screen_name = id
 
     def can_execute_now(self):
         blocks = ChannelScheduleBlock.objects.filter(channel=self.screen_name)
+        if len(blocks) > 0:
+            result = False
+        else:
+            result = True
 
         now = datetime.datetime.now()
         for block in blocks:
             if block.has_datetime(now):
-                return True
-                break
-        else:
-            return False
+                result = True
 
-        return True # since there are no time restrictions
+        if result:
+            print "can execute"
+        else:
+            print "can't execute now"
+
+        return result
 
     def calculate_eta(self):
         blocks = ChannelScheduleBlock.objects.filter(channel=self.screen_name)
@@ -82,7 +97,8 @@ def triggers_filter(tweet, channel):
     triggers = channel.get_triggers()
     try:
         for tr in triggers:
-            word = " %s " % unidecode(tr.text.lower())  # hace match con la palabra rodeada de espacios
+
+            word = unidecode(tr.text.lower())  # hace match con la palabra rodeada de espacios
             if word in unidecode(tweet.text.lower()):
 
                 tweet.status = Tweet.STATUS_TRIGGERED
@@ -90,6 +106,7 @@ def triggers_filter(tweet, channel):
                 print "Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, word)
                 break
         else:
+            print "Marked #%s as NOT TRIGGERED" % tweet.tweet_id
             tweet.status = Tweet.STATUS_NOT_TRIGGERED
             tweet.save()
 
@@ -126,9 +143,10 @@ def filter_pipeline(data, chan):
     from apps.twitter import tasks
     res =(
         tasks.store_tweet.s(data) |
+        #is_user_allowed.s(channel=chan) |
         triggers_filter.s(channel=chan) |
         banned_words_filter.s(channel=chan) |
-        retweet.s(screen_name=chan.screen_name)).apply_async()
+        delay_retweet.s(screen_name=chan.screen_name)).apply_async()
     return res
 
 @task(queue="tweets")
@@ -136,12 +154,28 @@ def filter_pipeline_dm(data, chan):
     from apps.twitter import tasks
     res =(
         tasks.store_dm.s(data) |
+        #is_user_allowed.s(channel=chan) |
         triggers_filter.s(channel=chan) |
         banned_words_filter.s(channel=chan) |
-        retweet.s(channel=chan)).apply_async()  #delayed
+        delay_retweet.s(channel=chan)).apply_async()  #delayed
     return res
 
+@task(queue="tweets")
+def is_user_allowed(tweet, chan):
+    from_user = tweet.screen_name
+    blocked_users = BlockedUser.objects.filter(channel=chan)
+    for user in blocked_users:
+        if user.screen_name == from_user:
+            # user is blocked
+            tweet.status = Tweet.STATUS_BLOCKED
+    return tweet
+
 @task(queue="tweets", base=RetweetDelayedTask)
+def delay_retweet(tweet, screen_name):
+    pass
+
+
+@task(queue="tweets")
 def retweet(tweet, screen_name):
     channel = Channel.objects.get(screen_name=screen_name)
     if tweet.status == Tweet.STATUS_APPROVED:
