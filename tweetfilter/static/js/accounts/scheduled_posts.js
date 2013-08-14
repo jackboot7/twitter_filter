@@ -137,10 +137,7 @@ $(document).ready(function () {
     });
 
     $('#delete_scheduled_post_confirmed').click(function () {
-        $.post("/scheduled_post/delete/",
-            {
-                'pk': $('#deleting_scheduled_post_id').val()
-            },
+        $.post("/scheduled_posts/delete/" + $('#deleting_scheduled_post_id').val(),
             function (data) {
             if(data.result === "ok") {
                 load_scheduled_post_table();

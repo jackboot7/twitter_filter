@@ -7,7 +7,7 @@ urlpatterns = patterns('apps.scheduling.views',
 
     url(r'^list/(?P<pk>\w+)', ScheduledTweetkListView.as_view()),
     url(r'^add', ScheduledTweetCreateView.as_view()),
-    url(r'^delete', ScheduledTweetDeleteView.as_view()),
+    url(r'^delete/(?P<pk>\w+)', ScheduledTweetDeleteView.as_view()),
     #url(r'^changestatus/(?P<pk>\w+)', ),
     url(r'^edit', ScheduledTweetkEditView.as_view()),
 
