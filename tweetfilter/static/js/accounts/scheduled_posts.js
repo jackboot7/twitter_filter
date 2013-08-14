@@ -46,7 +46,7 @@ var
         "use strict";
 
         $.post("/scheduled_posts/add/", {
-            'text': $('#scheduled_post_text').val(),
+            'text':$.trim($('#scheduled_post_text').val()),
             'time': $('#scheduled_post_timepicker').val(),
             'monday': $('#monday_check').is(':checked') ? 1 : 0,
             'tuesday': $('#tuesday_check').is(':checked') ? 1 : 0,
@@ -90,13 +90,18 @@ var
     validate_add_scheduled_post_form = function () {
         "use strict";
 
-        if($('#scheduled_post_timepicker').val() === ""){
-            alert("Debe ingresar la hora de publicación");
+        if($.trim($('#scheduled_post_text').val()) === ""){
+            alert("Debe ingresar un texto para la publicación");
             return false;
         }
 
-        if($.trim($('#scheduled_post_text').val()) === ""){
-            alert("Debe ingresar un texto para la publicación");
+        if($.trim($('#scheduled_post_text').val()).length > 140){
+            alert("Debe ingresar un texto menor a 140 caracteres");
+            return false;
+        }
+
+        if($('#scheduled_post_timepicker').val() === ""){
+            alert("Debe ingresar la hora de publicación");
             return false;
         }
 
@@ -143,7 +148,7 @@ $(document).ready(function () {
         });
     });
 
-    $('#save_timeblock_btn').click(function () {
+    $('#save_scheduled_post_btn').click(function () {
         if(validate_add_scheduled_post_form()){
             submit_new_scheduled_post();
         }else{

@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
+
+import json
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
 import datetime
-from django.core.serializers import json
 from django.http.response import HttpResponse
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
@@ -34,11 +36,12 @@ class ScheduledTweetkListView(CsrfExemptMixin, JSONResponseMixin,
             if scheduled_tweet.sunday:
                 dias += "Dom "
             if len(dias) == 28:
-                dias = "Todos"
+                dias = u"Todos los días"
 
             json_list.append({
                 'id': scheduled_tweet.id,
-                'date_time': scheduled_tweet.time + dias
+                'text': scheduled_tweet.get_excerpt() + "...",
+                'date_time': ("%s (%s)") % (scheduled_tweet.time.strftime("%H:%M"), dias)
             })
 
         return self.render_json_response(json_list)
@@ -53,17 +56,8 @@ class ScheduledTweetCreateView(CsrfExemptMixin, JSONResponseMixin,
         try:
             chan = Channel.objects.filter(screen_name=request.POST['channel'])[0]
             block = ScheduledTweet()
-
-            print "monday = %s" % request.POST['monday']
-            print "tuesday = %s" % request.POST['tuesday']
-            print "wednesday = %s" % request.POST['wednesday']
-            print "thursday = %s" % request.POST['thursday']
-            print "friday = %s" % request.POST['friday']
-            print "saturday = %s" % request.POST['saturday']
-            print "sunday = %s" % request.POST['sunday']
-
+            block.text = request.POST['text']
             block.time = datetime.datetime.strptime(request.POST['time'], "%H:%M").time()
-
             block.monday = True if request.POST['monday'] == "1" else False
             block.tuesday = True if request.POST['tuesday'] == "1" else False
             block.wednesday = True if request.POST['wednesday'] == "1" else False
@@ -73,7 +67,6 @@ class ScheduledTweetCreateView(CsrfExemptMixin, JSONResponseMixin,
             block.sunday = True if request.POST['sunday'] == "1" else False
             block.channel = chan
             block.save()
-
             response_data = {'result': "ok"}
         except Exception, e:
             print "Error al crear scheduled tweet: %s" % e
