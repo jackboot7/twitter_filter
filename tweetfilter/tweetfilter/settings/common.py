@@ -139,7 +139,8 @@ INSTALLED_APPS = (
     'apps.twitter',
     'apps.accounts',
     'apps.control',
-
+    'apps.scheduling',
+    
     # Third party modules
     'djcelery',
     'south',
