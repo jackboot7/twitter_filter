@@ -140,10 +140,10 @@ INSTALLED_APPS = (
     'apps.accounts',
     'apps.control',
     'apps.scheduling',
-    
+
     # Third party modules
     'djcelery',
-    'south',
+    #'south',
 
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
