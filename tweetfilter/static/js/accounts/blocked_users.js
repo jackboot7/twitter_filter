@@ -51,6 +51,7 @@ var
             $('#add_blocked_user_text').val("");
             if(data.result === "ok") {
                 load_blocked_user_table();
+                $('#add_blocked_user_name').val('');
             }else{
                 blocked_user_add_error(data.result);
             }
