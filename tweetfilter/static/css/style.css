@@ -14,8 +14,18 @@
 }
 
 .rounded_box_blue {
+     border-radius: 12px;
+     background-color: #E6F2FC;
+     padding-left: 13px;
+     padding-right: 13px;
+     padding-top: 5px;
+     padding-bottom: 7px;
+     margin-bottom: 20px;
+}
+
+.rounded_box_red {
     border-radius: 12px;
-    background-color: #E6F2FC;
+    background-color: #FFE0E0;
     padding-left: 13px;
     padding-right: 13px;
     padding-top: 5px;

@@ -94,32 +94,34 @@ def stream_channel(chan_id):
 
 @task(queue="tweets")
 def triggers_filter(tweet, channel):
-    triggers = channel.get_triggers()
-    try:
-        for tr in triggers:
+    if tweet.status is not Tweet.STATUS_BLOCKED:
+        triggers = channel.get_triggers()
+        try:
+            for tr in triggers:
 
-            word = unidecode(tr.text.lower())  # hace match con la palabra rodeada de espacios
-            if word in unidecode(tweet.text.lower()):
+                word = unidecode(tr.text.lower())  # hace match con la palabra rodeada de espacios
+                if word in unidecode(tweet.text.lower()):
 
-                tweet.status = Tweet.STATUS_TRIGGERED
+                    tweet.status = Tweet.STATUS_TRIGGERED
+                    tweet.save()
+                    print "Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, word)
+                    break
+            else:
+                print "Marked #%s as NOT TRIGGERED" % tweet.tweet_id
+                tweet.status = Tweet.STATUS_NOT_TRIGGERED
                 tweet.save()
-                print "Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, word)
-                break
-        else:
-            print "Marked #%s as NOT TRIGGERED" % tweet.tweet_id
-            tweet.status = Tweet.STATUS_NOT_TRIGGERED
-            tweet.save()
+        except Exception, e:
+            print "error en trigger update: %s" % e
 
-        return tweet
-    except Exception, e:
-        print "error en trigger update: %s" % e
+    return tweet
+
 
 
 @task(queue="tweets")
 def banned_words_filter(tweet, channel):
     from unidecode import unidecode
     filters = channel.get_filters()
-    if tweet.status == Tweet.STATUS_TRIGGERED:
+    if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
         try:
             for filter in filters:
                 word = unidecode(filter.text.lower())
@@ -143,7 +145,7 @@ def filter_pipeline(data, chan):
     from apps.twitter import tasks
     res =(
         tasks.store_tweet.s(data) |
-        #is_user_allowed.s(channel=chan) |
+        is_user_allowed.s(channel=chan) |
         triggers_filter.s(channel=chan) |
         banned_words_filter.s(channel=chan) |
         delay_retweet.s(screen_name=chan.screen_name)).apply_async()
@@ -154,20 +156,21 @@ def filter_pipeline_dm(data, chan):
     from apps.twitter import tasks
     res =(
         tasks.store_dm.s(data) |
-        #is_user_allowed.s(channel=chan) |
+        is_user_allowed.s(channel=chan) |
         triggers_filter.s(channel=chan) |
         banned_words_filter.s(channel=chan) |
         delay_retweet.s(channel=chan)).apply_async()  #delayed
     return res
 
 @task(queue="tweets")
-def is_user_allowed(tweet, chan):
+def is_user_allowed(tweet, channel):
     from_user = tweet.screen_name
-    blocked_users = BlockedUser.objects.filter(channel=chan)
+    blocked_users = BlockedUser.objects.filter(channel=channel)
     for user in blocked_users:
-        if user.screen_name == from_user:
+        if user.screen_name.lower() == from_user.lower():
             # user is blocked
             tweet.status = Tweet.STATUS_BLOCKED
+            print "Tweet %s marked as BLOCKED (sent from blacklisted user @%s)" % (tweet.tweet_id, user.screen_name)
     return tweet
 
 @task(queue="tweets", base=RetweetDelayedTask)

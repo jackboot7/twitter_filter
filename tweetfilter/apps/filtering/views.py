@@ -6,6 +6,12 @@ from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from apps.accounts.models import Channel, Trigger, Filter
+from apps.filtering.models import BlockedUser
+
+
+#==========================
+# Trigger words
+#==========================
 
 class TriggerCreateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
@@ -58,6 +64,10 @@ class TriggerDeleteView(CsrfExemptMixin, JSONResponseMixin,
             content_type="application/json")
 
 
+#==========================
+# Forbidden word filters
+#==========================
+
 class FilterCreateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
     model = Filter
@@ -104,6 +114,59 @@ class FilterDeleteView(CsrfExemptMixin, JSONResponseMixin,
         #obj = self.get_object()
         self.delete(request)
         response_data = {'result': "ok"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+#==========================
+# Blocked users (blacklist)
+#==========================
+
+class BlockedUserListView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, DetailView):
+    model = Channel
+
+    def get_ajax(self, request, *args, **kwargs):
+        objs = BlockedUser.objects.filter(channel=self.get_object())
+
+        json_list = []
+        for user in objs:
+            dict = model_to_dict(user)
+            json_list.append(dict)
+
+        return self.render_json_response(json_list)
+        #return self.render_json_response(objs)
+
+
+class BlockedUserDeleteView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, DeleteView):
+    model = BlockedUser
+    success_url = "/"
+
+    def post_ajax(self, request, *args, **kwargs):
+        #obj = self.get_object()
+        self.delete(request)
+        response_data = {'result': "ok"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+class BlockedUserAddView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, View):
+    model = BlockedUser
+
+    def post_ajax(self, request, *args, **kwargs):
+        try:
+            chan = Channel.objects.filter(screen_name=request.POST['blocked_user_channel'])[0]
+            user = BlockedUser()
+            user.screen_name = request.POST['blocked_user_name']
+            user.channel = chan
+            user.save()
+            response_data = {'result': "ok"}
+        except Exception, e:
+            print "Error al bloquear usuario: %s" % e
+            response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")

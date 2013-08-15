@@ -132,6 +132,49 @@
                 </div>
             </div> <!-- delete timeblock modal -->
         </div>
+
+        <div class="rounded_box_dark">
+            <h4>Usuarios bloqueados</h4>
+
+            <table class="table" id="blocked_user_list_table">
+                <thead>
+                <tr>
+                    <th>Nombre de usuario</th>
+                    <!--<th>Acción</th>-->
+                    <th>Eliminar</th>
+                </tr>
+                </thead>
+                <tbody id="blocked_user_list_tbody">
+                </tbody>
+            </table>
+
+            <span id="no_blocked_users_message">No hay usuarios bloqueados en el canal</span> <br><br>
+
+            <table><tr>
+                <span class="help-block">Introduzca el nombre de un usuario que desee bloquear (sin la @)</span>
+                <td><input type="text" id="add_blocked_user_name"></td>
+                <td class="button_td"> &nbsp;<a id="add_blocked_user_btn" href="#" class="btn btn-danger btn-small">Bloquear usuario</a></td>
+            </tr></table>
+
+            <div id="delete_blocked_user_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="my_blocked_userModalLabel">
+                        Eliminar Disparador
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="deleting_blocked_user_id" value="">
+                    <p>
+                        Está seguro de que desea eliminar el usuario &quot;<span id="deleting_blocked_user_name"></span>&quot;?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+                    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_blocked_user_confirmed">Sí, eliminar</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="span6">
@@ -246,6 +289,7 @@
     <script type="text/javascript" src="{{ STATIC_URL }}js/accounts/triggers.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/accounts/filters.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/accounts/timeblocks.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/accounts/blocked_users.js"></script>
 {% endblock %}
 
 {% block modal_header %}

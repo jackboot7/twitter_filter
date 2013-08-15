@@ -9,7 +9,7 @@ from django.db import models
 class BlockedUser(models.Model):
     screen_name = models.CharField(max_length=16)
     block_date = models.DateTimeField(auto_now=True)
-    block_duration = models.IntegerField()  #days
+    block_duration = models.IntegerField(null=True, blank=True)  #days
     reason = models.CharField(max_length=64, blank=True)
     channel = models.ForeignKey(Channel)
 
