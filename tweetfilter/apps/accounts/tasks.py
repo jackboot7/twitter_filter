@@ -170,6 +170,7 @@ def is_user_allowed(tweet, channel):
         if user.screen_name.lower() == from_user.lower():
             # user is blocked
             tweet.status = Tweet.STATUS_BLOCKED
+            tweet.save()
             print "Tweet %s marked as BLOCKED (sent from blacklisted user @%s)" % (tweet.tweet_id, user.screen_name)
     return tweet
 
