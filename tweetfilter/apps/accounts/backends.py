@@ -17,16 +17,12 @@ class ChannelStreamer(TwythonStreamer):
 
     def __init__(self, channel):
         super(ChannelStreamer, self).__init__(
-            app_key=settings.TWITTER_APP_KEY,
-            app_secret=settings.TWITTER_APP_SECRET,
-            oauth_token=channel.oauth_token,
-            oauth_token_secret=channel.oauth_secret)
-        self.twitter_api = Twitter(
-            key=settings.TWITTER_APP_KEY,
-            secret=settings.TWITTER_APP_SECRET,
-            token=channel.oauth_token,
-            token_secret=channel.oauth_secret
-        )
+            app_key=settings.TWITTER_APP_KEY, app_secret=settings.TWITTER_APP_SECRET,
+            oauth_token=channel.oauth_token, oauth_token_secret=channel.oauth_secret)
+
+        self.twitter_api = Twitter(key=settings.TWITTER_APP_KEY, secret=settings.TWITTER_APP_SECRET,
+            token=channel.oauth_token, token_secret=channel.oauth_secret)
+
         self.channel = channel
 
     def on_success(self, data):
@@ -37,26 +33,24 @@ class ChannelStreamer(TwythonStreamer):
         print "new data from twitter!"
         print "data = %s" % data
 
-        if 'text' in data:      # regular tweet
-            self.handle_mention(data)
+        self.handle_data(data)
 
-        if 'direct_message' in data:    # DM
-            self.handle_dm(data)
-
-    def handle_mention(self, data):
-        for mention in data['entities']['user_mentions']:
-            if self.channel.screen_name.lower() == mention['screen_name'].lower():
-                #current channel is mentioned
-                print "\nGot mention!!!\n"
-                # Invokes subtask chain for storing and retweeting
-                from . import tasks
-                res = tasks.filter_pipeline.apply_async([data, self.channel])
-
-    def handle_dm(self, data):
-        print "\nGot DM!!!\n"
-        # Invokes subtask chain for storing and retweeting
+    def handle_data(self, data):
         from . import tasks
-        res = tasks.filter_pipeline_dm.apply_async([data, self.channel])
+        if 'direct_message' in data:
+            print "\nGot DM!!!\n"
+            # Invokes subtaskt chain for sotring and retweeting
+            res = tasks.filter_pipeline_dm.apply_async([data, self.channel])
+        elif 'text' in data:
+            for mention in data['entities']['user_mentions']:
+                if self.channel.screen_name.lower() == mention['screen_name'].lower():
+                    print "\nGot Mention!!!\n"
+                    # Invokes subtask chain for storing and retweeting
+                    res = tasks.filter_pipeline.apply_async([data, self.channel])
+        else:
+            # We should manage the rest of the tweets?
+            # Maybe store them for future use.
+            pass
 
     def on_error(self, status_code, data):
         print "Error en streaming"
