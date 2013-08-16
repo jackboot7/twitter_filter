@@ -57,7 +57,8 @@ def auth_callback(request):
     chan.screen_name = name
     chan.oauth_token = final_token
     chan.oauth_secret = final_secret
-
+    chan.save()
+    
     #initializes streaming process
     task = tasks.stream_channel.delay(chan.screen_name)
     chan.streaming_task = task
