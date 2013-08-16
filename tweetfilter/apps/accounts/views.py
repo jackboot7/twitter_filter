@@ -58,7 +58,7 @@ def auth_callback(request):
     chan.oauth_token = final_token
     chan.oauth_secret = final_secret
     chan.save()
-    
+
     #initializes streaming process
     task = tasks.stream_channel.delay(chan.screen_name)
     chan.streaming_task = task
@@ -98,7 +98,8 @@ class DeleteChannelView(CsrfExemptMixin, JSONResponseMixin,
     success_url = "/"
 
     def post_ajax(self, request, *args, **kwargs):
-        self.get_object().stop_streaming()
+        #self.get_object().stop_streaming()
+        self.get_object().streaming_task.revoke(terminate=True)
         self.delete(request)
         response_data = {"result": "ok"}
         return HttpResponse(json.dumps(response_data),
@@ -122,8 +123,6 @@ class ChangeStatusView(CsrfExemptMixin, JSONResponseMixin,
                 obj.streaming_task = task   # tiene que haber un mejor lugar para guardar el task
                 obj.save()
             else:
-                print "type(obj) = %s" % type(obj)
-                print "type(obj.streaming_task) = %s" % type(obj.streaming_task)
                 obj.streaming_task.revoke(terminate=True)
             response_data = {'result': "ok"}
         except Exception as e:
