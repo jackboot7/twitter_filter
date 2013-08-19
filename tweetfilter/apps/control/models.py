@@ -16,6 +16,30 @@ class Schedule(models.Model):
     saturday = models.BooleanField(default=False)
     sunday = models.BooleanField(default=False)
 
+    def days_of_week_list(self):
+        """
+        Returns a list of ordered integers representing the weekdays marked as True
+        """
+        res = []
+        if self.monday:
+            res.append(0)
+        if self.tuesday:
+            res.append(1)
+        if self.wednesday:
+            res.append(2)
+        if self.thursday:
+            res.append(3)
+        if self.friday:
+            res.append(4)
+        if self.saturday:
+            res.append(5)
+        if self.sunday:
+            res.append(6)
+
+        return res
+
+    def days_of_week_string(self):
+        return ','.join(map(str, self.days_of_week_list()))
 
 class ScheduleBlock(models.Model):
     start = models.TimeField()  # start time of the day
@@ -51,6 +75,9 @@ class ScheduleBlock(models.Model):
             res.append(6)
 
         return res
+
+    def days_of_week_string(self):
+        return ','.join(map(str, self.days_of_week_list()))
 
     def has_weekday(self, day):
         """

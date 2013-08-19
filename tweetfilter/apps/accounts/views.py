@@ -233,7 +233,7 @@ class TimeBlockDeleteView(CsrfExemptMixin, JSONResponseMixin,
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
 
-    
+
 class ScheduledPostsDetailView(DetailView):
     model = Channel
     template_name = "accounts/scheduled_posts.html"

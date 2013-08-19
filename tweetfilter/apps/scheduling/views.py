@@ -10,7 +10,7 @@ from django.views.generic.edit import DeleteView
 from apps.accounts.models import Channel
 from apps.scheduling.models import ScheduledTweet
 
-class ScheduledTweetkListView(CsrfExemptMixin, JSONResponseMixin,
+class ScheduledTweetListView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DetailView):
     model = Channel
     context_object_name = "scheduled_tweet_list"
@@ -88,7 +88,7 @@ class ScheduledTweetDeleteView(CsrfExemptMixin, JSONResponseMixin,
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
 
-
+"""
 class ScheduledTweetkEditView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DetailView):
     model = ScheduledTweet
@@ -111,4 +111,4 @@ class ScheduledTweetkEditView(CsrfExemptMixin, JSONResponseMixin,
         })
 
         return self.render_json_response(json_obj)
-
+"""
