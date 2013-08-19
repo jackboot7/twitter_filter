@@ -1,12 +1,12 @@
 from django.conf.urls import *
 from apps.accounts.views import ChannelListView, DeleteChannelView, ChangeStatusView, ChannelDetailView, \
-    TimeBlockListView, TimeBlockCreateView, TimeBlockDeleteView, ScheduledPostsDetailView
+    TimeBlockListView, TimeBlockCreateView, TimeBlockDeleteView, ScheduledPostsDetailView, TwitterAuthenticationView, AuthCallbackView
 
 
 urlpatterns = patterns('apps.accounts.views',
 
-    url(r'^authenticate/', 'authenticate'),
-    url(r'^auth_callback', 'auth_callback'),
+    url(r'^authenticate/', TwitterAuthenticationView.as_view()),
+    url(r'^auth_callback', AuthCallbackView.as_view()),
 
     url(r'^list', ChannelListView.as_view()),
     url(r'^delete/(?P<pk>\w+)', DeleteChannelView.as_view()),
