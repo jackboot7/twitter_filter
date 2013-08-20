@@ -33,7 +33,8 @@ class RetweetDelayedTask(DelayedTask):
             # calculate nearest ETA and delay itself until then
             eta = self.calculate_eta()
             print "Retweet task %s will execute on %s" % (current_task.request.id, eta)
-            print "now is %s" % datetime.datetime.now()
+            #print "now is %s" % datetime.datetime.now()
+            #print "task name = %s" % current_task.name
             """try:
                 current_task.retry(args=args, kwargs=kwargs, eta=eta)
             except Exception:

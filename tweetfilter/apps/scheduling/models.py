@@ -1,6 +1,8 @@
+import json
 from celery.schedules import crontab
 from django.db import models
 from djcelery.models import PeriodicTask, CrontabSchedule
+from djcelery.schedulers import ModelEntry
 from apps.accounts.models import Channel
 from apps.control.models import Schedule
 
@@ -16,27 +18,50 @@ class ScheduledTweet(Schedule):
     text = models.CharField(max_length=140)
     channel = models.ForeignKey(Channel)
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=STATUS_ENABLED)
+    periodic_task = models.ForeignKey(PeriodicTask, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         super(ScheduledTweet, self).save(*args, **kwargs)
 
-        print "saving %s" % self.channel.screen_name
-        for count, thing in enumerate(args):
-            print '{0}. {1}'.format(count, thing)
-        for name, value in kwargs.items():
-            print '{0} = {1}'.format(name, value)
-
-        PeriodicTask(
-            name="%s-schedule-%s"%(self.channel.screen_name, self.id),
-            task=u"apps.scheduling.tasks.schedule_tweet",
-            crontab=CrontabSchedule(
+        if self.periodic_task is None:
+            cron = CrontabSchedule(
                 minute=self.time.minute,
                 hour=self.time.hour,
-                day_of_week=self.days_of_week_string()),
+                day_of_week=self.days_of_week_string())
+            cron.save()
 
-            #interval=IntervalSchedule.objects.get_or_create(every=10,period=u'seconds')[0],
-            args=[self.channel.screen_name]
-        ).save()
+            ptask = PeriodicTask(
+                name="%s-schedule-%s-%s"%(self.channel.screen_name, self.id, cron.id),
+                task="apps.scheduling.tasks.schedule_tweet",
+                crontab=cron,
+                queue="scheduling",
+                #args=json.dumps([self.channel.screen_name, self.text]))
+                kwargs=json.dumps({'channel_id': self.channel.screen_name,
+                                   'text': self.text}))
+            ptask.save()
+            self.periodic_task = ptask
+            super(ScheduledTweet, self).save(*args, **kwargs)
+        else:
+            ptask = self.periodic_task
+            ptask.kwargs=json.dumps({'channel_id': self.channel.screen_name,
+                                     'text': self.text})
+            cron = ptask.crontab
+            cron.hour = self.time.hour
+            cron.minute = self.time.minute
+            cron.day_of_week = self.days_of_week_string()
+            cron.save()
+            ptask.save()
+
+        """
+        model_entry = ModelEntry(ptask)
+
+        try:
+            model_entry.save()
+        except:
+            from django.db import connection
+            print connection.queries
+            raise
+        """
 
     def get_excerpt(self):
         max_chars = 32
