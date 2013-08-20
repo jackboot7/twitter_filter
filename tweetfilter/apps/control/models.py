@@ -38,8 +38,31 @@ class Schedule(models.Model):
 
         return res
 
+    def days_of_week_word_list(self):
+        """
+        Returns a list of ordered integers representing the weekdays marked as True
+        """
+        res = []
+        if self.monday:
+            res.append("mon")
+        if self.tuesday:
+            res.append("tue")
+        if self.wednesday:
+            res.append("wed")
+        if self.thursday:
+            res.append("thu")
+        if self.friday:
+            res.append("fri")
+        if self.saturday:
+            res.append("sat")
+        if self.sunday:
+            res.append("sun")
+
+        return res
+
     def days_of_week_string(self):
-        return ','.join(map(str, self.days_of_week_list()))
+        return ','.join(self.days_of_week_word_list())
+
 
 class ScheduleBlock(models.Model):
     start = models.TimeField()  # start time of the day
