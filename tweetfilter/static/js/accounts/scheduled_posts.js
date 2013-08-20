@@ -84,6 +84,7 @@ var
         "use strict";
 
         $('#scheduled_post_timepicker').val('');
+        $('#scheduled_post_text').val('');
         check_all_days();
     },
 
