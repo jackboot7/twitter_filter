@@ -32,14 +32,10 @@ class RetweetDelayedTask(DelayedTask):
         if tweet.status == Tweet.STATUS_APPROVED:
             # calculate nearest ETA and delay itself until then
             eta = self.calculate_eta()
+            countdown = (eta - datetime.datetime.now()).total_seconds()
             print "Retweet task %s will execute on %s" % (current_task.request.id, eta)
-            #print "now is %s" % datetime.datetime.now()
-            #print "task name = %s" % current_task.name
-            """try:
-                current_task.retry(args=args, kwargs=kwargs, eta=eta)
-            except Exception:
-                pass    # all cool"""
-            retweet.s().apply_async(args=args, kwargs=kwargs, eta=eta)
+            #print "type of eta = %s" % type(eta)
+            retweet.s().apply_async(args=args, kwargs=kwargs, countdown=countdown)
             return self.run(*args, **kwargs)
         else:
             pass    # nothing happens, tweet shouldn't be retweeted
