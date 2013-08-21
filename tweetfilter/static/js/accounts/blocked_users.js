@@ -43,19 +43,22 @@ var
     submit_new_blocked_user = function () {
         "use strict";
 
-        $.post("/filtering/blocked_user/add/", {
-            'blocked_user_name': $('#add_blocked_user_name').val(),
-            'blocked_user_channel': $('#current_channel').val()
-        }, function (data) {
+        var screen_name = $.trim($('#add_blocked_user_name').val());
+        if(screen_name.length > 0) {
+            $.post("/filtering/blocked_user/add/", {
+                'blocked_user_name': screen_name,
+                'blocked_user_channel': $('#current_channel').val()
+            }, function (data) {
 
-            $('#add_blocked_user_text').val("");
-            if(data.result === "ok") {
-                load_blocked_user_table();
-                $('#add_blocked_user_name').val('');
-            }else{
-                blocked_user_add_error(data.result);
-            }
-        });
+                $('#add_blocked_user_text').val("");
+                if(data.result === "ok") {
+                    load_blocked_user_table();
+                    $('#add_blocked_user_name').val('');
+                }else{
+                    blocked_user_add_error(data.result);
+                }
+            });
+        }
     };
 
 $(document).ready(function () {

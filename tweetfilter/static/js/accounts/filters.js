@@ -43,18 +43,21 @@ var
     submit_new_filter = function () {
         "use strict";
 
-        $.post("/filtering/filter/add/", {
-            'filter_text': $('#add_filter_text').val(),
-            'filter_channel': $('#current_channel').val()
-        }, function (data) {
+        var filter_text = $.trim($('#add_filter_text').val());
+        if(filter_text.length > 0){
+            $.post("/filtering/filter/add/", {
+                'filter_text': filter_text,
+                'filter_channel': $('#current_channel').val()
+            }, function (data) {
 
-            $('#add_filter_text').val("");
-            if(data.result === "ok") {
-                load_filter_table();
-            }else{
-                filter_add_error(data.result);
-            }
-        });
+                $('#add_filter_text').val("");
+                if(data.result === "ok") {
+                    load_filter_table();
+                }else{
+                    filter_add_error(data.result);
+                }
+            });
+        }
     };
 
 $(document).ready(function () {

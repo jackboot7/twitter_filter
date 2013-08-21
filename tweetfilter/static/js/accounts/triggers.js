@@ -42,18 +42,21 @@ var
     submit_new_trigger = function () {
         "use strict";
 
-        $.post("/filtering/trigger/add/", {
-            'trigger_text': $('#add_trigger_text').val(),
-            'trigger_channel': $('#current_channel').val()
-        }, function (data) {
+        var trigger_text = $.trim($('#add_trigger_text').val());
+        if(trigger_text.length > 0) {
+            $.post("/filtering/trigger/add/", {
+                'trigger_text': trigger_text,
+                'trigger_channel': $('#current_channel').val()
+            }, function (data) {
 
-            $('#add_trigger_text').val("");
-            if(data.result === "ok") {
-                load_trigger_table();
-            }else{
-                trigger_add_error(data.result);
-            }
-        });
+                $('#add_trigger_text').val("");
+                if(data.result === "ok") {
+                    load_trigger_table();
+                }else{
+                    trigger_add_error(data.result);
+                }
+            });
+        }
     };
 
 $(document).ready(function () {
