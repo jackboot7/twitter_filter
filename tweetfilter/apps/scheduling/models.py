@@ -52,16 +52,13 @@ class ScheduledTweet(Schedule):
             cron.save()
             ptask.save()
 
-        """
-        model_entry = ModelEntry(ptask)
+    def delete(self):
+        ptask = self.periodic_task
+        cron = ptask.crontab
+        cron.delete()
+        ptask.delete()
+        #super(ScheduledTweet, self).delete()   # ??????
 
-        try:
-            model_entry.save()
-        except:
-            from django.db import connection
-            print connection.queries
-            raise
-        """
 
     def get_excerpt(self):
         max_chars = 32
