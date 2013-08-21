@@ -80,12 +80,27 @@ var
         $('#sunday_check').attr('checked', true);
     },
 
+    count_characters = function () {
+        "use strict";
+
+        var count = 140 - parseInt($('#scheduled_post_text').val().length, 10);
+        $('#tweet_char_count').text(count);
+        if(count > 20){
+            $('#tweet_char_count').css({'color': '#999999'});
+        }else if(count <= 10){
+            $('#tweet_char_count').css({'color': '#D40D12'});
+        }else{
+            $('#tweet_char_count').css({'color': '#5C0002'});
+        }
+    },
+
     clear_add_scheduled_post_form = function () {
         "use strict";
 
         $('#scheduled_post_timepicker').val('');
         $('#scheduled_post_text').val('');
         check_all_days();
+        count_characters();
     },
 
     validate_add_scheduled_post_form = function () {
@@ -135,6 +150,10 @@ $(document).ready(function () {
     $('#scheduled_post_timepicker').timepicker({
         hourText: 'Hora',
         minuteText: 'Minutos'
+    });
+
+    $('#scheduled_post_text').bind("keyup change input", function () {
+        count_characters();
     });
 
     $('#delete_scheduled_post_confirmed').click(function () {

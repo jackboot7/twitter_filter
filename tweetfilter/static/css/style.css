@@ -33,6 +33,14 @@
     margin-bottom: 20px;
 }
 
+.float_right {
+    float: right;
+}
+
 .center-search{
     margin-top: 5px;
+}
+
+.td_right_padding{
+    padding-right: 8px;
 }
