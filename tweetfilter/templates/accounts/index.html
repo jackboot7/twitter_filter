@@ -44,6 +44,7 @@
 <div class="row-fluid">
 
     <div class="span6"> <!-- left column -->
+        <!--
         <div class="rounded_box_blue">
             <h4>Horarios de publicación</h4>
 
@@ -81,8 +82,7 @@
                         <table>
                             <tr>
                                 <td><label>Hora de inicio: </label></td>
-                                <td><!--<select class="input-mini" id="start_hour_select"></select>-->
-                                    <!--<select class="input-mini" id="start_minute_select"></select>-->
+                                <td>
                                     <input type="text" class="input-mini" id="start_timepicker">
                                 </td>
                             </tr>
@@ -111,7 +111,7 @@
                     <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_timeblock_btn">Guardar</button>
                     <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
                 </div>
-            </div> <!-- Add timeblock modal -->
+            </div>
 
             <div id="delete_timeblock_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                 <div class="modal-header">
@@ -130,8 +130,9 @@
                     <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
                     <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_timeblock_confirmed">Sí, eliminar</button>
                 </div>
-            </div> <!-- delete timeblock modal -->
+            </div>
         </div>
+        --> <!-- Fin horarios de publicación -->
 
         <div class="rounded_box_red">
             <h4>Usuarios bloqueados</h4>
@@ -288,7 +289,7 @@
 {% block page_scripts %}
     <script type="text/javascript" src="{{ STATIC_URL }}js/accounts/triggers.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/accounts/filters.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/accounts/timeblocks.js"></script>
+    <!--<script type="text/javascript" src="{{ STATIC_URL }}js/accounts/timeblocks.js"></script>-->
     <script type="text/javascript" src="{{ STATIC_URL }}js/accounts/blocked_users.js"></script>
 {% endblock %}
 
