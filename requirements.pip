@@ -1,4 +1,5 @@
 Django==1.5.1
+Unidecode
 South==0.8.1
 anyjson==0.3.3
 distribute==0.6.15
