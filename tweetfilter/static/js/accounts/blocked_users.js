@@ -40,10 +40,22 @@ var
         $('#alert_warning').show();
     },
 
+    validate_new_blocked_user = function () {
+        "use strict";
+
+        return !/[~`!#$%\^@&*+=\-\[\]\\';,\/{}|\\":<>\?]/g.test($('#add_blocked_user_name').val());
+    },
+
     submit_new_blocked_user = function () {
         "use strict";
 
         var screen_name = $.trim($('#add_blocked_user_name').val());
+
+        if(!validate_new_blocked_user()){
+            alert("El nombre de la cuenta no debe contener arroba (@) ni otros caracteres especiales");
+            return false;
+        }
+
         if(screen_name.length > 0) {
             $.post("/filtering/blocked_user/add/", {
                 'blocked_user_name': screen_name,
