@@ -29,7 +29,7 @@ class RetweetDelayedTask(DelayedTask):
         self.screen_name = kwargs['screen_name']
         tweet = args[0]     # Tweet object
 
-        if tweet.status == Tweet.STATUS_APPROVED:
+        if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
             # calculate nearest ETA and delay itself until then
             eta = self.calculate_eta()
             countdown = (eta - datetime.datetime.now()).total_seconds()
@@ -91,7 +91,7 @@ def stream_channel(chan_id):
 
 @task(queue="tweets")
 def triggers_filter(tweet, channel):
-    if tweet.status is not Tweet.STATUS_BLOCKED:
+    if tweet is not None and tweet.status is not Tweet.STATUS_BLOCKED:
         triggers = channel.get_triggers()
         try:
             for tr in triggers:
@@ -161,14 +161,16 @@ def filter_pipeline_dm(data, chan):
 
 @task(queue="tweets")
 def is_user_allowed(tweet, channel):
-    from_user = tweet.screen_name
-    blocked_users = BlockedUser.objects.filter(channel=channel)
-    for user in blocked_users:
-        if user.screen_name.lower() == from_user.lower():
-            # user is blocked
-            tweet.status = Tweet.STATUS_BLOCKED
-            tweet.save()
-            print "Tweet %s marked as BLOCKED (sent from blacklisted user @%s)" % (tweet.tweet_id, user.screen_name)
+    if tweet is not None:
+        from_user = tweet.screen_name
+        blocked_users = BlockedUser.objects.filter(channel=channel)
+        for user in blocked_users:
+            if user.screen_name.lower() == from_user.lower():
+                # user is blocked
+                tweet.status = Tweet.STATUS_BLOCKED
+                tweet.save()
+                print "Tweet %s marked as BLOCKED (sent from blacklisted user @%s)" % (tweet.tweet_id, user.screen_name)
+
     return tweet
 
 @task(queue="tweets", base=RetweetDelayedTask)
@@ -179,7 +181,7 @@ def delay_retweet(tweet, screen_name):
 @task(queue="tweets")
 def retweet(tweet, screen_name):
     channel = Channel.objects.get(screen_name=screen_name)
-    if tweet.status == Tweet.STATUS_APPROVED:
+    if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         twitterAPI = ChannelAPI(channel)
         regular_exp = re.compile(re.escape("@" + tweet.mention_to), re.IGNORECASE)
         text = "via @" + tweet.screen_name + ":" + regular_exp.sub('', tweet.text)
