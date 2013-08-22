@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # -*- encoding: utf-8 -*-
 
 import json
@@ -238,3 +239,15 @@ class ScheduledPostsDetailView(DetailView):
     model = Channel
     template_name = "accounts/scheduled_posts.html"
     context_object_name = "channel"
+=======
+# -*- coding:utf-8 -*-
+
+from django.conf import settings
+
+#from django.views.generic import 
+
+from braces.views import LoginRequiredMixin, PermissionRequiredMixin
+
+
+#
+>>>>>>> time_zone

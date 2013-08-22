@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from django.conf.urls import *
 from apps.accounts.views import ChannelListView, DeleteChannelView, ChangeStatusView, ChannelDetailView, \
     TimeBlockListView, TimeBlockCreateView, TimeBlockDeleteView, ScheduledPostsDetailView, TwitterAuthenticationView, AuthCallbackView
@@ -19,3 +20,27 @@ urlpatterns = patterns('apps.accounts.views',
     url(r'^timeblock/add/', TimeBlockCreateView.as_view()),
     url(r'^timeblock/delete/(?P<pk>\w+)', TimeBlockDeleteView.as_view()),
 )
+=======
+# -*- coding:utf-8 -*-
+
+""" Urls for the accounts module. """
+
+from django.conf.urls.defaults import patterns, url
+
+from registration.views import RegistrationView
+from apps.accounts.forms import RegistrationForm, LoginForm
+
+urlpatterns = patterns('',
+    #URL config for the login form.
+    url(r'^login/',
+        'django.contrib.auth.views.login',
+        {'authentication_form': LoginForm},
+        name='login'),
+
+    # URL config for the registration form.
+    url(r'^register/',
+        #'registration.views.register',
+        RegistrationView.as_view(form_class=RegistrationForm),
+        name='registration')
+)
+>>>>>>> time_zone
