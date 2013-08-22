@@ -1,4 +1,3 @@
-{% load staticfiles %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +12,6 @@
     <!--script src="js/less-1.3.3.min.js"></script-->
     <!--append ‘#!watch’ to the browser URL, then refresh the page. -->
 
-<<<<<<< HEAD
 
 
     <link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet">
@@ -24,11 +22,6 @@
     <link href="{{ STATIC_URL }}css/redmond/jquery-ui.css" rel="stylesheet"/>
 
     <link href="{{ STATIC_URL }}css/style.css" rel="stylesheet">
-=======
-    <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
-    <link href="{% static "css/bootstrap-responsive.min.css" %}" rel="stylesheet">
-    <link href="{% static "css/style.css" %}" rel="stylesheet">
->>>>>>> time_zone
 
     {% block page_styles %} {% endblock %}
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -37,7 +30,6 @@
   <![endif]-->
 
     <!-- Fav and touch icons -->
-<<<<<<< HEAD
     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{{ STATIC_URL }}img/apple-touch-icon-144-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{{ STATIC_URL }}img/apple-touch-icon-114-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{{ STATIC_URL }}img/apple-touch-icon-72-precomposed.png">
@@ -50,17 +42,6 @@
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.timepicker.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/scripts.js"></script>
-=======
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{% static "img/apple-touch-icon-144-precomposed.png" %}">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{% static "img/apple-touch-icon-114-precomposed.png" %}">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{% static "img/apple-touch-icon-72-precomposed.png" %}">
-    <link rel="apple-touch-icon-precomposed" href="{% static "img/apple-touch-icon-57-precomposed.png" %}">
-    <link rel="shortcut icon" href="{% static "img/favicon.ico" %}">
-
-    <script type="text/javascript" src="{% static "js/jquery.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "js/bootstrap.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "js/scripts.js" %}"></script>
->>>>>>> time_zone
 </head>
 
 <body>
@@ -73,7 +54,6 @@
                 </h1>
             </div>
 
-            {% if request.user.is_authenticated %}
             <div class="navbar">
                 <div class="navbar-inner">
                     <div class="container-fluid">
@@ -87,6 +67,36 @@
                                 <li>
                                     <a href="#">Configuración</a>
                                 </li>
+                                <li>
+                                    <!--<a href="#">Link</a>-->
+                                </li>
+                                <!--
+                                <li class="dropdown">
+                                    <a data-toggle="dropdown" class="dropdown-toggle" href="#">Dropdown<strong class="caret"></strong></a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a href="#">Action</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">Another action</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">Something else here</a>
+                                        </li>
+                                        <li class="divider">
+                                        </li>
+                                        <li class="nav-header">
+                                            Nav header
+                                        </li>
+                                        <li>
+                                            <a href="#">Separated link</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">One more separated link</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                -->
                             </ul>
                             <ul class="nav pull-right">
                                 <!--<li>
@@ -100,13 +110,33 @@
                                 <li>
                                     <input class="input-medium search-query center-search" type="text" /> <!--<button type="submit" class="btn">Search</button>-->
                                 </li>
+                                <!--
+                                <li class="dropdown">
+                                    <a data-toggle="dropdown" class="dropdown-toggle" href="#">Dropdown<strong class="caret"></strong></a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a href="#">Action</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">Another action</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">Something else here</a>
+                                        </li>
+                                        <li class="divider">
+                                        </li>
+                                        <li>
+                                            <a href="#">Separated link</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                -->
                             </ul>
                         </div>
 
                     </div>
                 </div>
             </div> <!-- end navbar -->
-            {% endif %}
 
             <div class="alert alert-success" id="alert_success" style="display: none">
                 <button type="button" class="close" data-dismiss="alert">×</button>
@@ -133,6 +163,29 @@
 
                     {% endblock %}  <!-- endblock section_body -->
                 </div>
+
+                <!-- right column -->
+                <!--
+                <div class="span4">
+
+                    <span class="label">Notificaciones</span>
+                    <br><br>
+                    <ul>
+                        <li>
+                            01/07/13 17:53:00 El usuario @trollFace fue bloqueado por "uso de palabras inadecuadas"
+                        </li>
+                        <li>
+                            01/07/13 18:00:04 El temporizador de tweets entró en condición: <span style="color: orange;">Naranja</span>
+                        </li>
+                        <li>
+                            01/07/13 18:15:18 El temporizador de tweets volvió a su condición normal.
+                        </li>
+                    </ul>
+
+                    <a style="float:right" href="#" class="btn btn-small btn-primary" type="button">Ver historial</a>
+
+                </div>
+                -->
             </div> <!-- end row-fluid -->
 
             <div id="modal-container-206857" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
