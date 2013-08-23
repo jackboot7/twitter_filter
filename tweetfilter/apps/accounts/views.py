@@ -8,13 +8,13 @@ from django.contrib.sites.models import RequestSite
 from django.core.urlresolvers import reverse
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView
-from django.views.generic.base import View, TemplateView
+from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from twython.api import Twython
-from apps.accounts import tasks
 from apps.accounts.models import Channel, ChannelScheduleBlock
 from django.views.generic.edit import DeleteView, UpdateView
 from apps.control.models import ScheduleBlock
+from apps.filtering import tasks
 
 
 class TwitterAuthenticationView(View):
