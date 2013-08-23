@@ -3,7 +3,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from picklefield.fields import PickledObjectField
-from apps.control.models import ScheduleBlock
+#from apps.filtering.models import Trigger, Filter
 from apps.twitter.models import Tweet
 
 
@@ -103,49 +103,16 @@ class Channel(models.Model):
         """
         Returns a list of this channel's trigger words
         """
-        triggers = Trigger.objects.filter(channel=self)
-        return triggers
-        #return self.trigger_set.all()
+        #triggers = Trigger.objects.filter(channel=self)
+        #return triggers
+        return self.trigger_set.all()
 
     def get_filters(self):
         """
         Returns a list of this channel's trigger words
         """
-        filters = Filter.objects.filter(channel=self)
-        return filters
-        #return self.filter_set.all()
+        #filters = Filter.objects.filter(channel=self)
+        #return filters
+        return self.filter_set.all()
 
-
-class ChannelScheduleBlock(ScheduleBlock):
-    channel = models.ForeignKey(Channel)
-
-
-class Trigger(models.Model):
-    ACTION_RETWEET = 1
-
-    ACTION_CHOICES = (
-        (ACTION_RETWEET, "Retweet"),
-    )
-
-    text = models.CharField(max_length=32)
-    action = models.IntegerField(choices=ACTION_CHOICES, default=ACTION_RETWEET)
-    channel = models.ForeignKey(Channel)
-    enabled_mentions = models.BooleanField(default=True)
-    enabled_dm = models.BooleanField(default=True)
-
-
-class Filter(models.Model):
-    ACTION_BLOCK_TWEET = 1
-    ACTION_BLOCK_USER = 2
-
-    ACTION_CHOICES = (
-        (ACTION_BLOCK_TWEET, "Bloquear tweet"),
-        (ACTION_BLOCK_USER, "Bloquear usuario"),
-        )
-
-    text = models.CharField(max_length=32)
-    action = models.SmallIntegerField(choices=ACTION_CHOICES, default=ACTION_BLOCK_TWEET)
-    channel = models.ForeignKey(Channel)
-    enabled_mentions = models.BooleanField(default=True)
-    enabled_dm = models.BooleanField(default=True)
 

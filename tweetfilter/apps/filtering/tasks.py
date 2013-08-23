@@ -6,10 +6,10 @@ import re
 from exceptions import Exception
 from celery import task
 from celery._state import current_task
-from apps.accounts.backends import ChannelStreamer
-from apps.accounts.models import ChannelScheduleBlock, Channel
+import apps
+from apps.accounts.models import  Channel
 from apps.control.tasks import DelayedTask
-from apps.filtering.models import BlockedUser
+from apps.filtering.models import BlockedUser, ChannelScheduleBlock
 from apps.twitter.api import ChannelAPI
 from apps.twitter.models import Tweet
 
@@ -81,7 +81,8 @@ def stream_channel(chan_id):
     print "Starting streaming for channel %s" % chan_id
     try:
         chan = Channel.objects.filter(screen_name=chan_id)[0]
-        stream = ChannelStreamer(chan)
+
+        stream = apps.filtering.backends.ChannelStreamer(chan)
         stream.user(**{"with": "followings"})
         return True
     except Exception as e:

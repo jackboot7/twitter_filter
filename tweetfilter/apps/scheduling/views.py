@@ -4,6 +4,7 @@ import json
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
 import datetime
 from django.http.response import HttpResponse
+from django.views.generic import DetailView
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
@@ -112,3 +113,8 @@ class ScheduledTweetkEditView(CsrfExemptMixin, JSONResponseMixin,
 
         return self.render_json_response(json_obj)
 """
+
+class ScheduledPostsDetailView(DetailView):
+    model = Channel
+    template_name = "accounts/scheduled_posts.html"
+    context_object_name = "channel"

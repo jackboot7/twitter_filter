@@ -1,6 +1,8 @@
 from django.conf.urls import *
-from apps.accounts.views import ChannelListView, DeleteChannelView, ChangeStatusView, ChannelDetailView, \
-    TimeBlockListView, TimeBlockCreateView, TimeBlockDeleteView, ScheduledPostsDetailView, TwitterAuthenticationView, AuthCallbackView
+from apps.accounts.views import ChannelListView, DeleteChannelView, ChangeStatusView, ChannelDetailView,\
+    TwitterAuthenticationView, AuthCallbackView
+from apps.filtering.views import TimeBlockListView, TimeBlockCreateView, TimeBlockDeleteView
+from apps.scheduling.views import ScheduledPostsDetailView
 
 
 urlpatterns = patterns('apps.accounts.views',

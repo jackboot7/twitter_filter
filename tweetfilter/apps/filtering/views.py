@@ -1,12 +1,17 @@
+import datetime
+from exceptions import Exception
 import json
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
 from django.forms.models import model_to_dict
+from django.http import HttpResponse
 from django.http.response import HttpResponse
+from django.views.generic import DetailView, View, DeleteView
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
-from apps.accounts.models import Channel, Trigger, Filter
-from apps.filtering.models import BlockedUser
+from apps.accounts.models import Channel
+from apps.control.models import ScheduleBlock
+from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleBlock
 
 
 #==========================
@@ -167,6 +172,99 @@ class BlockedUserAddView(CsrfExemptMixin, JSONResponseMixin,
         except Exception, e:
             print "Error al bloquear usuario: %s" % e
             response_data = {'result': e}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class TimeBlockListView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, DetailView):
+    model = Channel
+    context_object_name = "timeblock_list"
+
+    def get_ajax(self, request, *args, **kwargs):
+        objs = ChannelScheduleBlock.objects.filter(channel=self.get_object())
+        json_list = []
+
+        for timeblock in objs:
+            dias = ""
+            if timeblock.monday:
+                dias = "Lun "
+            if timeblock.tuesday:
+                dias += "Mar "
+            if timeblock.wednesday:
+                dias += "Mie "
+            if timeblock.thursday:
+                dias += "Jue "
+            if timeblock.friday:
+                dias += "Vie "
+            if timeblock.saturday:
+                dias += "Sab "
+            if timeblock.sunday:
+                dias += "Dom "
+            if len(dias) == 28:
+                dias = "Todos"
+
+            json_list.append({
+                'id': timeblock.id,
+                'start': timeblock.start,
+                'end': timeblock.end,
+                'days': dias
+                #'days' : ????
+            })
+
+        return self.render_json_response(json_list)
+
+
+class TimeBlockCreateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, View):
+    model = ScheduleBlock
+
+    def post_ajax(self, request, *args, **kwargs):
+
+        try:
+            chan = Channel.objects.filter(screen_name=request.POST['timeblock_channel'])[0]
+            block = ChannelScheduleBlock()
+
+            print "monday = %s" % request.POST['monday']
+            print "tuesday = %s" % request.POST['tuesday']
+            print "wednesday = %s" % request.POST['wednesday']
+            print "thursday = %s" % request.POST['thursday']
+            print "friday = %s" % request.POST['friday']
+            print "saturday = %s" % request.POST['saturday']
+            print "sunday = %s" % request.POST['sunday']
+
+            block.start = datetime.datetime.strptime(request.POST['start'], "%H:%M").time()
+            block.end = datetime.datetime.strptime(request.POST['end'], "%H:%M").time()
+
+            block.monday = True if request.POST['monday'] == "1" else False
+            block.tuesday = True if request.POST['tuesday'] == "1" else False
+            block.wednesday = True if request.POST['wednesday'] == "1" else False
+            block.thursday = True if request.POST['thursday'] == "1" else False
+            block.friday = True if request.POST['friday'] == "1" else False
+            block.saturday = True if request.POST['saturday'] == "1" else False
+            block.sunday = True if request.POST['sunday'] == "1" else False
+            block.channel = chan
+            block.save()
+            print "is now appliable? %s" % block.has_datetime(datetime.datetime.now())   #####
+            response_data = {'result': "ok"}
+        except Exception, e:
+            print "Error al crear timeblock: %s" % e
+            response_data = {'result': e}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class TimeBlockDeleteView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, DeleteView):
+    model = ScheduleBlock
+    success_url = "/"
+
+    def post_ajax(self, request, *args, **kwargs):
+        #obj = self.get_object()
+        self.delete(request)
+        response_data = {'result': "ok"}
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")

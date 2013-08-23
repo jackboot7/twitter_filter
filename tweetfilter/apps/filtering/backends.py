@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from celery.task.base import Task
-import datetime
 from django.conf import settings
 from twython import TwythonStreamer
 from apps.twitter.api import Twitter
-
+from apps.filtering import tasks
 
 class ChannelStreamer(TwythonStreamer):
     """
     TwythonStreamer subclass for a specific channel.
-    Enables the stream, instantiating a filter_pipeline for each successful mention or DM to the current channel.
+    Enables the stream, instantiating a filter_pipeline for each mention or DM received.
     """
     channel = {}
     twitter_api = {}
@@ -36,7 +34,6 @@ class ChannelStreamer(TwythonStreamer):
         self.handle_data(data)
 
     def handle_data(self, data):
-        from . import tasks
         if 'direct_message' in data:
             print "\nGot DM!!!\n"
             # Invokes subtaskt chain for sotring and retweeting
