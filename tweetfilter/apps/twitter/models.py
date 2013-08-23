@@ -22,7 +22,9 @@ class Tweet(models.Model):
         (STATUS_PENDING, 'Pendiente'),
         (STATUS_APPROVED, 'Aprobado'),
         (STATUS_BLOCKED, 'Bloqueado'),
-        (STATUS_SENT, 'Enviado')
+        (STATUS_SENT, 'Enviado'),
+        (STATUS_TRIGGERED, 'Relevante'),
+        (STATUS_NOT_TRIGGERED, 'Irrelevante')
     )
 
     text = models.CharField(max_length=140)

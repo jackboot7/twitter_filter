@@ -2,15 +2,17 @@
 
 
 import datetime
+from django.conf import settings
 import re
 from exceptions import Exception
 from celery import task
 from celery._state import current_task
+from twython.streaming.api import TwythonStreamer
 import apps
 from apps.accounts.models import  Channel
 from apps.control.tasks import DelayedTask
 from apps.filtering.models import BlockedUser, ChannelScheduleBlock
-from apps.twitter.api import ChannelAPI
+from apps.twitter.api import ChannelAPI, Twitter
 from apps.twitter.models import Tweet
 
 from unidecode import unidecode
@@ -76,13 +78,66 @@ class RetweetDelayedTask(DelayedTask):
         return eta
 
 
+class ChannelStreamer(TwythonStreamer):
+    """
+    TwythonStreamer subclass for a specific channel.
+    Enables the stream, instantiating a filter_pipeline for each mention or DM received.
+    """
+    channel = {}
+    twitter_api = {}
+
+    def __init__(self, channel):
+        super(ChannelStreamer, self).__init__(
+            app_key=settings.TWITTER_APP_KEY, app_secret=settings.TWITTER_APP_SECRET,
+            oauth_token=channel.oauth_token, oauth_token_secret=channel.oauth_secret)
+
+        self.twitter_api = Twitter(key=settings.TWITTER_APP_KEY, secret=settings.TWITTER_APP_SECRET,
+            token=channel.oauth_token, token_secret=channel.oauth_secret)
+
+        self.channel = channel
+
+    def on_success(self, data):
+        # stores mentions and DMs only
+        print ""
+        print ""
+        print ""
+        print "new data from twitter!"
+        print "data = %s" % data
+
+        self.handle_data(data)
+
+    def handle_data(self, data):
+        if 'direct_message' in data:
+            # Invokes subtask chain for storing and retweeting
+            res = filter_pipeline_dm.apply_async([data, self.channel])
+        elif 'text' in data:
+            for mention in data['entities']['user_mentions']:
+                if self.channel.screen_name.lower() == mention['screen_name'].lower():
+                    print "\nGot Mention!!!\n"
+                    # Invokes subtask chain for storing and retweeting
+                    res = filter_pipeline.apply_async([data, self.channel])
+        else:
+            # should we handle the rest of the tweets?
+            # Maybe store them for future use.
+            pass
+
+
+
+
+    def on_error(self, status_code, data):
+        print "Error en streaming"
+        print status_code
+        print data
+        self.disconnect()   # ???
+
+
 @task(queue="streaming")
 def stream_channel(chan_id):
     print "Starting streaming for channel %s" % chan_id
     try:
         chan = Channel.objects.filter(screen_name=chan_id)[0]
 
-        stream = apps.filtering.backends.ChannelStreamer(chan)
+        stream = ChannelStreamer(chan)
         stream.user(**{"with": "followings"})
         return True
     except Exception as e:
@@ -140,9 +195,8 @@ def banned_words_filter(tweet, channel):
 
 @task(queue="tweets")
 def filter_pipeline(data, chan):
-    from apps.twitter import tasks
     res =(
-        tasks.store_tweet.s(data) |
+        store_tweet.s(data, chan.screen_name) |
         is_user_allowed.s(channel=chan) |
         triggers_filter.s(channel=chan) |
         banned_words_filter.s(channel=chan) |
@@ -151,9 +205,8 @@ def filter_pipeline(data, chan):
 
 @task(queue="tweets")
 def filter_pipeline_dm(data, chan):
-    from apps.twitter import tasks
     res =(
-        tasks.store_dm.s(data) |
+        store_dm.s(data) |
         is_user_allowed.s(channel=chan) |
         triggers_filter.s(channel=chan) |
         banned_words_filter.s(channel=chan) |
@@ -198,3 +251,52 @@ def retweet(tweet, screen_name):
 
     return tweet
 
+
+@task(queue="tweets")
+def store_tweet(data, channel_id):
+    try:
+        tweet = Tweet()
+        tweet.screen_name = data['user']['screen_name']
+        tweet.text = data['text']
+        tweet.tweet_id = data['id']
+        tweet.source = data['source']
+        tweet.mention_to = channel_id
+        tweet.type = Tweet.TYPE_MENTION
+        tweet.save()
+        print "stored tweet %s as PENDING" % data['id']
+        return tweet
+
+    except Exception, e:
+        print "Error trying to save tweet #%s: %s" % (data['id'], e)
+        return None
+
+
+@task(queue="tweets")
+def store_dm(dm):
+    data = dm['direct_message']
+    try:
+        tweet = Tweet()
+        tweet.screen_name = data['sender']['screen_name']
+        tweet.text = data['text']
+        tweet.tweet_id = data['id']
+        tweet.source = 'DM'
+        tweet.mention_to = data['recipient_screen_name']
+        tweet.type = Tweet.TYPE_DM
+        tweet.save()
+        print "stored dm %s as PENDING" % data['id']
+        return tweet
+    except Exception, e:
+        print "Error trying to save dm #%s: %s" % (data['id'], e)
+        return None
+
+
+@task(queue="tweets")
+def send_tweet(tweet, twitterAPI):
+    text = tweet.text
+    if len(text) <= 140:
+        twitterAPI.tweet(text)
+    else:
+        twitterAPI.tweet("%s.." % text[0:137])
+    tweet.status = Tweet.STATUS_SENT
+    tweet.save()
+    return tweet
