@@ -1,9 +1,9 @@
 # -*- encoding: utf-8 -*-
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from picklefield.fields import PickledObjectField
-#from apps.filtering.models import Trigger, Filter
 from apps.twitter.models import Tweet
 
 
@@ -40,6 +40,16 @@ class Channel(models.Model):
     # indica quiénes pueden enviar mensajes al canal
     allow_messages = models.SmallIntegerField(choices=ALLOW_CHOICES, default=ALLOW_ALL)
 
+    def save(self, *args, **kwargs):
+        super(Channel, self).save(*args, **kwargs)
+        try:
+            if self.filteringconfig is not None:
+                pass
+        except ObjectDoesNotExist:
+            filtering_config = FilteringConfig(channel=self)
+            filtering_config.save()
+            scheduling_config = SchedulingConfig(channel=self)
+            scheduling_config.save()
 
     def get_last_update(self):
         try:
@@ -116,3 +126,26 @@ class Channel(models.Model):
         return self.filter_set.all()
 
 
+
+class FilteringConfig(models.Model):
+    channel = models.OneToOneField(Channel, parent_link=True)
+    retweets_enabled = models.BooleanField(default=True)
+
+    def __init__(self, *args, **kwargs):
+        channel = kwargs.pop('channel', None)
+        super(FilteringConfig, self).__init__(*args, **kwargs)
+        if channel is not None:
+            self.channel = channel
+            self.save()
+
+
+class SchedulingConfig(models.Model):
+    channel = models.OneToOneField(Channel, parent_link=True)
+    scheduling_enabled = models.BooleanField(default=True)
+
+    def __init__(self, *args, **kwargs):
+        channel = kwargs.pop('channel', None)
+        super(SchedulingConfig, self).__init__(*args, **kwargs)
+        if channel is not None:
+            self.channel = channel
+            self.save()

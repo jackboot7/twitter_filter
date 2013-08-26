@@ -5,7 +5,6 @@ from django.db import models
 # Create your models here.
 from apps.control.models import ScheduleBlock
 
-
 class BlockedUser(models.Model):
     screen_name = models.CharField(max_length=16)
     block_date = models.DateTimeField(auto_now=True)

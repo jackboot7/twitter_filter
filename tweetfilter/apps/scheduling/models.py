@@ -6,6 +6,7 @@ from djcelery.schedulers import ModelEntry
 from apps.accounts.models import Channel
 from apps.control.models import Schedule
 
+
 class ScheduledTweet(Schedule):
     STATUS_DISABLED = 0
     STATUS_ENABLED = 1

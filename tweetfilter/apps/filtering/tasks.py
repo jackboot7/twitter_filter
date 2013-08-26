@@ -8,7 +8,6 @@ from exceptions import Exception
 from celery import task
 from celery._state import current_task
 from twython.streaming.api import TwythonStreamer
-import apps
 from apps.accounts.models import  Channel
 from apps.control.tasks import DelayedTask
 from apps.filtering.models import BlockedUser, ChannelScheduleBlock
@@ -121,9 +120,6 @@ class ChannelStreamer(TwythonStreamer):
             # Maybe store them for future use.
             pass
 
-
-
-
     def on_error(self, status_code, data):
         print "Error en streaming"
         print status_code
@@ -210,7 +206,7 @@ def filter_pipeline_dm(data, chan):
         is_user_allowed.s(channel=chan) |
         triggers_filter.s(channel=chan) |
         banned_words_filter.s(channel=chan) |
-        delay_retweet.s(channel=chan)).apply_async()  #delayed
+        delay_retweet.s(screen_name=chan.screen_name)).apply_async()  #delayed
     return res
 
 @task(queue="tweets")

@@ -52,10 +52,10 @@ var
                         "<tr class='" + row_class + "' id='channel_row_" + elem.screen_name + "'>"+
                         "<td><a href='/accounts/edit/" + elem.screen_name + "/'>" + elem.screen_name + "</a></td>" +
                         "<td>" + elem.last_tweet + "</td>" +
-                        "<td><a title='" + link_title + "' class='channel_row' id='change_status_" +
+                        /*"<td><a title='" + link_title + "' class='channel_row' id='change_status_" +
                         elem.screen_name + "' href='#'>" +
                         "<span class='label " + label_class + "' id='label_status_"+ elem.screen_name+ "'>" +
-                            elem.status + "</span></a></td>" +
+                            elem.status + "</span></a></td>" + */
                         "<td><a id='delete_channel_" + elem.screen_name +"' class='delete_channel' " +
                         "title='Haga click para eliminar canal' href='#delete_confirm_modal' data-toggle='modal'>" +
                         "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td></tr>");

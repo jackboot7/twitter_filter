@@ -4,11 +4,7 @@ import json
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
-from django.http.response import HttpResponse
 from django.views.generic import DetailView, View, DeleteView
-from django.views.generic.base import View
-from django.views.generic.detail import DetailView
-from django.views.generic.edit import DeleteView
 from apps.accounts.models import Channel
 from apps.control.models import ScheduleBlock
 from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleBlock
