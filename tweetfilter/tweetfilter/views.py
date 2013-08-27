@@ -98,7 +98,7 @@ def test(request):
 
 
 class HomeView(TemplateView):
-    template_name = "home/index.html"
+    template_name = "accounts/index.html"
 
     def get(self, request, *args, **kwargs):
         channels = Channel.objects.all()
@@ -106,7 +106,7 @@ class HomeView(TemplateView):
 
 
 class ChannelAddedView(TemplateView):
-    template_name = "home/index.html"
+    template_name = "accounts/index.html"
 
     def get(self, request, *args, **kwargs):
         channels = Channel.objects.all()

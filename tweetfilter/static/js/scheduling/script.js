@@ -1,10 +1,30 @@
 
 var
 
+    update_scheduling_status = function () {
+        "use strict";
+
+        $.get("/scheduling/check_status/" + $('#current_channel').val(), function (data) {
+            var
+                btn = $('#switch_retweets_btn'),
+                label = $('#switch_retweets_label');
+
+            if(data.result === "enabled"){
+                btn.attr('title', "Haga click para desactivar");
+                label.text("Activo");
+                label.removeClass('label-important').addClass('label-success');
+            }else{
+                btn.attr('title', "Haga click para activar");
+                label.text("Desactivado");
+                label.removeClass('label-success').addClass('label-important');
+            }
+        });
+    },
+
     load_scheduled_post_table = function () {
         "use strict";
 
-        $.get("/scheduled_posts/list/" + $('#current_channel').val(), function (data) {
+        $.get("/scheduling/list/" + $('#current_channel').val(), function (data) {
             $('#scheduled_post_list_tbody').empty();
 
             if (data.length > 0) {
@@ -45,7 +65,7 @@ var
     submit_new_scheduled_post = function () {
         "use strict";
 
-        $.post("/scheduled_posts/add/", {
+        $.post("/scheduling/add/", {
             'text':$.trim($('#scheduled_post_text').val()),
             'time': $('#scheduled_post_timepicker').val(),
             'monday': $('#monday_check').is(':checked') ? 1 : 0,
@@ -157,7 +177,7 @@ $(document).ready(function () {
     });
 
     $('#delete_scheduled_post_confirmed').click(function () {
-        $.post("/scheduled_posts/delete/" + $('#deleting_scheduled_post_id').val(),
+        $.post("/scheduling/delete/" + $('#deleting_scheduled_post_id').val(),
             function (data) {
             if(data.result === "ok") {
                 load_scheduled_post_table();

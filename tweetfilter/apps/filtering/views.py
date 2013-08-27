@@ -12,6 +12,12 @@ from apps.filtering import tasks
 from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleBlock
 
 
+class FilteringDetailView(DetailView):
+    model = Channel
+    template_name = "filtering/index.html"
+    context_object_name = "channel"
+
+
 #==========================
 # Filtering Config
 #==========================

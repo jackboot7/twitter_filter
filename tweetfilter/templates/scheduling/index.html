@@ -18,7 +18,7 @@
                 <a href="#">Seguidores</a>
             </li>-->
             <li id="nav_tab_home">
-                <a href="/accounts/edit/{{ channel.screen_name }}">Retweets automáticos</a>
+                <a href="/filtering/edit/{{ channel.screen_name }}">Retweets automáticos</a>
             </li>
 
             <li class="active">
@@ -43,15 +43,11 @@
     </ul>
 
     <div class="row-fluid">
-        <div class="span3 rounded_box fill_green">
-            <!--El módulo de retweets automáticos está:
-            <a title='Haga click para activar o desactivar' class='channel_row' href='#'>
-                &nbsp;<span class='label label-success' > Activo </span>
-            </a>-->
-            <div class="checkbox">
-                <label><input type="checkbox" checked="checked"> Activar tweets programados</label>
-            </div>
-
+        <div class="span5 rounded_box fill_white">
+            El módulo de tweets programados está:
+            <a class="no_decoration" id="switch_scheduling_btn" title='' href='#'>
+                &nbsp;<span id="switch_scheduling_label" class='label' ></span>
+            </a>
         </div>
     </div>
 
@@ -164,7 +160,7 @@
 {% endblock %} <!-- endblock section_body -->
 
 {% block page_scripts %}
-    <script type="text/javascript" src="{{ STATIC_URL }}js/accounts/scheduled_posts.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/scheduling/script.js"></script>
 {% endblock %}
 
 {% block modal_header %}

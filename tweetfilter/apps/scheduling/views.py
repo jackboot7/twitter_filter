@@ -116,5 +116,5 @@ class ScheduledTweetkEditView(CsrfExemptMixin, JSONResponseMixin,
 
 class ScheduledPostsDetailView(DetailView):
     model = Channel
-    template_name = "accounts/scheduled_posts.html"
+    template_name = "scheduling/index.html"
     context_object_name = "channel"

@@ -137,9 +137,3 @@ class ChangeStatusView(CsrfExemptMixin, JSONResponseMixin,
             content_type="application/json")
 
 
-class ChannelDetailView(DetailView):
-    model = Channel
-    template_name = "accounts/index.html"
-    context_object_name = "channel"
-
-
