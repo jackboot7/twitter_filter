@@ -1,7 +1,10 @@
 from django.conf.urls import *
-from apps.filtering.views import TriggerDeleteView, TriggerCreateView, TriggerListView, FilterDeleteView, FilterCreateView, FilterListView, BlockedUserListView, BlockedUserDeleteView, BlockedUserAddView
+from apps.filtering.views import TriggerDeleteView, TriggerCreateView, TriggerListView, FilterDeleteView, FilterCreateView, FilterListView, BlockedUserListView, BlockedUserDeleteView, BlockedUserAddView, CheckStatusView, SwitchStatusView
 
 urlpatterns = patterns('apps.filtering.views',
+
+    url(r'check_status/(?P<pk>\w+)', CheckStatusView.as_view()),
+    url(r'switch_status/(?P<pk>\w+)', SwitchStatusView.as_view()),
 
     url(r'^trigger/list/(?P<pk>\w+)', TriggerListView.as_view()),
     url(r'^trigger/delete/(?P<pk>\w+)', TriggerDeleteView.as_view()),

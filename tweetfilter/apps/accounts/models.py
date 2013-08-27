@@ -33,10 +33,6 @@ class Channel(models.Model):
     # Resultado de la tarea de streaming (necesario para desactivar)
     streaming_task = PickledObjectField()
 
-    # indica si hace retweet de mentions y/o DMs
-    enabled_mentions = models.BooleanField(default=True)
-    enabled_dm = models.BooleanField(default=True)
-
     # indica quiénes pueden enviar mensajes al canal
     allow_messages = models.SmallIntegerField(choices=ALLOW_CHOICES, default=ALLOW_ALL)
 
@@ -126,10 +122,11 @@ class Channel(models.Model):
         return self.filter_set.all()
 
 
-
 class FilteringConfig(models.Model):
     channel = models.OneToOneField(Channel, parent_link=True)
     retweets_enabled = models.BooleanField(default=True)
+    retweet_mentions = models.BooleanField(default=True)
+    retweet_dm = models.BooleanField(default=True)
 
     def __init__(self, *args, **kwargs):
         channel = kwargs.pop('channel', None)

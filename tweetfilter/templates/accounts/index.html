@@ -44,22 +44,16 @@
 <div class="row-fluid">
     <div class="span5 rounded_box fill_white">
         El módulo de retweets automáticos está:
-        {% if channel.filteringconfig.retweets_enabled  %}
-        <a class="no_decoration" title='Haga click para desactivar' href='#'>
-            &nbsp;<span class='label label-success' > Activo </span>
+
+        <a class="no_decoration" id="switch_retweets_btn" title='' href='#'>
+            &nbsp;<span id="switch_retweets_label" class='label' ></span>
         </a>
-        {% else %}
-        <a class="no_decoration" title='Haga click para activar' href='#'>
-            &nbsp;<span class='label label-important' > Inactivo </span>
-        </a>
-        {% endif %}
+
         <!--
         <div class="checkbox">
-            {% if filteringconfig.retweets_enabled %}
+
             <label><input type="checkbox" checked="checked"> Activar retweets automáticos</label>
-            {% else %}
-            <label><input type="checkbox"> Activar retweets automáticos</label>
-            {% endif %}
+
         </div>
         -->
     </div>
@@ -311,6 +305,7 @@
 {% endblock %} <!-- endblock section_body -->
 
 {% block page_scripts %}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/accounts/script.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/accounts/triggers.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/accounts/filters.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/accounts/timeblocks.js"></script>

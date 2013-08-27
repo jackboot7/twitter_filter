@@ -5,9 +5,64 @@ from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.views.generic import DetailView, View, DeleteView
+from django.views.generic.edit import UpdateView
 from apps.accounts.models import Channel
 from apps.control.models import ScheduleBlock
+from apps.filtering import tasks
 from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleBlock
+
+
+#==========================
+# Filtering Config
+#==========================
+class CheckStatusView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Returns filtering module status (is it enabled or disabled?)
+    """
+    model = Channel
+
+    def get_ajax(self, request,  *args, **kwargs):
+        obj = self.get_object()
+
+        if obj.filteringconfig.retweets_enabled:
+            response_data = {'result': "enabled"}
+        else:
+            response_data = {'result': "disabled"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Enables or disables automatic retweets
+    """
+    model = Channel
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        try:
+            if obj.filteringconfig.retweets_enabled:
+                # disable
+                obj.streaming_task.revoke(terminate=True)
+                obj.filteringconfig.retweets_enabled = False
+                obj.filteringconfig.save()
+            else:
+                # enable
+                task = tasks.stream_channel.delay(obj.screen_name)
+                obj.streaming_task = task   # tiene que haber un mejor lugar para guardar el task
+                obj.save()
+                obj.filteringconfig.retweets_enabled = True
+                obj.filteringconfig.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            print " Error in SwitchStatusView: %s" % e
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
 
 
 #==========================
@@ -35,8 +90,7 @@ class TriggerCreateView(CsrfExemptMixin, JSONResponseMixin,
             content_type="application/json")
 
 
-class TriggerListView(CsrfExemptMixin, JSONResponseMixin,
-    AjaxResponseMixin, DetailView):
+class TriggerListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     model = Channel
 
     def get_ajax(self, request, *args, **kwargs):
@@ -90,8 +144,7 @@ class FilterCreateView(CsrfExemptMixin, JSONResponseMixin,
             content_type="application/json")
 
 
-class FilterListView(CsrfExemptMixin, JSONResponseMixin,
-    AjaxResponseMixin, DetailView):
+class FilterListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     model = Channel
 
     def get_ajax(self, request, *args, **kwargs):
@@ -124,8 +177,7 @@ class FilterDeleteView(CsrfExemptMixin, JSONResponseMixin,
 # Blocked users (blacklist)
 #==========================
 
-class BlockedUserListView(CsrfExemptMixin, JSONResponseMixin,
-    AjaxResponseMixin, DetailView):
+class BlockedUserListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     model = Channel
 
     def get_ajax(self, request, *args, **kwargs):
@@ -173,8 +225,7 @@ class BlockedUserAddView(CsrfExemptMixin, JSONResponseMixin,
             content_type="application/json")
 
 
-class TimeBlockListView(CsrfExemptMixin, JSONResponseMixin,
-    AjaxResponseMixin, DetailView):
+class TimeBlockListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     model = Channel
     context_object_name = "timeblock_list"
 

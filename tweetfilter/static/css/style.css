@@ -1,4 +1,5 @@
-.no_decoration:hover, no_decoration:visited, no_decoration:active, no_decoration:after{
+.no_decoration:hover, .no_decoration:visited, .no_decoration:active, .no_decoration:after,
+.no_decoration:focus, .no_decoration:link{
     color: #FFFFFF;
     text-decoration: none;
 }
