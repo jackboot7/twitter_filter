@@ -4,6 +4,7 @@ from django.db import models
 
 # Create your models here.
 from apps.control.models import ScheduleBlock
+from apps.twitter.models import Tweet
 
 class BlockedUser(models.Model):
     screen_name = models.CharField(max_length=16)
@@ -23,6 +24,11 @@ class ChannelScheduleBlock(ScheduleBlock):
     allow_mentions = models.BooleanField(default=True)
     allow_dm = models.BooleanField(default=True)
 
+    def allows(self, type):
+        if type == Tweet.TYPE_MENTION:
+            return self.allow_mentions
+        if type == Tweet.TYPE_DM:
+            return self.allow_dm
 
 class Trigger(models.Model):
     ACTION_RETWEET = 1

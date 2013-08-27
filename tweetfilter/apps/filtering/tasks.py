@@ -32,7 +32,7 @@ class RetweetDelayedTask(DelayedTask):
 
         if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
             # calculate nearest ETA and delay itself until then
-            eta = self.calculate_eta()
+            eta = self.calculate_eta(tweet.type)
             countdown = (eta - datetime.datetime.now()).total_seconds()
             print "Retweet task %s will execute on %s" % (current_task.request.id, eta)
             #print "type of eta = %s" % type(eta)
@@ -44,6 +44,7 @@ class RetweetDelayedTask(DelayedTask):
     def set_channel_id(self, id):
         self.screen_name = id
 
+    """
     def can_execute_now(self):
         blocks = ChannelScheduleBlock.objects.filter(channel=self.screen_name)
         if len(blocks) > 0:
@@ -62,15 +63,19 @@ class RetweetDelayedTask(DelayedTask):
             print "can't execute now"
 
         return result
+    """
 
-    def calculate_eta(self):
+    def calculate_eta(self, tweet_type):
         blocks = ChannelScheduleBlock.objects.filter(channel=self.screen_name)
-        if len(blocks) > 0:
-            eta = blocks[0].next_datetime()
-        else:
+        eta = datetime.datetime.max     # does this even work???
+        #eta = blocks[0].next_datetime()
+        if not len(blocks) > 0:
+            # if there are no blocks, there are no restrictions, execute now.
             eta = datetime.datetime.now()
 
         for block in blocks:
+            if not block.allows(tweet_type):
+                continue
             block_eta = block.next_datetime()
             if block_eta < eta:
                 eta = block_eta
