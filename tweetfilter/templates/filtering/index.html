@@ -88,6 +88,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="span6">
+
                         <table>
                             <tr>
                                 <td><label>Hora de inicio: </label></td>
@@ -103,10 +104,16 @@
                             </tr>
                         </table>
                         <br>
+                        <h5>Permitir:</h5>
+                        <div class="checkbox">
+                            <label><input type="checkbox" id="allow_mentions_check"> Retweet de mentions</label>
+                            <label><input type="checkbox" id="allow_dm_check"> Retweet de DMs (mensajes directos)</label>
+                        </div>
 
                     </div>
-
-                    <div class="span6" id="weekdays_select_div">
+                    <div class="span1"></div>
+                    <div class="span5" id="weekdays_select_div">
+                        <h5>Días de la semana:</h5>
                         <label class="checkbox"><input type="checkbox" id="monday_check"> Lunes</label>
                         <label class="checkbox"><input type="checkbox" id="tuesday_check"> Martes</label>
                         <label class="checkbox"><input type="checkbox" id="wednesday_check"> Miércoles</label>

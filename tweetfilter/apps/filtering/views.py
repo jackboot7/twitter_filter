@@ -290,6 +290,9 @@ class TimeBlockCreateView(CsrfExemptMixin, JSONResponseMixin,
             block.start = datetime.datetime.strptime(request.POST['start'], "%H:%M").time()
             block.end = datetime.datetime.strptime(request.POST['end'], "%H:%M").time()
 
+            block.allow_mentions = True if request.POST['allow_mentions'] == "1" else False
+            block.allow_dm = True if request.POST['allow_dm'] == "1" else False
+
             block.monday = True if request.POST['monday'] == "1" else False
             block.tuesday = True if request.POST['tuesday'] == "1" else False
             block.wednesday = True if request.POST['wednesday'] == "1" else False

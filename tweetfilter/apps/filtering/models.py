@@ -20,6 +20,8 @@ class AllowedUser(models.Model):
 
 class ChannelScheduleBlock(ScheduleBlock):
     channel = models.ForeignKey(Channel)
+    allow_mentions = models.BooleanField(default=True)
+    allow_dm = models.BooleanField(default=True)
 
 
 class Trigger(models.Model):

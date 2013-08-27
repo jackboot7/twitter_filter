@@ -51,6 +51,8 @@ var
         $.post("/filtering/timeblock/add/", {
             'start': $('#start_timepicker').val(),
             'end': $('#end_timepicker').val(),
+            'allow_mentions': $('#allow_mentions_check').is(':checked') ? 1 : 0,
+            'allow_dm': $('#allow_dm_check').is(':checked') ? 1 : 0,
             'monday': $('#monday_check').is(':checked') ? 1 : 0,
             'tuesday': $('#tuesday_check').is(':checked') ? 1 : 0,
             'wednesday': $('#wednesday_check').is(':checked') ? 1 : 0,
@@ -88,6 +90,8 @@ var
 
         $('#start_timepicker').val('');
         $('#end_timepicker').val('');
+        $('#allow_mentions_check').attr('checked', true);
+        $('#allow_dm_check').attr('checked', true);
         check_all_days();
     },
 
