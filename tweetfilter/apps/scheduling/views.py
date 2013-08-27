@@ -7,9 +7,71 @@ from django.http.response import HttpResponse
 from django.views.generic import DetailView
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import DeleteView
+from django.views.generic.edit import DeleteView, UpdateView
 from apps.accounts.models import Channel
 from apps.scheduling.models import ScheduledTweet
+
+
+#==========================
+# Filtering Config
+#==========================
+class CheckStatusView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Returns scheduling module status (is it enabled or disabled?)
+    """
+    model = Channel
+
+    def get_ajax(self, request,  *args, **kwargs):
+        obj = self.get_object()
+
+        if obj.schedulingconfig.scheduling_enabled:
+            response_data = {'result': "enabled"}
+        else:
+            response_data = {'result': "disabled"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Enables or disables automatic retweets
+    """
+    model = Channel
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        try:
+            if obj.schedulingconfig.scheduling_enabled:
+                # disable
+                scheduled_tweets = ScheduledTweet.objects.filter(channel=obj.screen_name)
+                for tweet in scheduled_tweets:
+                    if tweet.status == ScheduledTweet.STATUS_ENABLED:
+                        pt = tweet.periodic_task
+                        pt.enabled = False
+                        pt.save()
+                obj.schedulingconfig.scheduling_enabled = False
+                obj.schedulingconfig.save()
+            else:
+                # enable
+                scheduled_tweets = ScheduledTweet.objects.filter(channel=obj.screen_name)
+                for tweet in scheduled_tweets:
+                    if tweet.status == ScheduledTweet.STATUS_ENABLED:
+                        pt = tweet.periodic_task
+                        pt.enabled = True
+                        pt.save()
+                obj.schedulingconfig.scheduling_enabled = True
+                obj.schedulingconfig.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            print " Error in SwitchStatusView: %s" % e
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
 
 class ScheduledTweetListView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DetailView):

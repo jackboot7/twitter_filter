@@ -1,8 +1,6 @@
 import json
-from celery.schedules import crontab
 from django.db import models
 from djcelery.models import PeriodicTask, CrontabSchedule
-from djcelery.schedulers import ModelEntry
 from apps.accounts.models import Channel
 from apps.control.models import Schedule
 
@@ -36,7 +34,6 @@ class ScheduledTweet(Schedule):
                 task="apps.scheduling.tasks.schedule_tweet",
                 crontab=cron,
                 queue="scheduling",
-                #args=json.dumps([self.channel.screen_name, self.text]))
                 kwargs=json.dumps({'channel_id': self.channel.screen_name,
                                    'text': self.text}))
             ptask.save()
@@ -59,7 +56,6 @@ class ScheduledTweet(Schedule):
         cron.delete()
         ptask.delete()
         #super(ScheduledTweet, self).delete()   # ??????
-
 
     def get_excerpt(self):
         max_chars = 32

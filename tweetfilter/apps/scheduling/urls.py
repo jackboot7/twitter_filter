@@ -1,10 +1,13 @@
 from django.conf.urls import *
-from apps.scheduling.views import ScheduledTweetListView, ScheduledTweetCreateView, ScheduledTweetDeleteView, ScheduledPostsDetailView
+from apps.scheduling.views import ScheduledTweetListView, ScheduledTweetCreateView, ScheduledTweetDeleteView, ScheduledPostsDetailView, SwitchStatusView, CheckStatusView
 
 
 urlpatterns = patterns('apps.scheduling.views',
 
     url(r'^edit/(?P<pk>\w+)', ScheduledPostsDetailView.as_view()),   # module main view
+
+    url(r'check_status/(?P<pk>\w+)', CheckStatusView.as_view()),
+    url(r'switch_status/(?P<pk>\w+)', SwitchStatusView.as_view()),
 
     url(r'^list/(?P<pk>\w+)', ScheduledTweetListView.as_view()),
     url(r'^add', ScheduledTweetCreateView.as_view()),

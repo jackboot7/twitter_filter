@@ -6,8 +6,8 @@ var
 
         $.get("/scheduling/check_status/" + $('#current_channel').val(), function (data) {
             var
-                btn = $('#switch_retweets_btn'),
-                label = $('#switch_retweets_label');
+                btn = $('#switch_scheduling_btn'),
+                label = $('#switch_scheduling_label');
 
             if(data.result === "enabled"){
                 btn.attr('title', "Haga click para desactivar");
@@ -164,8 +164,15 @@ $(document).ready(function () {
     $('#no_scheduled_posts_message').hide();
     $('#weekdays_select_div').show();
 
+    update_scheduling_status();
     clear_add_scheduled_post_form();
     load_scheduled_post_table();
+
+    $('#switch_scheduling_btn').click(function () {
+        $.post("/scheduling/switch_status/" + $('#current_channel').val(), function (data) {
+            update_scheduling_status();
+        });
+    });
 
     $('#scheduled_post_timepicker').timepicker({
         hourText: 'Hora',
