@@ -33,13 +33,16 @@ class RetweetDelayedTask(DelayedTask):
         if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
             # calculate nearest ETA and delay itself until then
             eta = self.calculate_eta(tweet.type)
-            countdown = (eta - datetime.datetime.now()).total_seconds()
-            print "Retweet task %s will execute on %s" % (current_task.request.id, eta)
-            #print "type of eta = %s" % type(eta)
-            retweet.s().apply_async(args=args, kwargs=kwargs, countdown=countdown)
-            return self.run(*args, **kwargs)
+            if eta is None:
+                print "There are no blocks available for %s" % tweet.get_type_display()
+            else:
+                countdown = (eta - datetime.datetime.now()).total_seconds()
+                print "Retweet task %s will execute on %s" % (current_task.request.id, eta)
+                #print "type of eta = %s" % type(eta)
+                retweet.s().apply_async(args=args, kwargs=kwargs, countdown=countdown)
+                return self.run(*args, **kwargs)
         else:
-            pass    # nothing happens, tweet shouldn't be retweeted
+            pass    # nothing happens
 
     def set_channel_id(self, id):
         self.screen_name = id
@@ -79,7 +82,12 @@ class RetweetDelayedTask(DelayedTask):
             block_eta = block.next_datetime()
             if block_eta < eta:
                 eta = block_eta
-        return eta
+
+        if eta == datetime.datetime.max:
+            # time blocks found didn't allow tweet_type (dm or mention)
+            return None
+        else:
+            return eta
 
 
 class ChannelStreamer(TwythonStreamer):

@@ -125,6 +125,7 @@ class ScheduleBlock(models.Model):
                 next = day
                 break
         else:
+            # available days for this week are over, return first day of next week
             next = list[0]
         return next
 
@@ -134,26 +135,41 @@ class ScheduleBlock(models.Model):
         """
         now = datetime.datetime.now()
         today = now.weekday()
-        if self.has_datetime(now):
-            # if now is inside the timeblock
-            return now
+        available_days = self.days_of_week_list()
+
+        if today in available_days:
+            if self.start <= now.time() < self.end:
+                # It's now
+                return now
+            if now.time() < self.start:
+                # It's later today
+                return datetime.datetime(
+                    year=now.year,
+                    month=now.month,
+                    day=today,
+                    hour=self.start.hour,
+                    minute=self.start.minute)
+
+        # calculate which is the next available weekday (0-6)
+        cursor = 0 if today == 6 else today + 1
+        while True:
+            if cursor in available_days:
+                break
+            cursor = 0 if cursor == 6 else cursor + 1
+
+        # calculate how many days from now until next available date
+        if cursor > today:
+            days_delta = cursor - today
         else:
-            # calculate how many days until next available date
-            next_day = self.get_next_weekday()
-            if next_day > today:
-                days_delta = next_day - today
-            elif next_day == today:
-                days_delta = 0
-            else:
-                days_delta = (7 - today) + next_day
+            days_delta = (7 - today) + cursor
 
-            # calculate complete datetime until next available date
-            next_date = now + datetime.timedelta(days=days_delta)
-            next_datetime = datetime.datetime(
-                year=next_date.year,
-                month=next_date.month,
-                day=next_date.day,
-                hour=self.start.hour,
-                minute=self.start.minute)
+        # calculate complete datetime of next schedule start
+        next_date = now + datetime.timedelta(days=days_delta)
+        next_datetime = datetime.datetime(
+            year=next_date.year,
+            month=next_date.month,
+            day=next_date.day,
+            hour=self.start.hour,
+            minute=self.start.minute)
 
-            return next_datetime
+        return next_datetime
