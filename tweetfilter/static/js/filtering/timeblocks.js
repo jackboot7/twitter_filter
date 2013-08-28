@@ -97,13 +97,18 @@ var
 
     validate_add_timeblock_form = function () {
         "use strict";
-        if($('#start_timepicker').val() == "" || $('#end_timepicker').val() == ""){
+        if($('#start_timepicker').val() == "" || $('#end_timepicker').val() == "") {
             alert("Debe ingresar los tiempos de inicio y fin");
             return false;
         }
 
-        if ($('#start_timepicker').val() >= $('#end_timepicker').val()){
+        if($('#start_timepicker').val() >= $('#end_timepicker').val()) {
             alert("El tiempo de inicio debe ser menor al tiempo de fin");
+            return false;
+        }
+
+        if(!$('#allow_mentions_check').is(":checked") && !$('#allow_dm_check').is(":checked")) {
+            alert("Debe seleccionar al menos un tipo de mensaje (mentions o DM)");
             return false;
         }
 

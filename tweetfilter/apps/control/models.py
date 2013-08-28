@@ -157,7 +157,7 @@ class ScheduleBlock(models.Model):
                 break
             cursor = 0 if cursor == 6 else cursor + 1
 
-        # calculate how many days from now until next available date
+        # calculate how many days from now until next available day
         if cursor > today:
             days_delta = cursor - today
         else:
