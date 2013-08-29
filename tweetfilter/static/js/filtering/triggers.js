@@ -48,10 +48,11 @@ var
                 'trigger_text': trigger_text,
                 'trigger_channel': $('#current_channel').val()
             }, function (data) {
-
-                $('#add_trigger_text').val("");
                 if(data.result === "ok") {
+                    $('#add_trigger_text').val("");
                     load_trigger_table();
+                }else if(data.result === "duplicate"){
+                    alert("La palabra introducida ya existe en la lista");
                 }else{
                     trigger_add_error(data.result);
                 }

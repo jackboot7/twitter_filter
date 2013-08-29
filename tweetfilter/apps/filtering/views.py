@@ -82,12 +82,18 @@ class TriggerCreateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
 
         try:
-            chan = Channel.objects.filter(screen_name=request.POST['trigger_channel'])[0]
-            trigger = Trigger()
-            trigger.text = request.POST['trigger_text']
-            trigger.channel = chan
-            trigger.save()
-            response_data = {'result': "ok"}
+            triggers = Trigger.objects.filter(channel=request.POST['trigger_channel'])
+            for tr in triggers:
+                if tr.equals(request.POST['trigger_text']):
+                    response_data = {'result': "duplicate"}
+                    break
+            else:
+                chan = Channel.objects.filter(screen_name=request.POST['trigger_channel'])[0]
+                trigger = Trigger()
+                trigger.text = request.POST['trigger_text']
+                trigger.channel = chan
+                trigger.save()
+                response_data = {'result': "ok"}
         except Exception, e:
             print "Error al crear trigger: %s" % e
             response_data = {'result': e}
@@ -136,12 +142,18 @@ class FilterCreateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
 
         try:
-            chan = Channel.objects.filter(screen_name=request.POST['filter_channel'])[0]
-            filter = Filter()
-            filter.text = request.POST['filter_text']
-            filter.channel = chan
-            filter.save()
-            response_data = {'result': "ok"}
+            filters = Filter.objects.filter(channel=request.POST['filter_channel'])
+            for fl in filters:
+                if fl.equals(request.POST['filter_text']):
+                    response_data = {'result': "duplicate"}
+                    break
+            else:
+                chan = Channel.objects.filter(screen_name=request.POST['filter_channel'])[0]
+                filter = Filter()
+                filter.text = request.POST['filter_text']
+                filter.channel = chan
+                filter.save()
+                response_data = {'result': "ok"}
         except Exception, e:
             print "Error al crear filter: %s" % e
             response_data = {'result': e}

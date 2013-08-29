@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 import datetime
 from django.conf import settings
 import re
@@ -13,8 +12,6 @@ from apps.control.tasks import DelayedTask
 from apps.filtering.models import BlockedUser, ChannelScheduleBlock
 from apps.twitter.api import ChannelAPI, Twitter
 from apps.twitter.models import Tweet
-
-from unidecode import unidecode
 
 
 class RetweetDelayedTask(DelayedTask):
@@ -160,10 +157,7 @@ def triggers_filter(tweet, channel):
         triggers = channel.get_triggers()
         try:
             for tr in triggers:
-
-                word = unidecode(tr.text.lower())  # hace match con la palabra rodeada de espacios
-                if word in unidecode(tweet.text.lower()):
-
+                if tr.occurs_in(tweet.text):
                     tweet.status = Tweet.STATUS_TRIGGERED
                     tweet.save()
                     print "Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, word)
@@ -181,13 +175,11 @@ def triggers_filter(tweet, channel):
 
 @task(queue="tweets")
 def banned_words_filter(tweet, channel):
-    from unidecode import unidecode
     filters = channel.get_filters()
     if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
         try:
             for filter in filters:
-                word = unidecode(filter.text.lower())
-                if word in unidecode(tweet.text.lower()):
+                if filter.occurs_in(tweet.text):
                     tweet.status = Tweet.STATUS_BLOCKED
                     tweet.save()
                     print "Blocked #%s (found the word '%s')" % (tweet.tweet_id, word)

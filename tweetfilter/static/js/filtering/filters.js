@@ -49,10 +49,11 @@ var
                 'filter_text': filter_text,
                 'filter_channel': $('#current_channel').val()
             }, function (data) {
-
-                $('#add_filter_text').val("");
                 if(data.result === "ok") {
+                    $('#add_filter_text').val("");
                     load_filter_table();
+                }else if(data.result === "duplicate"){
+                    alert("La palabra introducida ya existe en la lista");
                 }else{
                     filter_add_error(data.result);
                 }

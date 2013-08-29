@@ -1,4 +1,5 @@
 import django.db.models
+from unidecode import unidecode
 from apps.accounts.models import Channel
 from django.db import models
 
@@ -30,21 +31,34 @@ class ChannelScheduleBlock(ScheduleBlock):
         if type == Tweet.TYPE_DM:
             return self.allow_dm
 
-class Trigger(models.Model):
+
+class Keyword(models.Model):
+    text = models.CharField(max_length=32)
+
+    def equals(self, other_text):
+        return unidecode(self.text.lower()) == unidecode(other_text.lower())
+
+    def occurs_in(self, string):
+        # THIS NEEDS TO BE FIXED
+        # string should be "parsed" (splitted in relationship to spaces and punctuation signs) and compare each _word_
+        return unidecode(self.text.lower()) in unidecode(string.lower())
+
+
+class Trigger(Keyword):
     ACTION_RETWEET = 1
 
     ACTION_CHOICES = (
         (ACTION_RETWEET, "Retweet"),
     )
 
-    text = models.CharField(max_length=32)
+    #text = models.CharField(max_length=32)
     action = models.IntegerField(choices=ACTION_CHOICES, default=ACTION_RETWEET)
     channel = models.ForeignKey(Channel)
     enabled_mentions = models.BooleanField(default=True)
     enabled_dm = models.BooleanField(default=True)
 
 
-class Filter(models.Model):
+class Filter(Keyword):
     ACTION_BLOCK_TWEET = 1
     ACTION_BLOCK_USER = 2
 
@@ -53,7 +67,7 @@ class Filter(models.Model):
         (ACTION_BLOCK_USER, "Bloquear usuario"),
         )
 
-    text = models.CharField(max_length=32)
+    #text = models.CharField(max_length=32)
     action = models.SmallIntegerField(choices=ACTION_CHOICES, default=ACTION_BLOCK_TWEET)
     channel = models.ForeignKey(Channel)
     enabled_mentions = models.BooleanField(default=True)
