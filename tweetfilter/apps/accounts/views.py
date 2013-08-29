@@ -79,10 +79,14 @@ class ChannelListView(JSONResponseMixin, AjaxResponseMixin, ListView):
 
         for channel in objs:
             last_tweet = channel.get_last_update()
-            excerpt = last_tweet.get_excerpt() if last_tweet is not None else ""
+            #excerpt = last_tweet.get_excerpt() if last_tweet is not None else ""
+            retweets = channel.filteringconfig.retweets_enabled
+            scheduling = channel.schedulingconfig.scheduling_enabled
+
             json_list.append({
                 'screen_name': channel.screen_name,
-                'last_tweet': excerpt,
+                'filtering': u"Sí" if retweets else u"No",
+                'scheduling': u"Sí" if scheduling else u"No",
                 'status' : channel.get_status_display()
             })
 
