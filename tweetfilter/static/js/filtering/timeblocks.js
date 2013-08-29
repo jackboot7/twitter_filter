@@ -16,9 +16,9 @@ var
 
                     $('#timeblock_list_tbody').append(
                         "<tr>" +
-                            "<td>" + elem.start + "</td>" +
-                            "<td>" + elem.end + "</td>" +
+                            "<td>" + elem.time + "</td>" +
                             "<td>" + elem.days + "</td>" +
+                            "<td>" + elem.allows + "</td>" +
                             "<td><a id='delete_timeblock_" + elem.id +"' class='delete_filter' " +
                             "title='Haga click para eliminar filtro' href='#delete_timeblock_confirm_modal' data-toggle='modal'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td>" +

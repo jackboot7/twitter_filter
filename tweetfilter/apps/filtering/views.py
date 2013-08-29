@@ -241,6 +241,8 @@ class TimeBlockListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
 
         for timeblock in objs:
             dias = ""
+            allows = ""
+
             if timeblock.monday:
                 dias = "Lun "
             if timeblock.tuesday:
@@ -258,12 +260,18 @@ class TimeBlockListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
             if len(dias) == 28:
                 dias = "Todos"
 
+            if timeblock.allow_dm:
+                allows = "DM"
+                if timeblock.allow_mentions:
+                    allows += " y Mentions"
+            else:
+                allows = "Mentions"
+
             json_list.append({
                 'id': timeblock.id,
-                'start': timeblock.start,
-                'end': timeblock.end,
-                'days': dias
-                #'days' : ????
+                'time': "%s - %s" % (timeblock.start, timeblock.end),
+                'days': dias,
+                'allows' : allows
             })
 
         return self.render_json_response(json_list)
