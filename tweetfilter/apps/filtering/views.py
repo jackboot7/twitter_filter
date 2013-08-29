@@ -100,7 +100,7 @@ class TriggerListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     model = Channel
 
     def get_ajax(self, request, *args, **kwargs):
-        objs = Trigger.objects.filter(channel=self.get_object())
+        objs = Trigger.objects.filter(channel=self.get_object()).order_by("text")
 
         json_list = []
         for trigger in objs:
@@ -154,7 +154,7 @@ class FilterListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     model = Channel
 
     def get_ajax(self, request, *args, **kwargs):
-        objs = Filter.objects.filter(channel=self.get_object())
+        objs = Filter.objects.filter(channel=self.get_object()).order_by("text")
 
         json_list = []
         for trigger in objs:
@@ -187,7 +187,7 @@ class BlockedUserListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     model = Channel
 
     def get_ajax(self, request, *args, **kwargs):
-        objs = BlockedUser.objects.filter(channel=self.get_object())
+        objs = BlockedUser.objects.filter(channel=self.get_object()).order_by("screen_name")
 
         json_list = []
         for user in objs:
@@ -269,7 +269,7 @@ class TimeBlockListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
 
             json_list.append({
                 'id': timeblock.id,
-                'time': "%s - %s" % (timeblock.start, timeblock.end),
+                'time': "%s - %s" % (timeblock.start.strftime("%H:%M"), timeblock.end.strftime("%H:%M")),
                 'days': dias,
                 'allows' : allows
             })
