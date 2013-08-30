@@ -223,21 +223,27 @@ class BlockedUserDeleteView(CsrfExemptMixin, JSONResponseMixin,
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
 
-class BlockedUserAddView(CsrfExemptMixin, JSONResponseMixin,
+class BlockedUserCreateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
     model = BlockedUser
 
     def post_ajax(self, request, *args, **kwargs):
-        try:
-            chan = Channel.objects.filter(screen_name=request.POST['blocked_user_channel'])[0]
-            user = BlockedUser()
-            user.screen_name = request.POST['blocked_user_name']
-            user.channel = chan
-            user.save()
-            response_data = {'result': "ok"}
-        except Exception, e:
-            print "Error al bloquear usuario: %s" % e
-            response_data = {'result': e}
+        blocked_users = BlockedUser.objects.filter(channel=request.POST['blocked_user_channel'])
+        for bo in blocked_users:
+            if bo.screen_name.lower() == request.POST['blocked_user_name'].lower():
+                response_data = {'result': "duplicate"}
+                break
+        else:
+            try:
+                chan = Channel.objects.filter(screen_name=request.POST['blocked_user_channel'])[0]
+                user = BlockedUser()
+                user.screen_name = request.POST['blocked_user_name']
+                user.channel = chan
+                user.save()
+                response_data = {'result': "ok"}
+            except Exception, e:
+                print "Error al bloquear usuario: %s" % e
+                response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")

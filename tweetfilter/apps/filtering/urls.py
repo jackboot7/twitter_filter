@@ -1,5 +1,5 @@
 from django.conf.urls import *
-from apps.filtering.views import TriggerDeleteView, TriggerCreateView, TriggerListView, FilterDeleteView, FilterCreateView, FilterListView, BlockedUserListView, BlockedUserDeleteView, BlockedUserAddView, CheckStatusView, SwitchStatusView, FilteringDetailView, TimeBlockDeleteView, TimeBlockCreateView, TimeBlockListView
+from apps.filtering.views import *
 
 urlpatterns = patterns('apps.filtering.views',
 
@@ -22,5 +22,5 @@ urlpatterns = patterns('apps.filtering.views',
 
     url(r'^blocked_user/list/(?P<pk>\w+)', BlockedUserListView.as_view()),
     url(r'^blocked_user/delete/(?P<pk>\w+)', BlockedUserDeleteView.as_view()),
-    url(r'^blocked_user/add', BlockedUserAddView.as_view()),
+    url(r'^blocked_user/add', BlockedUserCreateView.as_view()),
 )
