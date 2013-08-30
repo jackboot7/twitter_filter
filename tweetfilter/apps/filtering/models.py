@@ -41,7 +41,8 @@ class Keyword(models.Model):
     def occurs_in(self, string):
         # THIS NEEDS TO BE FIXED
         # string should be "parsed" (splitted in relationship to spaces and punctuation signs) and compare each _word_
-        return unidecode(self.text.lower()) in unidecode(string.lower())
+        words = "".join((char if char.isalpha() else " ") for char in unidecode(string.lower())).split()
+        return unidecode(self.text.lower()) in words
 
 
 class Trigger(Keyword):
