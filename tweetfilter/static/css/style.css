@@ -50,3 +50,7 @@
 .td_right_padding{
     padding-right: 8px;
 }
+
+.scrollable {
+    max-height: 300px;
+}

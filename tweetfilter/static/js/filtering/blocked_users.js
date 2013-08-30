@@ -26,6 +26,7 @@ var
                         $('#deleting_blocked_user_id').val(elem.id);
                     });
                 });
+                $('#blocked_user_list_div').slimscroll();
             }else{
                 $('#blocked_user_list_table').hide();
                 $('#no_blocked_users_message').show();

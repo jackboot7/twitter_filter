@@ -31,6 +31,7 @@ var
 
                 });
                 $('#timeblock_list').show();
+                $('#timeblock_list_div').slimscroll();
             }else{
                 $('#timeblock_list').hide();
                 $('#no_timeblocks_message').show();

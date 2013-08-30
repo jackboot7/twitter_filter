@@ -60,17 +60,19 @@
             <div id="timeblock_list">
                 <span>El canal publicará automáticamente en los siguientes horarios:</span>
 
-                <table class="table" id="timeblock_list_table">
-                    <thead>
-                        <tr>
-                            <th>Horario</th><th>Días</th><th>DM/Mentions</th><th>Eliminar</th>
-                        </tr>
-                    </thead>
-                    <tbody id="timeblock_list_tbody">
+                <div id="timeblock_list_div" class="scrollable">
+                    <table class="table" id="timeblock_list_table">
+                        <thead>
+                            <tr>
+                                <th>Horario</th><th>Días</th><th>DM/Mentions</th><th>Eliminar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timeblock_list_tbody">
 
-                    </tbody>
+                        </tbody>
 
-                </table>
+                    </table>
+                </div>
             </div>
 
             <span id="no_timeblocks_message">
@@ -152,18 +154,19 @@
 
         <div class="rounded_box fill_red">
             <h4>Usuarios bloqueados</h4>
-
-            <table class="table" id="blocked_user_list_table">
-                <thead>
-                <tr>
-                    <th>Nombre de usuario</th>
-                    <!--<th>Acción</th>-->
-                    <th>Eliminar</th>
-                </tr>
-                </thead>
-                <tbody id="blocked_user_list_tbody">
-                </tbody>
-            </table>
+            <div class="scrollable" id="blocked_user_list_div">
+                <table class="table" id="blocked_user_list_table">
+                    <thead>
+                    <tr>
+                        <th>Nombre de usuario</th>
+                        <!--<th>Acción</th>-->
+                        <th>Eliminar</th>
+                    </tr>
+                    </thead>
+                    <tbody id="blocked_user_list_tbody">
+                    </tbody>
+                </table>
+            </div>
 
             <span id="no_blocked_users_message">No hay usuarios bloqueados en el canal</span> <br><br>
 
@@ -198,18 +201,19 @@
         <div class="rounded_box fill_gray">
             <h4>Disparadores</h4>
 
-            <table class="table" id="trigger_list_table">
-                <thead>
-                    <tr>
-                        <th>Texto</th>
-                        <!--<th>Acción</th>-->
-                        <th>Eliminar</th>
-                    </tr>
-                </thead>
-                <tbody id="trigger_list_tbody">
-                </tbody>
-            </table>
-
+            <div class="scrollable" id="trigger_list_div">
+                <table class="table" id="trigger_list_table">
+                    <thead>
+                        <tr>
+                            <th>Texto</th>
+                            <!--<th>Acción</th>-->
+                            <th>Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trigger_list_tbody">
+                    </tbody>
+                </table>
+            </div>
             <span id="no_triggers_message">No hay disparadores asociados al canal</span> <br><br>
 
             <table><tr>
@@ -240,17 +244,19 @@
         <div class="rounded_box fill_gray">
             <h4>Frases no permitidas</h4>
 
-            <table class="table" id="filter_list_table">
-                <thead>
-                <tr>
-                    <th>Texto</th>
-                    <!--<th>Acción</th>-->
-                    <th>Eliminar</th>
-                </tr>
-                </thead>
-                <tbody id="filter_list_tbody">
-                </tbody>
-            </table>
+            <div class="scrollable" id="filter_list_div">
+                <table class="table" id="filter_list_table">
+                    <thead>
+                    <tr>
+                        <th>Texto</th>
+                        <!--<th>Acción</th>-->
+                        <th>Eliminar</th>
+                    </tr>
+                    </thead>
+                    <tbody id="filter_list_tbody">
+                    </tbody>
+                </table>
+            </div>
 
             <span id="no_filters_message">No hay filtros asociados al canal</span> <br><br>
 

@@ -39,8 +39,6 @@ class Keyword(models.Model):
         return unidecode(self.text.lower()) == unidecode(other_text.lower())
 
     def occurs_in(self, string):
-        # THIS NEEDS TO BE FIXED
-        # string should be "parsed" (splitted in relationship to spaces and punctuation signs) and compare each _word_
         words = "".join((char if char.isalpha() else " ") for char in unidecode(string.lower())).split()
         return unidecode(self.text.lower()) in words
 

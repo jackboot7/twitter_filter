@@ -25,6 +25,8 @@ var
                         $('#deleting_trigger_id').val(elem.id);
                     });
                 });
+
+                $('#trigger_list_div').slimscroll();
             }else{
                 $('#trigger_list_table').hide();
                 $('#no_triggers_message').show();
