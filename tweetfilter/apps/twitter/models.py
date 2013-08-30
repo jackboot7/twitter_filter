@@ -43,3 +43,12 @@ class Tweet(models.Model):
         max_chars = 32
         date_time = self.date_time.strftime('%d/%m/%y %H:%M:%S')
         return "%s %s..." % (date_time, self.retweeted_text[0:max_chars])
+
+    def __unicode__(self):
+        return "#%s (%s) from %s to %s: \"%s\"" % (
+            self.tweet_id,
+            self.get_type_display(),
+            self.screen_name,
+            self.mention_to,
+            self.text
+            )

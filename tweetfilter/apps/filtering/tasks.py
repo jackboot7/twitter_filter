@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import json
 from django.conf import settings
 import re
 from exceptions import Exception
@@ -34,7 +35,8 @@ class RetweetDelayedTask(DelayedTask):
                 print "There are no blocks available for %s" % tweet.get_type_display()
             else:
                 countdown = (eta - datetime.datetime.now()).total_seconds()
-                print "Retweet task %s will execute on %s" % (current_task.request.id, eta)
+                if countdown > 1:
+                    print "Tweet %s has been DELAYED until %s" % (tweet.tweet_id, eta)
                 #print "type of eta = %s" % type(eta)
                 retweet.s().apply_async(args=args, kwargs=kwargs, countdown=countdown)
                 return self.run(*args, **kwargs)
@@ -44,26 +46,6 @@ class RetweetDelayedTask(DelayedTask):
     def set_channel_id(self, id):
         self.screen_name = id
 
-    """
-    def can_execute_now(self):
-        blocks = ChannelScheduleBlock.objects.filter(channel=self.screen_name)
-        if len(blocks) > 0:
-            result = False
-        else:
-            result = True
-
-        now = datetime.datetime.now()
-        for block in blocks:
-            if block.has_datetime(now):
-                result = True
-
-        if result:
-            print "can execute"
-        else:
-            print "can't execute now"
-
-        return result
-    """
 
     def calculate_eta(self, tweet_type):
         blocks = ChannelScheduleBlock.objects.filter(channel=self.screen_name)
@@ -107,12 +89,13 @@ class ChannelStreamer(TwythonStreamer):
 
     def on_success(self, data):
         # stores mentions and DMs only
-        print ""
-        print ""
-        print ""
-        print "new data from twitter!"
-        print "data = %s" % data
 
+        """
+        print "new data from twitter!"
+        print "data = %s" % json.dumps(data, sort_keys=True, indent=3)
+        print ""
+        print ""
+        # """
         self.handle_data(data)
 
     def handle_data(self, data):
@@ -122,7 +105,6 @@ class ChannelStreamer(TwythonStreamer):
         elif 'text' in data:
             for mention in data['entities']['user_mentions']:
                 if self.channel.screen_name.lower() == mention['screen_name'].lower():
-                    print "\nGot Mention!!!\n"
                     # Invokes subtask chain for storing and retweeting
                     res = filter_pipeline.apply_async([data, self.channel])
         else:
@@ -160,7 +142,7 @@ def triggers_filter(tweet, channel):
                 if tr.occurs_in(tweet.text):
                     tweet.status = Tweet.STATUS_TRIGGERED
                     tweet.save()
-                    print "Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, word)
+                    print "Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, tr.text)
                     break
             else:
                 print "Marked #%s as NOT TRIGGERED" % tweet.tweet_id
@@ -182,7 +164,7 @@ def banned_words_filter(tweet, channel):
                 if filter.occurs_in(tweet.text):
                     tweet.status = Tweet.STATUS_BLOCKED
                     tweet.save()
-                    print "Blocked #%s (found the word '%s')" % (tweet.tweet_id, word)
+                    print "Blocked #%s (found the word '%s')" % (tweet.tweet_id, filter.text)
                     break
             else:
                 tweet.status = Tweet.STATUS_APPROVED
@@ -264,7 +246,9 @@ def store_tweet(data, channel_id):
         tweet.mention_to = channel_id
         tweet.type = Tweet.TYPE_MENTION
         tweet.save()
-        print "stored tweet %s as PENDING" % data['id']
+        print tweet
+        #print "stored tweet %s as PENDING" % data['id']
+        print ""
         return tweet
 
     except Exception, e:
@@ -284,7 +268,9 @@ def store_dm(dm):
         tweet.mention_to = data['recipient_screen_name']
         tweet.type = Tweet.TYPE_DM
         tweet.save()
-        print "stored dm %s as PENDING" % data['id']
+        print tweet
+        #print "stored dm %s as PENDING" % data['id']
+        print ""
         return tweet
     except Exception, e:
         print "Error trying to save dm #%s: %s" % (data['id'], e)
