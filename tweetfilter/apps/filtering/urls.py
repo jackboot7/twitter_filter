@@ -1,6 +1,7 @@
 from django.conf.urls import *
 from apps.filtering.views import *
 
+
 urlpatterns = patterns('apps.filtering.views',
 
     url(r'edit/(?P<pk>\w+)', FilteringDetailView.as_view()),    # module main view
@@ -11,6 +12,7 @@ urlpatterns = patterns('apps.filtering.views',
     url(r'^timeblock/list/(?P<pk>\w+)', TimeBlockListView.as_view()),
     url(r'^timeblock/add/', TimeBlockCreateView.as_view()),
     url(r'^timeblock/delete/(?P<pk>\w+)', TimeBlockDeleteView.as_view()),
+    url(r'^timeblock/update/(?P<pk>\w+)', TimeBlockUpdateView.as_view()),
 
     url(r'^trigger/list/(?P<pk>\w+)', TriggerListView.as_view()),
     url(r'^trigger/delete/(?P<pk>\w+)', TriggerDeleteView.as_view()),

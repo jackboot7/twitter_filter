@@ -82,9 +82,10 @@
             <a id="add_timeblock_btn" href="#add_timeblock_modal" class="btn btn-primary btn-small" data-toggle='modal'>Agregar horario</a>
 
             <div id="add_timeblock_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <input type="hidden" id="editing_timeblock_id">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h3>
+                    <h3 id="timeblock_modal_title">
                         Añadir horario
                     </h3>
                 </div>

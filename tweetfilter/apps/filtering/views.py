@@ -288,8 +288,19 @@ class TimeBlockListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
             json_list.append({
                 'id': timeblock.id,
                 'time': "%s - %s" % (timeblock.start.strftime("%H:%M"), timeblock.end.strftime("%H:%M")),
+                'start': timeblock.start.strftime("%H:%M"),
+                'end': timeblock.end.strftime("%H:%M"),
                 'days': dias,
-                'allows' : allows
+                'allows': allows,
+                'monday': timeblock.monday,
+                'tuesday': timeblock.tuesday,
+                'wednesday': timeblock.wednesday,
+                'thursday': timeblock.thursday,
+                'friday': timeblock.friday,
+                'saturday': timeblock.saturday,
+                'sunday': timeblock.sunday,
+                'allow_dm': timeblock.allow_dm,
+                'allow_mentions': timeblock.allow_mentions
             })
 
         return self.render_json_response(json_list)
@@ -304,14 +315,6 @@ class TimeBlockCreateView(CsrfExemptMixin, JSONResponseMixin,
         try:
             chan = Channel.objects.filter(screen_name=request.POST['timeblock_channel'])[0]
             block = ChannelScheduleBlock()
-
-            print "monday = %s" % request.POST['monday']
-            print "tuesday = %s" % request.POST['tuesday']
-            print "wednesday = %s" % request.POST['wednesday']
-            print "thursday = %s" % request.POST['thursday']
-            print "friday = %s" % request.POST['friday']
-            print "saturday = %s" % request.POST['saturday']
-            print "sunday = %s" % request.POST['sunday']
 
             block.start = datetime.datetime.strptime(request.POST['start'], "%H:%M").time()
             block.end = datetime.datetime.strptime(request.POST['end'], "%H:%M").time()
@@ -340,13 +343,41 @@ class TimeBlockCreateView(CsrfExemptMixin, JSONResponseMixin,
 
 class TimeBlockDeleteView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DeleteView):
-    model = ScheduleBlock
+    model = ScheduleBlock   # ChannelScheduleBlock # ????
     success_url = "/"
 
     def post_ajax(self, request, *args, **kwargs):
         #obj = self.get_object()
         self.delete(request)
         response_data = {'result': "ok"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+class TimeBlockUpdateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = ChannelScheduleBlock
+
+    def post_ajax(self, request, *args, **kwargs):
+        block = self.get_object()
+        try:
+            block.start = datetime.datetime.strptime(request.POST['start'], "%H:%M").time()
+            block.end = datetime.datetime.strptime(request.POST['end'], "%H:%M").time()
+
+            block.allow_mentions = True if request.POST['allow_mentions'] == "1" else False
+            block.allow_dm = True if request.POST['allow_dm'] == "1" else False
+            block.monday = True if request.POST['monday'] == "1" else False
+            block.tuesday = True if request.POST['tuesday'] == "1" else False
+            block.wednesday = True if request.POST['wednesday'] == "1" else False
+            block.thursday = True if request.POST['thursday'] == "1" else False
+            block.friday = True if request.POST['friday'] == "1" else False
+            block.saturday = True if request.POST['saturday'] == "1" else False
+            block.sunday = True if request.POST['sunday'] == "1" else False
+
+            block.save()
+            response_data = {'result': "ok"}
+        except Exception, e:
+            response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")

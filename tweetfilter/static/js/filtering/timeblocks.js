@@ -1,6 +1,31 @@
 
 var
 
+    edit_timeblock = function (timeblock) {
+        "use strict";
+
+        //alert(JSON.stringify(timeblock));
+        $('#timeblock_modal_title').text("Editar horario");
+        $('#editing_timeblock_id').val(timeblock.id);
+
+        $('#start_timepicker').val(timeblock.start);
+        $('#end_timepicker').val(timeblock.end);
+        /*
+        $('checkbox').each(function (index) {
+            $(this).removeAttr('checked');
+        });*/
+
+        $('#allow_mentions_check').attr('checked', timeblock.allow_mentions);
+        $('#allow_dm_check').attr('checked', timeblock.allow_dm);
+        $('#monday_check').attr('checked', timeblock.monday);
+        $('#tuesday_check').attr('checked', timeblock.tuesday);
+        $('#wednesday_check').attr('checked', timeblock.wednesday);
+        $('#thursday_check').attr('checked', timeblock.thursday);
+        $('#friday_check').attr('checked', timeblock.friday);
+        $('#saturday_check').attr('checked', timeblock.saturday);
+        $('#sunday_check').attr('checked', timeblock.sunday);
+    },
+
     load_timeblock_table = function () {
         "use strict";
 
@@ -16,7 +41,7 @@ var
 
                     $('#timeblock_list_tbody').append(
                         "<tr>" +
-                            "<td>" + elem.time + "</td>" +
+                            "<td><a id='edit_timeblock_" + elem.id + "' href='#add_timeblock_modal' data-toggle='modal'>" + elem.time + "</a></td>" +
                             "<td>" + elem.days + "</td>" +
                             "<td>" + elem.allows + "</td>" +
                             "<td><a id='delete_timeblock_" + elem.id +"' class='delete_filter' " +
@@ -25,10 +50,13 @@ var
                             "</tr>"
                     );
 
+                    $('#edit_timeblock_' + elem.id).click(function () {
+                        edit_timeblock(elem);
+                    });
+
                     $('#delete_timeblock_' + elem.id).click(function () {
                         $('#deleting_timeblock_id').val(elem.id);
                     });
-
                 });
                 $('#timeblock_list').show();
                 $('#timeblock_list_div').slimscroll();
@@ -46,10 +74,18 @@ var
         $('#alert_warning').show();
     },
 
-    submit_new_timeblock = function () {
+    submit_timeblock = function () {
         "use strict";
 
-        $.post("/filtering/timeblock/add/", {
+        var url;
+
+        if ($('#editing_timeblock_id').val() == "") {
+            url = "/filtering/timeblock/add/";
+        }else{
+            url = "/filtering/timeblock/update/" + $('#editing_timeblock_id').val();
+        }
+
+        $.post(url, {
             'start': $('#start_timepicker').val(),
             'end': $('#end_timepicker').val(),
             'allow_mentions': $('#allow_mentions_check').is(':checked') ? 1 : 0,
@@ -61,7 +97,7 @@ var
             'friday': $('#friday_check').is(':checked') ? 1 : 0,
             'saturday': $('#saturday_check').is(':checked') ? 1 : 0,
             'sunday': $('#sunday_check').is(':checked') ? 1 : 0,
-            'timeblock_channel': $('#current_channel').val()
+            'timeblock_channel': $('#current_channel').val(),
         }, function (data) {
 
             if(data.result === "ok") {
@@ -88,7 +124,7 @@ var
 
     clear_add_timeblock_form = function () {
         "use strict";
-
+        $('#editing_timeblock_id').val('');
         $('#start_timepicker').val('');
         $('#end_timepicker').val('');
         $('#allow_mentions_check').attr('checked', true);
@@ -159,9 +195,14 @@ $(document).ready(function () {
 
     $('#save_timeblock_btn').click(function () {
         if(validate_add_timeblock_form()){
-            submit_new_timeblock();
+            submit_timeblock();
         }else{
             return false;
         }
+    });
+
+    $('#add_timeblock_btn').click(function () {
+        $('#timeblock_modal_title').text("Añadir horario");
+        clear_add_timeblock_form();
     });
 });
