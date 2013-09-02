@@ -80,10 +80,11 @@
                 <a id="add_scheduled_post_btn" href="#add_scheduled_post_modal" class="btn btn-primary btn-small" data-toggle='modal'>Agregar mensaje automático</a>
 
                 <div id="add_scheduled_post_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <input type="hidden" id="editing_scheduled_post_id">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                        <h3>
-                            Añadir mensaje automático
+                        <h3 id="scheduled_post_modal_title">
+                            Añadir tweet programado
                         </h3>
                     </div>
                     <div class="modal-body">

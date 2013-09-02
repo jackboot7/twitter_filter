@@ -1,5 +1,5 @@
 from django.conf.urls import *
-from apps.scheduling.views import ScheduledTweetListView, ScheduledTweetCreateView, ScheduledTweetDeleteView, ScheduledPostsDetailView, SwitchStatusView, CheckStatusView
+from apps.scheduling.views import *
 
 
 urlpatterns = patterns('apps.scheduling.views',
@@ -12,5 +12,6 @@ urlpatterns = patterns('apps.scheduling.views',
     url(r'^list/(?P<pk>\w+)', ScheduledTweetListView.as_view()),
     url(r'^add', ScheduledTweetCreateView.as_view()),
     url(r'^delete/(?P<pk>\w+)', ScheduledTweetDeleteView.as_view()),
+    url(r'^update/(?P<pk>\w+)', ScheduledTweetUpdateView.as_view())
 
 )

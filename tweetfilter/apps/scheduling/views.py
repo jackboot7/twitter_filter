@@ -103,8 +103,17 @@ class ScheduledTweetListView(CsrfExemptMixin, JSONResponseMixin,
 
             json_list.append({
                 'id': scheduled_tweet.id,
-                'text': scheduled_tweet.get_excerpt() + "...",
-                'date_time': ("%s (%s)") % (scheduled_tweet.time.strftime("%H:%M"), dias)
+                'text': scheduled_tweet.text,
+                'text_excerpt': scheduled_tweet.get_excerpt() + "...",
+                'date_time': ("%s (%s)") % (scheduled_tweet.time.strftime("%H:%M"), dias),
+                'time': scheduled_tweet.time.strftime("%H:%M"),
+                'monday': scheduled_tweet.monday,
+                'tuesday': scheduled_tweet.tuesday,
+                'wednesday': scheduled_tweet.wednesday,
+                'thursday': scheduled_tweet.thursday,
+                'friday': scheduled_tweet.friday,
+                'saturday': scheduled_tweet.saturday,
+                'sunday': scheduled_tweet.sunday,
             })
 
         return self.render_json_response(json_list)
@@ -151,32 +160,33 @@ class ScheduledTweetDeleteView(CsrfExemptMixin, JSONResponseMixin,
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
 
-"""
-class ScheduledTweetkEditView(CsrfExemptMixin, JSONResponseMixin,
-    AjaxResponseMixin, DetailView):
-    model = ScheduledTweet
-    context_object_name = "scheduled_tweet"
-
-    def get_ajax(self, request, *args, **kwargs):
-        json_obj = {}
-        obj = self.get_object()
-
-        json_obj.append({
-            'id': obj.id,
-            'time': obj.time,
-            'monday': obj.monday,
-            'tuesday': obj.tuesday,
-            'wednesday': obj.wednesday,
-            'thursday': obj.thursday,
-            'friday': obj.friday,
-            'saturday': obj.saturday,
-            'sunday': obj.sunday,
-        })
-
-        return self.render_json_response(json_obj)
-"""
 
 class ScheduledPostsDetailView(DetailView):
     model = Channel
     template_name = "scheduling/index.html"
     context_object_name = "channel"
+
+
+class ScheduledTweetUpdateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = ScheduledTweet
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            obj.text = request.POST['text']
+            obj.time = datetime.datetime.strptime(request.POST['time'], "%H:%M").time()
+            obj.monday = True if request.POST['monday'] == "1" else False
+            obj.tuesday = True if request.POST['tuesday'] == "1" else False
+            obj.wednesday = True if request.POST['wednesday'] == "1" else False
+            obj.thursday = True if request.POST['thursday'] == "1" else False
+            obj.friday = True if request.POST['friday'] == "1" else False
+            obj.saturday = True if request.POST['saturday'] == "1" else False
+            obj.sunday = True if request.POST['sunday'] == "1" else False
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception, e:
+            response_data = {'result': e}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")

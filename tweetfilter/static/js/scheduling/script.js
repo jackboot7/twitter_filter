@@ -1,6 +1,26 @@
 
 var
 
+    edit_scheduled_post = function (scheduled_post) {
+        "use strict";
+
+        //alert(JSON.stringify(scheduled_post));
+        $('#scheduled_post_modal_title').text("Editar tweet programado");
+        $('#editing_scheduled_post_id').val(scheduled_post.id);
+
+        $('#scheduled_post_text').val(scheduled_post.text);
+        $('#scheduled_post_timepicker').val(scheduled_post.time);
+        $('#monday_check').attr('checked', scheduled_post.monday);
+        $('#tuesday_check').attr('checked', scheduled_post.tuesday);
+        $('#wednesday_check').attr('checked', scheduled_post.wednesday);
+        $('#thursday_check').attr('checked', scheduled_post.thursday);
+        $('#friday_check').attr('checked', scheduled_post.friday);
+        $('#saturday_check').attr('checked', scheduled_post.saturday);
+        $('#sunday_check').attr('checked', scheduled_post.sunday);
+
+        count_characters();
+    },
+
     update_scheduling_status = function () {
         "use strict";
 
@@ -35,13 +55,17 @@ var
 
                     $('#scheduled_post_list_tbody').append(
                         "<tr>" +
-                            "<td>" + elem.text + "</td>" +
+                            "<td><a id='edit_scheduled_post_" + elem.id + "' href='#add_scheduled_post_modal' data-toggle='modal'>" + elem.text_excerpt + "</a></td>" +
                             "<td>" + elem.date_time + "</td>" +
                             "<td><a id='delete_scheduled_post_" + elem.id +"' class='delete_scheduled_post' " +
                             "title='Haga click para eliminar el bloque' href='#delete_scheduled_post_confirm_modal' data-toggle='modal'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td>" +
                             "</tr>"
                     );
+
+                    $('#edit_scheduled_post_' + elem.id).click(function () {
+                        edit_scheduled_post(elem);
+                    });
 
                     $('#delete_scheduled_post_' + elem.id).click(function () {
                         $('#deleting_scheduled_post_id').val(elem.id);
@@ -62,10 +86,18 @@ var
         $('#alert_warning').show();
     },
 
-    submit_new_scheduled_post = function () {
+    submit_scheduled_post = function () {
         "use strict";
 
-        $.post("/scheduling/add/", {
+        var url;
+
+        if ($('#editing_scheduled_post_id').val() == "") {
+            url = "/scheduling/add/";
+        }else{
+            url = "/scheduling/update/" + $('#editing_scheduled_post_id').val();
+        }
+
+        $.post(url, {
             'text':$.trim($('#scheduled_post_text').val()),
             'time': $('#scheduled_post_timepicker').val(),
             'monday': $('#monday_check').is(':checked') ? 1 : 0,
@@ -117,6 +149,7 @@ var
     clear_add_scheduled_post_form = function () {
         "use strict";
 
+        $('#editing_scheduled_post_id').val('');
         $('#scheduled_post_timepicker').val('');
         $('#scheduled_post_text').val('');
         check_all_days();
@@ -194,9 +227,14 @@ $(document).ready(function () {
 
     $('#save_scheduled_post_btn').click(function () {
         if(validate_add_scheduled_post_form()){
-            submit_new_scheduled_post();
+            submit_scheduled_post();
         }else{
             return false;
         }
+    });
+
+    $('#add_scheduled_post_btn').click(function () {
+        $('#scheduled_post_modal_title').text("Añadir tweet programado");
+        clear_add_scheduled_post_form();
     });
 });

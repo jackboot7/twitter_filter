@@ -97,7 +97,7 @@ var
             'friday': $('#friday_check').is(':checked') ? 1 : 0,
             'saturday': $('#saturday_check').is(':checked') ? 1 : 0,
             'sunday': $('#sunday_check').is(':checked') ? 1 : 0,
-            'timeblock_channel': $('#current_channel').val(),
+            'timeblock_channel': $('#current_channel').val()
         }, function (data) {
 
             if(data.result === "ok") {
@@ -124,6 +124,7 @@ var
 
     clear_add_timeblock_form = function () {
         "use strict";
+
         $('#editing_timeblock_id').val('');
         $('#start_timepicker').val('');
         $('#end_timepicker').val('');
