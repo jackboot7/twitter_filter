@@ -153,7 +153,7 @@
         </div>
         <!-- Fin horarios de publicación -->
 
-        <div class="rounded_box fill_red">
+        <div class="rounded_box fill_gray">
             <h4>Usuarios bloqueados</h4>
             <div class="scrollable" id="blocked_user_list_div">
                 <table class="table" id="blocked_user_list_table">
@@ -181,7 +181,7 @@
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                     <h3 id="my_blocked_userModalLabel">
-                        Eliminar Disparador
+                        Desbloquear usuario
                     </h3>
                 </div>
                 <div class="modal-body">
@@ -199,7 +199,7 @@
     </div>
 
     <div class="span5">
-        <div class="rounded_box fill_gray">
+        <div class="rounded_box fill_green">
             <h4>Disparadores</h4>
 
             <div class="scrollable" id="trigger_list_div">
@@ -242,8 +242,57 @@
             </div>
         </div> <!-- end rounded box -->
 
-        <div class="rounded_box fill_gray">
-            <h4>Frases no permitidas</h4>
+
+        <div class="rounded_box fill_yellow">
+            <h4>Supresores</h4>
+
+            <div class="scrollable" id="replacement_list_div">
+                <table class="table" id="replacement_list_table">
+                    <thead>
+                    <tr>
+                        <th>Texto</th>
+                        <th>Reemplazar por</th>
+                        <!--<th>Acción</th>-->
+                        <th>Eliminar</th>
+                    </tr>
+                    </thead>
+                    <tbody id="replacement_list_tbody">
+                    </tbody>
+                </table>
+            </div>
+            <span id="no_replacements_message">No hay supresores asociados al canal</span> <br><br>
+
+            <table>
+                <tr>
+                    <td><input placeholder="sustituir" class="input-small" type="text" id="add_replacement_text">&nbsp;</td>
+                    <td><input placeholder="por" class="input-small" type="text" id="add_replacement_replace_with"></td>
+                    <td class="button_td" rowspan="2"> &nbsp;<a id="add_replacement_btn" class="btn btn-primary btn-small">Agregar supresor</a></td>
+                </tr>
+            </table>
+
+            <div id="delete_replacement_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="myreplacementModalLabel">
+                        Eliminar Supresor
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="deleting_replacement_id" value="">
+                    <p>
+                        Está seguro de que desea eliminar el supresor para la frase &quot;<span id="deleting_replacement_text"></span>&quot; ?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+                    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_replacement_confirmed">Sí, eliminar</button>
+                </div>
+            </div>
+        </div> <!-- end rounded box -->
+
+
+        <div class="rounded_box fill_red">
+            <h4>Retenedores</h4>
 
             <div class="scrollable" id="filter_list_div">
                 <table class="table" id="filter_list_table">
@@ -259,7 +308,7 @@
                 </table>
             </div>
 
-            <span id="no_filters_message">No hay filtros asociados al canal</span> <br><br>
+            <span id="no_filters_message">No hay retenedores asociados al canal</span> <br><br>
 
             <table><tr>
                 <td><input type="text" id="add_filter_text"></td>
@@ -312,6 +361,7 @@
 {% block page_scripts %}
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/script.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/triggers.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/replacements.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/filters.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/timeblocks.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/blocked_users.js"></script>

@@ -9,10 +9,13 @@ from django.views.generic.edit import UpdateView
 from apps.accounts.models import Channel
 from apps.control.models import ScheduleBlock
 from apps.filtering import tasks
-from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleBlock
+from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleBlock, Replacement
 
 
 class FilteringDetailView(DetailView):
+    """
+    Renders the main interface for filtering module config
+    """
     model = Channel
     template_name = "filtering/index.html"
     context_object_name = "channel"
@@ -120,6 +123,66 @@ class TriggerListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
 class TriggerDeleteView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DeleteView):
     model = Trigger
+    success_url = "/"
+
+    def post_ajax(self, request, *args, **kwargs):
+        #obj = self.get_object()
+        self.delete(request)
+        response_data = {'result': "ok"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+#==========================
+# Replacement words
+#==========================
+
+class ReplacementCreateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, View):
+    model = Replacement
+
+    def post_ajax(self, request, *args, **kwargs):
+
+        try:
+            reps = Replacement.objects.filter(channel=request.POST['replacement_channel'])
+            for rp in reps:
+                if rp.equals(request.POST['replacement_text']):
+                    response_data = {'result': "duplicate"}
+                    break
+            else:
+                chan = Channel.objects.filter(screen_name=request.POST['replacement_channel'])[0]
+                replacement = Replacement()
+                replacement.text = request.POST['replacement_text']
+                replacement.replace_with = request.POST['replacement_replace_with']
+                replacement.channel = chan
+                replacement.save()
+                response_data = {'result': "ok"}
+        except Exception, e:
+            print "Error al crear supresor: %s" % e
+            response_data = {'result': e}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ReplacementListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    model = Channel
+
+    def get_ajax(self, request, *args, **kwargs):
+        objs = Replacement.objects.filter(channel=self.get_object()).order_by("text")
+        json_list = []
+
+        for rep in objs:
+            dict = model_to_dict(rep)
+            json_list.append(dict)
+
+        return self.render_json_response(json_list)
+
+
+class ReplacementDeleteView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, DeleteView):
+    model = Replacement
     success_url = "/"
 
     def post_ajax(self, request, *args, **kwargs):
@@ -248,6 +311,10 @@ class BlockedUserCreateView(CsrfExemptMixin, JSONResponseMixin,
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
 
+
+#=========================
+# Time block views
+#=========================
 
 class TimeBlockListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     model = Channel

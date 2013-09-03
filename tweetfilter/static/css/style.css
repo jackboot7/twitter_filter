@@ -32,11 +32,16 @@
 }
 
 .fill_green {
-    background-color: #DFF0D8;
+    background-color: #E6F2E1;
+}
+
+.fill_yellow {
+    background-color: #F5F4DF;
 }
 
 .fill_red {
-    background-color: #FFE0E0;
+    background-color: #F5E9E9;
+    /*background-color: #FFE0E0;*/
 }
 
 .float_right {

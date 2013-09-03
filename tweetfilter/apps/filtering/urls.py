@@ -18,6 +18,10 @@ urlpatterns = patterns('apps.filtering.views',
     url(r'^trigger/delete/(?P<pk>\w+)', TriggerDeleteView.as_view()),
     url(r'^trigger/add', TriggerCreateView.as_view()),
 
+    url(r'^replacement/list/(?P<pk>\w+)', ReplacementListView.as_view()),
+    url(r'^replacement/delete/(?P<pk>\w+)', ReplacementDeleteView.as_view()),
+    url(r'^replacement/add', ReplacementCreateView.as_view()),
+
     url(r'^filter/list/(?P<pk>\w+)', FilterListView.as_view()),
     url(r'^filter/delete/(?P<pk>\w+)', FilterDeleteView.as_view()),
     url(r'^filter/add', FilterCreateView.as_view()),

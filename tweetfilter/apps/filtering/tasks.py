@@ -10,7 +10,7 @@ from celery._state import current_task
 from twython.streaming.api import TwythonStreamer
 from apps.accounts.models import  Channel
 from apps.control.tasks import DelayedTask
-from apps.filtering.models import BlockedUser, ChannelScheduleBlock
+from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
 from apps.twitter.api import ChannelAPI, Twitter
 from apps.twitter.models import Tweet
 
@@ -183,6 +183,7 @@ def filter_pipeline(data, chan):
         is_user_allowed.s(channel=chan) |
         triggers_filter.s(channel=chan) |
         banned_words_filter.s(channel=chan) |
+        replacements_filter.s(channel=chan) |
         delay_retweet.s(screen_name=chan.screen_name)).apply_async()
     return res
 
@@ -193,6 +194,7 @@ def filter_pipeline_dm(data, chan):
         is_user_allowed.s(channel=chan) |
         triggers_filter.s(channel=chan) |
         banned_words_filter.s(channel=chan) |
+        replacements_filter.s(channel=chan) |
         delay_retweet.s(screen_name=chan.screen_name)).apply_async()  #delayed
     return res
 
@@ -216,12 +218,26 @@ def delay_retweet(tweet, screen_name):
 
 
 @task(queue="tweets")
+def replacements_filter(tweet, channel):
+    if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
+        txt = tweet.text
+        reps = Replacement.objects.filter(channel=channel.screen_name)
+
+        for rep in reps:
+            if rep.occurs_in(tweet.text):
+                txt = txt.replace(rep.text, rep.replace_with)
+
+        tweet.retweeted_text = txt
+    return tweet
+
+@task(queue="tweets")
 def retweet(tweet, screen_name):
     channel = Channel.objects.get(screen_name=screen_name)
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         twitterAPI = ChannelAPI(channel)
         regular_exp = re.compile(re.escape("@" + tweet.mention_to), re.IGNORECASE)
-        text = "via @" + tweet.screen_name + ":" + regular_exp.sub('', tweet.text)
+        #text = "via @" + tweet.screen_name + ":" + regular_exp.sub('', tweet.text)
+        text = "via @" + tweet.screen_name + ":" + regular_exp.sub('', tweet.retweeted_text)
 
         if len(text) > 140:
             text = "%s.." % text[0:137]
