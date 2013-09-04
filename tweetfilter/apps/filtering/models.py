@@ -52,8 +52,13 @@ class Keyword(models.Model):
         return unidecode(self.text.lower()) == unidecode(other_text.lower())
 
     def occurs_in(self, string):
-        words = "".join((char if char.isalpha() else " ") for char in unidecode(string.lower())).split()
-        return unidecode(self.text.lower()) in words
+        if len(self.text.split()) > 1:
+            # if the keyword is a phrase, searches for direct occurrence in the string
+            return unidecode(self.text.lower()) in string
+        else:
+            # else: searches for individual word occurrence
+            words = "".join((char if char.isalpha() else " ") for char in unidecode(string.lower())).split()
+            return unidecode(self.text.lower()) in words
 
 
 class Trigger(Keyword):
