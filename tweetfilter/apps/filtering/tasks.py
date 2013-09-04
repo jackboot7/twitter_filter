@@ -25,8 +25,8 @@ class RetweetDelayedTask(DelayedTask):
     max_retries = 0     # I don't like this
 
     def __call__(self, *args, **kwargs):
-        self.screen_name = kwargs['screen_name']
         tweet = args[0]     # Tweet object
+        self.screen_name = tweet.mention_to
 
         if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
             # calculate nearest ETA and delay itself until then
@@ -106,7 +106,7 @@ class ChannelStreamer(TwythonStreamer):
             for mention in data['entities']['user_mentions']:
                 if self.channel.screen_name.lower() == mention['screen_name'].lower():
                     # Invokes subtask chain for storing and retweeting
-                    res = filter_pipeline.apply_async([data, self.channel])
+                    res = filter_pipeline.apply_async([data, self.channel.screen_name])
         else:
             # should we handle the rest of the tweets?
             # Maybe store them for future use.
@@ -134,8 +134,10 @@ def stream_channel(chan_id):
 
 
 @task(queue="tweets")
-def triggers_filter(tweet, channel):
+def triggers_filter(tweet):
     if tweet is not None and tweet.status is not Tweet.STATUS_BLOCKED:
+        #print "<%s>" % tweet.mention_to
+        channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
         triggers = channel.get_triggers()
         try:
             for tr in triggers:
@@ -156,7 +158,8 @@ def triggers_filter(tweet, channel):
 
 
 @task(queue="tweets")
-def banned_words_filter(tweet, channel):
+def banned_words_filter(tweet):
+    channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
     filters = channel.get_filters()
     if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
         try:
@@ -177,32 +180,33 @@ def banned_words_filter(tweet, channel):
     return tweet
 
 @task(queue="tweets")
-def filter_pipeline(data, chan):
+def filter_pipeline(data, screen_name):
     res =(
-        store_tweet.s(data, chan.screen_name) |
-        is_user_allowed.s(channel=chan) |
-        triggers_filter.s(channel=chan) |
-        banned_words_filter.s(channel=chan) |
-        replacements_filter.s(channel=chan) |
-        delay_retweet.s(screen_name=chan.screen_name)).apply_async()
+        store_tweet.s(data, screen_name) |
+        is_user_allowed.s() |
+        triggers_filter.s() |
+        banned_words_filter.s() |
+        replacements_filter.s() |
+        delay_retweet.s()).apply_async()
     return res
 
 @task(queue="tweets")
-def filter_pipeline_dm(data, chan):
+def filter_pipeline_dm(data):
     res =(
         store_dm.s(data) |
-        is_user_allowed.s(channel=chan) |
-        triggers_filter.s(channel=chan) |
-        banned_words_filter.s(channel=chan) |
-        replacements_filter.s(channel=chan) |
-        delay_retweet.s(screen_name=chan.screen_name)).apply_async()  #delayed
+        is_user_allowed.s() |
+        triggers_filter.s() |
+        banned_words_filter.s() |
+        replacements_filter.s() |
+        delay_retweet.s()).apply_async()
     return res
 
 @task(queue="tweets")
-def is_user_allowed(tweet, channel):
+def is_user_allowed(tweet):
     if tweet is not None:
         from_user = tweet.screen_name
-        blocked_users = BlockedUser.objects.filter(channel=channel)
+        #blocked_users = BlockedUser.objects.filter(channel=channel)
+        blocked_users = BlockedUser.objects.filter(channel=tweet.mention_to)
         for user in blocked_users:
             if user.screen_name.lower() == from_user.lower():
                 # user is blocked
@@ -213,15 +217,15 @@ def is_user_allowed(tweet, channel):
     return tweet
 
 @task(queue="tweets", base=RetweetDelayedTask)
-def delay_retweet(tweet, screen_name):
+def delay_retweet(tweet):
     pass
 
 
 @task(queue="tweets")
-def replacements_filter(tweet, channel):
+def replacements_filter(tweet):
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         txt = tweet.text
-        reps = Replacement.objects.filter(channel=channel.screen_name)
+        reps = Replacement.objects.filter(channel=tweet.mention_to)
 
         for rep in reps:
             if rep.occurs_in(tweet.text):
@@ -231,8 +235,8 @@ def replacements_filter(tweet, channel):
     return tweet
 
 @task(queue="tweets")
-def retweet(tweet, screen_name):
-    channel = Channel.objects.get(screen_name=screen_name)
+def retweet(tweet):
+    channel = Channel.objects.get(screen_name=tweet.mention_to)
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         twitterAPI = ChannelAPI(channel)
         regular_exp = re.compile(re.escape("@" + tweet.mention_to), re.IGNORECASE)

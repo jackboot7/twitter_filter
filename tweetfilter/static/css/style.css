@@ -3,6 +3,7 @@
     color: #FFFFFF;
     text-decoration: none;
     outline: 0;
+    cursor: pointer;
 }
 
 .button_td {
@@ -57,5 +58,5 @@
 }
 
 .scrollable {
-    max-height: 420px;
+    max-height: 250px;
 }
