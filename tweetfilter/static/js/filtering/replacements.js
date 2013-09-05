@@ -56,6 +56,7 @@ var
             }, function (data) {
                 if(data.result === "ok") {
                     $('#add_replacement_text').val("");
+                    $('#add_replacement_replace_with').val("");
                     load_replacement_table();
                 }else if(data.result === "duplicate"){
                     alert("La palabra introducida ya existe en la lista");

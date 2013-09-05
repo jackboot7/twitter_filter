@@ -54,7 +54,7 @@ class Keyword(models.Model):
     def occurs_in(self, string):
         if len(self.text.split()) > 1:
             # if the keyword is a phrase, searches for direct occurrence in the string
-            return unidecode(self.text.lower()) in string
+            return unidecode(self.text.lower()) in unidecode(string.lower())
         else:
             # else: searches for individual word occurrence
             words = "".join((char if char.isalpha() else " ") for char in unidecode(string.lower())).split()
