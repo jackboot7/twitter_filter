@@ -41,8 +41,9 @@
 }
 
 .fill_red {
-    background-color: #F5E9E9;
+    /*background-color: #F5E9E9;*/
     /*background-color: #FFE0E0;*/
+    background-color: #F5DFDF;
 }
 
 .float_right {

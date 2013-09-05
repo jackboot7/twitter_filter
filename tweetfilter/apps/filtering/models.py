@@ -1,3 +1,4 @@
+import re
 import django.db.models
 from unidecode import unidecode
 from apps.accounts.models import Channel
@@ -48,17 +49,23 @@ class Keyword(models.Model):
     """
     text = models.CharField(max_length=32)
 
+    def normalize(self, string):
+        return unidecode(string.lower())
+
+    def normalized_text(self):
+        return self.normalize(self.text)
+
     def equals(self, other_text):
-        return unidecode(self.text.lower()) == unidecode(other_text.lower())
+        return self.normalized_text() == self.normalize(other_text)
 
     def occurs_in(self, string):
         if len(self.text.split()) > 1:
             # if the keyword is a phrase, searches for direct occurrence in the string
-            return unidecode(self.text.lower()) in unidecode(string.lower())
+            return self.normalized_text() in self.normalize(string)
         else:
             # else: searches for individual word occurrence
-            words = "".join((char if char.isalpha() else " ") for char in unidecode(string.lower())).split()
-            return unidecode(self.text.lower()) in words
+            words = "".join((char if char.isalpha() else " ") for char in self.normalize(string)).split()
+            return self.normalized_text() in words
 
 
 class Trigger(Keyword):
@@ -108,3 +115,17 @@ class Replacement(Keyword):
     replace_with = models.CharField(max_length=32)
     #enable_mentions
     #enable_dm
+
+    def replace_in(self, string):
+        txt = string
+        if len(self.text.split()) > 1:
+            regexp = re.compile("(%s)|(%s)" % (self.text, self.normalized_text()), re.IGNORECASE)
+            txt = regexp.sub(self.replace_with, txt)
+        else:
+            words = "".join((char if char.isalpha() else " ") for char in string.split())
+            for word in words:
+                if self.equals(word):
+                    regexp = re.compile(word, re.IGNORECASE)
+                    txt = regexp.sub(self.replace_with, txt)
+
+        return txt

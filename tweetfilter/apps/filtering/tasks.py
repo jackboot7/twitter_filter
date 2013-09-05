@@ -245,11 +245,9 @@ def retweet(tweet):
         reps = Replacement.objects.filter(channel=tweet.mention_to)
         txt = tweet.strip_channel_mention()
         for rep in reps:
-            if rep.occurs_in(txt):
-                txt = txt.replace(rep.text, rep.replace_with)
+            txt = rep.replace_in(txt)
 
         txt = "via @%s: %s" % (tweet.screen_name, txt)
-
         if len(txt) > 140:
             txt = "%s..." % txt[0:136]
 
