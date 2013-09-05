@@ -137,11 +137,12 @@ def stream_channel(chan_id):
 def triggers_filter(tweet):
     if tweet is not None and tweet.status is not Tweet.STATUS_BLOCKED:
         #print "<%s>" % tweet.mention_to
+
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
         triggers = channel.get_triggers()
         try:
             for tr in triggers:
-                if tr.occurs_in(tweet.text):
+                if tr.occurs_in(tweet.strip_mentions()):
                     tweet.status = Tweet.STATUS_TRIGGERED
                     tweet.save()
                     print "Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, tr.text)
@@ -164,7 +165,7 @@ def banned_words_filter(tweet):
     if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
         try:
             for filter in filters:
-                if filter.occurs_in(tweet.text):
+                if filter.occurs_in(tweet.strip_mentions()):
                     tweet.status = Tweet.STATUS_BLOCKED
                     tweet.save()
                     print "Blocked #%s (found the word '%s')" % (tweet.tweet_id, filter.text)
@@ -186,7 +187,7 @@ def filter_pipeline(data, screen_name):
         is_user_allowed.s() |
         triggers_filter.s() |
         banned_words_filter.s() |
-        replacements_filter.s() |
+        #replacements_filter.s() |
         delay_retweet.s()).apply_async()
     return res
 
@@ -197,7 +198,7 @@ def filter_pipeline_dm(data):
         is_user_allowed.s() |
         triggers_filter.s() |
         banned_words_filter.s() |
-        replacements_filter.s() |
+        #replacements_filter.s() |
         delay_retweet.s()).apply_async()
     return res
 
@@ -220,7 +221,7 @@ def is_user_allowed(tweet):
 def delay_retweet(tweet):
     pass
 
-
+"""
 @task(queue="tweets")
 def replacements_filter(tweet):
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
@@ -233,23 +234,30 @@ def replacements_filter(tweet):
 
         tweet.retweeted_text = txt
     return tweet
+"""
 
 @task(queue="tweets")
 def retweet(tweet):
     channel = Channel.objects.get(screen_name=tweet.mention_to)
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
+
+        # Apply replacements
+        reps = Replacement.objects.filter(channel=tweet.mention_to)
+        txt = tweet.strip_channel_mention()
+        for rep in reps:
+            if rep.occurs_in(txt):
+                txt = txt.replace(rep.text, rep.replace_with)
+
+        txt = "via @%s: %s" % (tweet.screen_name, txt)
+
+        if len(txt) > 140:
+            txt = "%s..." % txt[0:136]
+
         twitterAPI = ChannelAPI(channel)
-        regular_exp = re.compile(re.escape("@" + tweet.mention_to), re.IGNORECASE)
-        #text = "via @" + tweet.screen_name + ":" + regular_exp.sub('', tweet.text)
-        text = "via @" + tweet.screen_name + ":" + regular_exp.sub('', tweet.retweeted_text)
-
-        if len(text) > 140:
-            text = "%s.." % text[0:137]
-
-        twitterAPI.tweet(text)
+        twitterAPI.tweet(txt)
         print "Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id
         tweet.status = Tweet.STATUS_SENT
-        tweet.retweeted_text = text
+        tweet.retweeted_text = txt
         tweet.save()
 
     return tweet
