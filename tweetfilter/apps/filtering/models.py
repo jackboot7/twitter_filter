@@ -122,7 +122,7 @@ class Replacement(Keyword):
             regexp = re.compile("(%s)|(%s)" % (self.text, self.normalized_text()), re.IGNORECASE)
             txt = regexp.sub(self.replace_with, txt)
         else:
-            words = "".join((char if char.isalpha() else " ") for char in string.split())
+            words = "".join((char if char.isalpha() else " ") for char in string).split()
             for word in words:
                 if self.equals(word):
                     regexp = re.compile(word, re.IGNORECASE)
