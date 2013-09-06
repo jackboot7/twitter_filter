@@ -146,7 +146,7 @@ class ScheduleBlock(models.Model):
                 return datetime.datetime(
                     year=now.year,
                     month=now.month,
-                    day=today,
+                    day=now.day,
                     hour=self.start.hour,
                     minute=self.start.minute)
 

@@ -22,7 +22,6 @@ class RetweetDelayedTask(DelayedTask):
     It should delay execution until next available datetime otherwise.
     """
     screen_name = ""
-    max_retries = 0     # I don't like this
 
     def __call__(self, *args, **kwargs):
         tweet = args[0]     # Tweet object
