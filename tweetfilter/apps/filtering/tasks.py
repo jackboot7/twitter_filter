@@ -36,7 +36,6 @@ class RetweetDelayedTask(DelayedTask):
                 countdown = (eta - datetime.datetime.now()).total_seconds()
                 if countdown > 1:
                     print "Tweet %s has been DELAYED until %s" % (tweet.tweet_id, eta)
-                #print "type of eta = %s" % type(eta)
                 retweet.s().apply_async(args=args, kwargs=kwargs, countdown=countdown)
                 return self.run(*args, **kwargs)
         else:
@@ -123,7 +122,10 @@ def stream_channel(chan_id):
     print "Starting streaming for channel %s" % chan_id
     try:
         chan = Channel.objects.filter(screen_name=chan_id)[0]
-
+        streaming_task = chan.streaming_task
+        #print "streaming task status = %s" % streaming_task.status
+        #print "streaming task state = %s" % streaming_task.state
+        #print "streaming task is ready? = %s" % streaming_task.ready()
         stream = ChannelStreamer(chan)
         stream.user(**{"with": "followings"})
         return True
