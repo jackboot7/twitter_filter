@@ -38,6 +38,7 @@ var
                 $('#channel_list_table').show();
 
                 $.each(data, function (idx, elem){
+                    /*
                     if (elem.status === "Activo") {
                         row_class = "success";
                         label_class = "label-success";
@@ -47,15 +48,16 @@ var
                         label_class = "label-important";
                         link_title = "Haga click para activar el canal";
                     }
-
+                    // */
                     $('#channel_list_tbody').append(
-                        "<tr class='" + row_class + "' id='channel_row_" + elem.screen_name + "'>"+
-                        "<td><a href='/accounts/edit/" + elem.screen_name + "/'>" + elem.screen_name + "</a></td>" +
-                        "<td>" + elem.last_tweet + "</td>" +
-                        "<td><a title='" + link_title + "' class='channel_row' id='change_status_" +
+                        "<tr  id='channel_row_" + elem.screen_name + "'>"+
+                        "<td><a href='/filtering/edit/" + elem.screen_name + "/'>" + elem.screen_name + "</a></td>" +
+                        "<td>" + elem.filtering + "</td>" +
+                        "<td>" + elem.scheduling + "</td>" +
+                        /*"<td><a title='" + link_title + "' class='channel_row' id='change_status_" +
                         elem.screen_name + "' href='#'>" +
                         "<span class='label " + label_class + "' id='label_status_"+ elem.screen_name+ "'>" +
-                            elem.status + "</span></a></td>" +
+                            elem.status + "</span></a></td>" + */
                         "<td><a id='delete_channel_" + elem.screen_name +"' class='delete_channel' " +
                         "title='Haga click para eliminar canal' href='#delete_confirm_modal' data-toggle='modal'>" +
                         "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td></tr>");

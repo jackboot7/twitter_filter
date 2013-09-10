@@ -1,6 +1,8 @@
 from celery._state import current_task
-from celery.task.base import Task
+#from celery.task.base import Task
+#from celery import Task
 import datetime
+from celery.app.task import Task
 
 class DelayedTask(Task):
     """

@@ -15,3 +15,7 @@ env/
 .sass-cache
 generated/
 server_logs/
+
+/.idea
+/.idea/jsLinters
+/.idea/jsLinters/jshint.xml

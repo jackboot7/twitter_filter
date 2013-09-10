@@ -1,3 +1,11 @@
+.no_decoration:hover, .no_decoration:visited, .no_decoration:active,
+.no_decoration:focus, .no_decoration:link{
+    color: #FFFFFF;
+    text-decoration: none;
+    outline: 0;
+    cursor: pointer;
+}
+
 .button_td {
     padding-bottom: 11px;
     padding-left: 7px
@@ -5,32 +13,37 @@
 
 .rounded_box {
     border-radius: 12px;
+    padding-left: 13px;
+    padding-right: 13px;
+    padding-top: 5px;
+    padding-bottom: 7px;
+    margin-bottom: 20px;
+}
+
+.fill_gray {
     background-color: #F1F1F1;
-    padding-left: 13px;
-    padding-right: 13px;
-    padding-top: 5px;
-    padding-bottom: 7px;
-    margin-bottom: 20px;
 }
 
-.rounded_box_blue {
-     border-radius: 12px;
-     background-color: #E6F2FC;
-     padding-left: 13px;
-     padding-right: 13px;
-     padding-top: 5px;
-     padding-bottom: 7px;
-     margin-bottom: 20px;
+.fill_white {
+    background-color: #ffffff;
 }
 
-.rounded_box_red {
-    border-radius: 12px;
-    background-color: #FFE0E0;
-    padding-left: 13px;
-    padding-right: 13px;
-    padding-top: 5px;
-    padding-bottom: 7px;
-    margin-bottom: 20px;
+.fill_blue {
+    background-color: #E6F2FC;
+}
+
+.fill_green {
+    background-color: #E6F2E1;
+}
+
+.fill_yellow {
+    background-color: #F5F4DF;
+}
+
+.fill_red {
+    /*background-color: #F5E9E9;*/
+    /*background-color: #FFE0E0;*/
+    background-color: #F5DFDF;
 }
 
 .float_right {
@@ -43,4 +56,8 @@
 
 .td_right_padding{
     padding-right: 8px;
+}
+
+.scrollable {
+    max-height: 250px;
 }
