@@ -1,9 +1,9 @@
 # -*- encoding: utf-8 -*-
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from picklefield.fields import PickledObjectField
-from apps.control.models import ScheduleBlock
 from apps.twitter.models import Tweet
 
 
@@ -33,13 +33,19 @@ class Channel(models.Model):
     # Resultado de la tarea de streaming (necesario para desactivar)
     streaming_task = PickledObjectField()
 
-    # indica si hace retweet de mentions y/o DMs
-    enabled_mentions = models.BooleanField(default=True)
-    enabled_dm = models.BooleanField(default=True)
-
     # indica quiénes pueden enviar mensajes al canal
     allow_messages = models.SmallIntegerField(choices=ALLOW_CHOICES, default=ALLOW_ALL)
 
+    def save(self, *args, **kwargs):
+        super(Channel, self).save(*args, **kwargs)
+        try:
+            if self.filteringconfig is not None:
+                pass
+        except ObjectDoesNotExist:
+            filtering_config = FilteringConfig(channel=self)
+            filtering_config.save()
+            scheduling_config = SchedulingConfig(channel=self)
+            scheduling_config.save()
 
     def get_last_update(self):
         try:
@@ -103,49 +109,40 @@ class Channel(models.Model):
         """
         Returns a list of this channel's trigger words
         """
-        triggers = Trigger.objects.filter(channel=self)
-        return triggers
-        #return self.trigger_set.all()
+        #triggers = Trigger.objects.filter(channel=self)
+        #return triggers
+        return self.trigger_set.all()
 
     def get_filters(self):
         """
         Returns a list of this channel's trigger words
         """
-        filters = Filter.objects.filter(channel=self)
-        return filters
-        #return self.filter_set.all()
+        #filters = Filter.objects.filter(channel=self)
+        #return filters
+        return self.filter_set.all()
 
 
-class ChannelScheduleBlock(ScheduleBlock):
-    channel = models.ForeignKey(Channel)
+class FilteringConfig(models.Model):
+    channel = models.OneToOneField(Channel, parent_link=True)
+    retweets_enabled = models.BooleanField(default=True)
+    retweet_mentions = models.BooleanField(default=True)
+    retweet_dm = models.BooleanField(default=True)
+
+    def __init__(self, *args, **kwargs):
+        channel = kwargs.pop('channel', None)
+        super(FilteringConfig, self).__init__(*args, **kwargs)
+        if channel is not None:
+            self.channel = channel
+            self.save()
 
 
-class Trigger(models.Model):
-    ACTION_RETWEET = 1
+class SchedulingConfig(models.Model):
+    channel = models.OneToOneField(Channel, parent_link=True)
+    scheduling_enabled = models.BooleanField(default=True)
 
-    ACTION_CHOICES = (
-        (ACTION_RETWEET, "Retweet"),
-    )
-
-    text = models.CharField(max_length=32)
-    action = models.IntegerField(choices=ACTION_CHOICES, default=ACTION_RETWEET)
-    channel = models.ForeignKey(Channel)
-    enabled_mentions = models.BooleanField(default=True)
-    enabled_dm = models.BooleanField(default=True)
-
-
-class Filter(models.Model):
-    ACTION_BLOCK_TWEET = 1
-    ACTION_BLOCK_USER = 2
-
-    ACTION_CHOICES = (
-        (ACTION_BLOCK_TWEET, "Bloquear tweet"),
-        (ACTION_BLOCK_USER, "Bloquear usuario"),
-        )
-
-    text = models.CharField(max_length=32)
-    action = models.SmallIntegerField(choices=ACTION_CHOICES, default=ACTION_BLOCK_TWEET)
-    channel = models.ForeignKey(Channel)
-    enabled_mentions = models.BooleanField(default=True)
-    enabled_dm = models.BooleanField(default=True)
-
+    def __init__(self, *args, **kwargs):
+        channel = kwargs.pop('channel', None)
+        super(SchedulingConfig, self).__init__(*args, **kwargs)
+        if channel is not None:
+            self.channel = channel
+            self.save()

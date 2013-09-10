@@ -26,6 +26,7 @@ var
                         $('#deleting_blocked_user_id').val(elem.id);
                     });
                 });
+                $('#blocked_user_list_div').slimscroll();
             }else{
                 $('#blocked_user_list_table').hide();
                 $('#no_blocked_users_message').show();
@@ -61,11 +62,11 @@ var
                 'blocked_user_name': screen_name,
                 'blocked_user_channel': $('#current_channel').val()
             }, function (data) {
-
-                $('#add_blocked_user_text').val("");
                 if(data.result === "ok") {
                     load_blocked_user_table();
                     $('#add_blocked_user_name').val('');
+                }else if(data.result === "duplicate"){
+                    alert("El nombre de cuenta introducido ya existe en la lista");
                 }else{
                     blocked_user_add_error(data.result);
                 }

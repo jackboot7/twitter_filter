@@ -4,11 +4,74 @@ import json
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
 import datetime
 from django.http.response import HttpResponse
+from django.views.generic import DetailView
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import DeleteView
+from django.views.generic.edit import DeleteView, UpdateView
 from apps.accounts.models import Channel
 from apps.scheduling.models import ScheduledTweet
+
+
+#==========================
+# Filtering Config
+#==========================
+class CheckStatusView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Returns scheduling module status (is it enabled or disabled?)
+    """
+    model = Channel
+
+    def get_ajax(self, request,  *args, **kwargs):
+        obj = self.get_object()
+
+        if obj.schedulingconfig.scheduling_enabled:
+            response_data = {'result': "enabled"}
+        else:
+            response_data = {'result': "disabled"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Enables or disables automatic retweets
+    """
+    model = Channel
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        try:
+            if obj.schedulingconfig.scheduling_enabled:
+                # disable
+                scheduled_tweets = ScheduledTweet.objects.filter(channel=obj.screen_name)
+                for tweet in scheduled_tweets:
+                    if tweet.status == ScheduledTweet.STATUS_ENABLED:
+                        pt = tweet.periodic_task
+                        pt.enabled = False
+                        pt.save()
+                obj.schedulingconfig.scheduling_enabled = False
+                obj.schedulingconfig.save()
+            else:
+                # enable
+                scheduled_tweets = ScheduledTweet.objects.filter(channel=obj.screen_name)
+                for tweet in scheduled_tweets:
+                    if tweet.status == ScheduledTweet.STATUS_ENABLED:
+                        pt = tweet.periodic_task
+                        pt.enabled = True
+                        pt.save()
+                obj.schedulingconfig.scheduling_enabled = True
+                obj.schedulingconfig.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            print " Error in SwitchStatusView: %s" % e
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
 
 class ScheduledTweetListView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DetailView):
@@ -40,8 +103,17 @@ class ScheduledTweetListView(CsrfExemptMixin, JSONResponseMixin,
 
             json_list.append({
                 'id': scheduled_tweet.id,
-                'text': scheduled_tweet.get_excerpt() + "...",
-                'date_time': ("%s (%s)") % (scheduled_tweet.time.strftime("%H:%M"), dias)
+                'text': scheduled_tweet.text,
+                'text_excerpt': scheduled_tweet.get_excerpt() + "...",
+                'date_time': ("%s (%s)") % (scheduled_tweet.time.strftime("%H:%M"), dias),
+                'time': scheduled_tweet.time.strftime("%H:%M"),
+                'monday': scheduled_tweet.monday,
+                'tuesday': scheduled_tweet.tuesday,
+                'wednesday': scheduled_tweet.wednesday,
+                'thursday': scheduled_tweet.thursday,
+                'friday': scheduled_tweet.friday,
+                'saturday': scheduled_tweet.saturday,
+                'sunday': scheduled_tweet.sunday,
             })
 
         return self.render_json_response(json_list)
@@ -88,27 +160,33 @@ class ScheduledTweetDeleteView(CsrfExemptMixin, JSONResponseMixin,
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
 
-"""
-class ScheduledTweetkEditView(CsrfExemptMixin, JSONResponseMixin,
-    AjaxResponseMixin, DetailView):
+
+class ScheduledPostsDetailView(DetailView):
+    model = Channel
+    template_name = "scheduling/index.html"
+    context_object_name = "channel"
+
+
+class ScheduledTweetUpdateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
     model = ScheduledTweet
-    context_object_name = "scheduled_tweet"
 
-    def get_ajax(self, request, *args, **kwargs):
-        json_obj = {}
+    def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
+        try:
+            obj.text = request.POST['text']
+            obj.time = datetime.datetime.strptime(request.POST['time'], "%H:%M").time()
+            obj.monday = True if request.POST['monday'] == "1" else False
+            obj.tuesday = True if request.POST['tuesday'] == "1" else False
+            obj.wednesday = True if request.POST['wednesday'] == "1" else False
+            obj.thursday = True if request.POST['thursday'] == "1" else False
+            obj.friday = True if request.POST['friday'] == "1" else False
+            obj.saturday = True if request.POST['saturday'] == "1" else False
+            obj.sunday = True if request.POST['sunday'] == "1" else False
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception, e:
+            response_data = {'result': e}
 
-        json_obj.append({
-            'id': obj.id,
-            'time': obj.time,
-            'monday': obj.monday,
-            'tuesday': obj.tuesday,
-            'wednesday': obj.wednesday,
-            'thursday': obj.thursday,
-            'friday': obj.friday,
-            'saturday': obj.saturday,
-            'sunday': obj.sunday,
-        })
-
-        return self.render_json_response(json_obj)
-"""
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")

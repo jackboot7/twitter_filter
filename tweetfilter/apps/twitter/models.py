@@ -1,3 +1,4 @@
+import re
 from django.db import models
 import time
 
@@ -22,7 +23,9 @@ class Tweet(models.Model):
         (STATUS_PENDING, 'Pendiente'),
         (STATUS_APPROVED, 'Aprobado'),
         (STATUS_BLOCKED, 'Bloqueado'),
-        (STATUS_SENT, 'Enviado')
+        (STATUS_SENT, 'Enviado'),
+        (STATUS_TRIGGERED, 'Relevante'),
+        (STATUS_NOT_TRIGGERED, 'Irrelevante')
     )
 
     text = models.CharField(max_length=140)
@@ -41,3 +44,22 @@ class Tweet(models.Model):
         max_chars = 32
         date_time = self.date_time.strftime('%d/%m/%y %H:%M:%S')
         return "%s %s..." % (date_time, self.retweeted_text[0:max_chars])
+
+    def strip_mentions(self):
+        regular_exp = re.compile("@(\w)+")
+        text = regular_exp.sub("", self.text)
+        return text
+
+    def strip_channel_mention(self):
+        regular_exp = re.compile(re.escape("@" + self.mention_to), re.IGNORECASE)
+        text = regular_exp.sub("", self.text)
+        return text
+
+    def __unicode__(self):
+        return "#%s (%s) from %s to %s: \"%s\"" % (
+            self.tweet_id,
+            self.get_type_display(),
+            self.screen_name,
+            self.mention_to,
+            self.text
+            )
