@@ -50,7 +50,7 @@ class Keyword(models.Model):
     text = models.CharField(max_length=32)
 
     def normalize(self, string):
-        return unidecode(string.lower())
+        return unidecode(string.lower())    # convert to unicode
 
     def normalized_text(self):
         return self.normalize(self.text)
@@ -64,9 +64,15 @@ class Keyword(models.Model):
             return self.normalized_text() in self.normalize(string)
         else:
             # else: searches for individual word occurrence
-            words = "".join((char if char.isalpha() else " ") for char in self.normalize(string)).split()
+            words = self.get_normalized_words(string)
             return self.normalized_text() in words
 
+    def get_words(self, string):
+        return "".join((char if char.isalpha() or char.isdigit() or char == "@" or char == "_"
+                        else " ") for char in string).split()
+    def get_normalized_words(self, string):
+        return "".join((char if char.isalpha() or char.isdigit() or char == "@" or char == "_"
+                        else " ") for char in self.normalize(string)).split()
 
 class Trigger(Keyword):
     """
@@ -122,7 +128,7 @@ class Replacement(Keyword):
             regexp = re.compile("(%s)|(%s)" % (self.text, self.normalized_text()), re.IGNORECASE)
             txt = regexp.sub(self.replace_with, txt)
         else:
-            words = "".join((char if char.isalpha() else " ") for char in string).split()
+            words = self.get_words(string)
             for word in words:
                 if self.equals(word):
                     regexp = re.compile(word, re.IGNORECASE)
