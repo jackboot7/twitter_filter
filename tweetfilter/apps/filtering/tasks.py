@@ -2,6 +2,7 @@
 
 import datetime
 import json
+import celery
 from django.conf import settings
 import re
 from exceptions import Exception
@@ -99,7 +100,7 @@ class ChannelStreamer(TwythonStreamer):
     def handle_data(self, data):
         if 'direct_message' in data:
             # Invokes subtask chain for storing and retweeting
-            res = filter_pipeline_dm.apply_async([data, self.channel])
+            res = filter_pipeline_dm.apply_async([data])
         elif 'text' in data:
             for mention in data['entities']['user_mentions']:
                 if self.channel.screen_name.lower() == mention['screen_name'].lower():
@@ -126,6 +127,9 @@ def stream_channel(chan_id):
         #print "streaming task status = %s" % streaming_task.status
         #print "streaming task state = %s" % streaming_task.state
         #print "streaming task is ready? = %s" % streaming_task.ready()
+        #from celery import current_app
+        #inspect = current_app.control.inspect()
+        #print "current active tasks = %s" % inspect.active()
         stream = ChannelStreamer(chan)
         stream.user(**{"with": "followings"})
         return True
