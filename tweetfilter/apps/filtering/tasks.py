@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import json
-import celery
 from django.conf import settings
-import re
 from exceptions import Exception
 from celery import task
-from celery._state import current_task
 from twython.streaming.api import TwythonStreamer
 from apps.accounts.models import  Channel
 from apps.control.tasks import DelayedTask
@@ -165,9 +161,9 @@ def triggers_filter(tweet):
 
 @task(queue="tweets")
 def banned_words_filter(tweet):
-    channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
-    filters = channel.get_filters()
     if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
+        channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
+        filters = channel.get_filters()
         try:
             for filter in filters:
                 if filter.occurs_in(tweet.strip_mentions()):
@@ -243,9 +239,9 @@ def replacements_filter(tweet):
 
 @task(queue="tweets")
 def retweet(tweet):
-    channel = Channel.objects.get(screen_name=tweet.mention_to)
-    if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
 
+    if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
+        channel = Channel.objects.get(screen_name=tweet.mention_to)
         # Apply replacements
         reps = Replacement.objects.filter(channel=tweet.mention_to)
         txt = tweet.strip_channel_mention()
