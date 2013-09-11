@@ -143,7 +143,7 @@ INSTALLED_APPS = (
 
     # Third party modules
     'djcelery',
-    #'south',
+    'south',
 
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
@@ -200,3 +200,5 @@ CELERY_RESULT_BACKEND = "amqp"
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 CELERYD_CONCURRENCY = 4
 CELERY_TIMEZONE = 'America/Caracas'
+CELERY_IMPORTS = ('apps.filtering.tasks',
+                  'apps.scheduling.tasks')
