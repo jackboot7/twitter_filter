@@ -22,10 +22,10 @@ class RetweetDelayedTask(DelayedTask):
 
     def __call__(self, *args, **kwargs):
         tweet = args[0]     # Tweet object
-        self.screen_name = tweet.mention_to
 
         if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
             # calculate nearest ETA and delay itself until then
+            self.screen_name = tweet.mention_to
             eta = self.calculate_eta(tweet.type)
             if eta is None:
                 print "There are no blocks available for %s" % tweet.get_type_display()
