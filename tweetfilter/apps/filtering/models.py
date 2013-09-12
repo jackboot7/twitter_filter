@@ -68,10 +68,12 @@ class Keyword(models.Model):
             return self.normalized_text() in words
 
     def get_words(self, string):
-        return "".join((char if char.isalpha() or char.isdigit() or char == "@" or char == "_"
+        return "".join((
+            char if char.isalpha() or char.isdigit() or char == "@" or char == "_" or char == "#"
                         else " ") for char in string).split()
     def get_normalized_words(self, string):
-        return "".join((char if char.isalpha() or char.isdigit() or char == "@" or char == "_"
+        return "".join((
+            char if char.isalpha() or char.isdigit() or char == "@" or char == "_" or char == "#"
                         else " ") for char in self.normalize(string)).split()
 
 class Trigger(Keyword):
