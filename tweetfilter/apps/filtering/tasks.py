@@ -114,7 +114,7 @@ class ChannelStreamer(TwythonStreamer):
         self.disconnect()   # ???
 
 
-@task(queue="streaming")
+@task(queue="streaming", ignore_result=True)
 def stream_channel(chan_id):
     print "Starting streaming for channel %s" % chan_id
     try:
@@ -134,7 +134,7 @@ def stream_channel(chan_id):
         return False
 
 
-@task(queue="tweets")
+@task(queue="tweets", ignore_result=True)
 def triggers_filter(tweet):
     if tweet is not None and tweet.status is not Tweet.STATUS_BLOCKED:
         #print "<%s>" % tweet.mention_to
@@ -159,7 +159,7 @@ def triggers_filter(tweet):
 
 
 
-@task(queue="tweets")
+@task(queue="tweets", ignore_result=True)
 def banned_words_filter(tweet):
     if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
@@ -181,7 +181,7 @@ def banned_words_filter(tweet):
 
     return tweet
 
-@task(queue="tweets")
+@task(queue="tweets", ignore_result=True)
 def filter_pipeline(data, screen_name):
     res =(
         store_tweet.s(data, screen_name) |
@@ -192,7 +192,7 @@ def filter_pipeline(data, screen_name):
         delay_retweet.s()).apply_async()
     return res
 
-@task(queue="tweets")
+@task(queue="tweets", ignore_result=True)
 def filter_pipeline_dm(data):
     res =(
         store_dm.s(data) |
@@ -203,7 +203,7 @@ def filter_pipeline_dm(data):
         delay_retweet.s()).apply_async()
     return res
 
-@task(queue="tweets")
+@task(queue="tweets", ignore_result=True)
 def is_user_allowed(tweet):
     if tweet is not None:
         from_user = tweet.screen_name
@@ -218,7 +218,7 @@ def is_user_allowed(tweet):
 
     return tweet
 
-@task(queue="tweets", base=RetweetDelayedTask)
+@task(queue="tweets", base=RetweetDelayedTask, ignore_result=True)
 def delay_retweet(tweet):
     pass
 
@@ -237,7 +237,7 @@ def replacements_filter(tweet):
     return tweet
 """
 
-@task(queue="tweets")
+@task(queue="tweets", ignore_result=True)
 def retweet(tweet):
 
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
@@ -262,7 +262,7 @@ def retweet(tweet):
     return tweet
 
 
-@task(queue="tweets")
+@task(queue="tweets", ignore_result=True)
 def store_tweet(data, channel_id):
     try:
         tweet = Tweet()
@@ -283,7 +283,7 @@ def store_tweet(data, channel_id):
         return None
 
 
-@task(queue="tweets")
+@task(queue="tweets", ignore_result=True)
 def store_dm(dm):
     data = dm['direct_message']
     try:
@@ -304,7 +304,7 @@ def store_dm(dm):
         return None
 
 
-@task(queue="tweets")
+@task(queue="tweets", ignore_result=True)
 def send_tweet(tweet, twitterAPI):
     text = tweet.text
     if len(text) <= 140:
