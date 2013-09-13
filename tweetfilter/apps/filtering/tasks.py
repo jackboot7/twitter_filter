@@ -4,6 +4,7 @@ import datetime
 from django.conf import settings
 from exceptions import Exception
 from celery import task
+from twython.exceptions import TwythonError
 from twython.streaming.api import TwythonStreamer
 from apps.accounts.models import  Channel
 from apps.control.tasks import DelayedTask
@@ -237,9 +238,8 @@ def replacements_filter(tweet):
     return tweet
 """
 
-@task(queue="tweets", ignore_result=True)
+@task(queue="tweets", ignore_result=True, rate_limit="45/h")
 def retweet(tweet):
-
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         channel = Channel.objects.get(screen_name=tweet.mention_to)
         # Apply replacements
@@ -253,10 +253,18 @@ def retweet(tweet):
             txt = "%s..." % txt[0:136]
 
         twitterAPI = ChannelAPI(channel)
-        twitterAPI.tweet(txt)
-        print "Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id
-        tweet.status = Tweet.STATUS_SENT
-        tweet.retweeted_text = txt
+        try:
+            twitterAPI.tweet(txt)
+            print "Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id
+
+            tweet.status = Tweet.STATUS_SENT
+            tweet.retweeted_text = txt
+        except TwythonError, e:
+            # parsear texto del error (detectar "update limit")
+            tweet.status = Tweet.STATUS_NOT_SENT
+            print "Tweet #%s NOT SENT" % tweet.tweet_id
+            # loggear
+
         tweet.save()
 
     return tweet

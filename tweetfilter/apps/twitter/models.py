@@ -10,6 +10,7 @@ class Tweet(models.Model):
     STATUS_SENT = 3
     STATUS_TRIGGERED = 4
     STATUS_NOT_TRIGGERED = 5
+    STATUS_NOT_SENT = 6
 
     TYPE_MENTION = 0
     TYPE_DM = 1
