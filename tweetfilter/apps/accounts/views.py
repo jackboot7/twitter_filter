@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 import json
+import logging
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
 from django.conf import settings
 from django.contrib.sites.models import RequestSite
@@ -14,6 +15,7 @@ from apps.accounts.models import Channel
 from django.views.generic.edit import DeleteView, UpdateView
 from apps.filtering import tasks
 
+logger = logging.getLogger('twitter')
 
 class TwitterAuthenticationView(View):
     def get(self, request, *args, **kwargs):
@@ -134,7 +136,8 @@ class ChangeStatusView(CsrfExemptMixin, JSONResponseMixin,
                 obj.streaming_task.revoke(terminate=True)
             response_data = {'result': "ok"}
         except Exception as e:
-            print "Error en ChangeStatus: %s" % e
+            logger.exception("Error en ChangeStatus")
+            #print "Error en ChangeStatus: %s" % e
             response_data = {'result': "fail"}
 
         return HttpResponse(json.dumps(response_data),

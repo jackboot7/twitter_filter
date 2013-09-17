@@ -10,15 +10,12 @@ class Streamer(TwythonStreamer):
 
     def on_success(self, data):
         if 'text' in data:
-            print "-------------------"
-            print data
-            #print data['text'].encode('utf-8')
-            print "-------------------"
-            print ""
+            pass # do something with data
 
     def on_error(self, status_code, data):
-        print status_code
-        print data
+        logger.error("Error in streamer class %s" % status_code)
+        #print status_code
+        #print data
         self.disconnect()   # ???
 
 class Twitter():
