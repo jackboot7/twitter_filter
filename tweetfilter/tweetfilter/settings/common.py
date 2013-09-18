@@ -186,7 +186,7 @@ LOGGING = {
             'level':'DEBUG',
             'class':'logging.StreamHandler',
             'formatter': 'standard',
-            'filters': ['require_debug_false'],
+            'filters': ['require_debug_true'],
         },
         'mail_admins': {
             'level': 'ERROR',
