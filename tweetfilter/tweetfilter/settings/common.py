@@ -156,12 +156,13 @@ INSTALLED_APPS = (
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
+LOGGING_ROOT = "server_logs/dev/"
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
     'formatters': {
         'standard': {
-            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+            'format': '%(asctime)s [%(levelname)s]: %(message)s'
         }
     },
     'filters': {
@@ -173,15 +174,7 @@ LOGGING = {
         'default': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'server_logs/dev/twitter-all.log',
-            'maxBytes': 1024*1024*5, # 5 MB
-            'backupCount': 5,
-            'formatter':'standard',
-        },
-        'channels': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'server_logs/dev/channels-all.log',
+            'filename': LOGGING_ROOT + 'twitter-all.log',
             'maxBytes': 1024*1024*5, # 5 MB
             'backupCount': 5,
             'formatter':'standard',
@@ -204,9 +197,14 @@ LOGGING = {
             'propagate': True,
         },
         'twitter': {
-            'handlers': ['default', 'console', 'channels'],
-            'level': 'INFO',
+            'handlers': ['default', 'console'],
+            'level': 'DEBUG',
             'propagate': False
+        },
+        'twitter.channels': {
+            'handlers': ['default'],    # esto se elimina en runtime
+            'level': 'DEBUG',
+            'propagate': True
         },
     }
 }
