@@ -137,7 +137,6 @@ class ChangeStatusView(CsrfExemptMixin, JSONResponseMixin,
             response_data = {'result': "ok"}
         except Exception as e:
             logger.exception("Error en ChangeStatus")
-            #print "Error en ChangeStatus: %s" % e
             response_data = {'result': "fail"}
 
         return HttpResponse(json.dumps(response_data),

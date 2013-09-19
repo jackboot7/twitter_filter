@@ -69,7 +69,6 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
             response_data = {'result': "ok"}
         except Exception as e:
             logger.exception("Error in SwitchStatusView")
-            #print "Error in SwitchStatusView: %s" % e
             response_data = {'result': "fail"}
 
         return HttpResponse(json.dumps(response_data),
@@ -145,7 +144,6 @@ class ScheduledTweetCreateView(CsrfExemptMixin, JSONResponseMixin,
             response_data = {'result': "ok"}
         except Exception, e:
             logger.exception("Error al crear scheduled tweet")
-            #print "Error al crear scheduled tweet: %s" % e
             response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),

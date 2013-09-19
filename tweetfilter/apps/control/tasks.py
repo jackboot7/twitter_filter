@@ -24,7 +24,6 @@ class DelayedTask(Task):
             pass
 
     def after_return(self, status, retval, task_id, args, kwargs, einfo):
-        #print "DelayedTask %s ended with status %s" % (task_id, status)
         pass
 
     def can_execute_now(self):

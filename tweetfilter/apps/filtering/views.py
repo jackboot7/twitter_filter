@@ -57,14 +57,12 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
         try:
             if obj.filteringconfig.retweets_enabled:
                 # disable
-
                 logger.debug("terminating task %s" % obj.streaming_task.id)
-                #print "terminating task %s" % obj.streaming_task.id
 
                 from celery import current_app
                 current_app.control.revoke(obj.streaming_task.id, terminate=True)
-
                 #obj.streaming_task.revoke(terminate=True)
+
                 obj.filteringconfig.retweets_enabled = False
                 obj.filteringconfig.save()
             else:
@@ -77,7 +75,6 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
             response_data = {'result': "ok"}
         except Exception as e:
             logger.exception("Error in SwitchStatusView")
-            #print "Error in SwitchStatusView: %s" % e
             response_data = {'result': "fail"}
 
         return HttpResponse(json.dumps(response_data),
@@ -108,7 +105,6 @@ class TriggerCreateView(CsrfExemptMixin, JSONResponseMixin,
                 trigger.save()
                 response_data = {'result': "ok"}
         except Exception, e:
-            #print "Error al crear trigger: %s" % e
             logger.exception("Error al crear trigger")
             response_data = {'result': e}
 
@@ -171,7 +167,6 @@ class ReplacementCreateView(CsrfExemptMixin, JSONResponseMixin,
                 response_data = {'result': "ok"}
         except Exception, e:
             logger.exception("Error al crear supresor")
-            #print "Error al crear supresor: %s" % e
             response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),
@@ -231,7 +226,6 @@ class FilterCreateView(CsrfExemptMixin, JSONResponseMixin,
                 response_data = {'result': "ok"}
         except Exception, e:
             logger.exception("Error al crear filter")
-            #print "Error al crear filter: %s" % e
             response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),
@@ -319,7 +313,6 @@ class BlockedUserCreateView(CsrfExemptMixin, JSONResponseMixin,
                 response_data = {'result': "ok"}
             except Exception, e:
                 logger.exception("Error al bloquear usuario")
-                #print "Error al bloquear usuario: %s" % e
                 response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),
@@ -415,7 +408,6 @@ class TimeBlockCreateView(CsrfExemptMixin, JSONResponseMixin,
             response_data = {'result': "ok"}
         except Exception, e:
             logger.exception("Error al crear timeblock")
-            #print "Error al crear timeblock: %s" % e
             response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),
