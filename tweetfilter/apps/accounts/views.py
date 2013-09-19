@@ -109,7 +109,7 @@ class DeleteChannelView(CsrfExemptMixin, JSONResponseMixin,
         try:
             obj.streaming_task.revoke(terminate=True)
         except Exception:
-            pass
+            logger.exception("Couldn't revoke streaming task for channel %s" % obj.screen_name)
         self.delete(request)
         response_data = {"result": "ok"}
         return HttpResponse(json.dumps(response_data),

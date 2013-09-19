@@ -215,7 +215,7 @@ def delay_retweet(tweet):
     pass
 
 
-@task(queue="tweets", ignore_result=True, rate_limit="45/h")
+@task(queue="tweets", ignore_result=True)
 def retweet(tweet):
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         channel = Channel.objects.get(screen_name=tweet.mention_to)

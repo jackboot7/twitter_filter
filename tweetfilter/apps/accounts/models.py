@@ -45,10 +45,18 @@ class Channel(models.Model):
             if self.filteringconfig is not None:
                 pass
         except ObjectDoesNotExist:
+            # if models is being saved for the first time,
+            # instantiate FilteringConfig and SchedulingConfig
             filtering_config = FilteringConfig(channel=self)
             filtering_config.save()
             scheduling_config = SchedulingConfig(channel=self)
             scheduling_config.save()
+
+    def delete(self):
+        schedules = self.scheduledtweet_set.all()
+        for schedule in schedules:
+            schedule.delete()
+        super(Channel, self).delete()
 
     def get_last_update(self):
         try:
