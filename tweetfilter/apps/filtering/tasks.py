@@ -159,7 +159,7 @@ def triggers_filter(tweet):
         triggers = channel.get_triggers()
         try:
             for tr in triggers:
-                if tr.occurs_in(tweet.strip_mentions()):
+                if tr.occurs_in(tweet.strip_channel_mention()):
                     tweet.status = Tweet.STATUS_TRIGGERED
                     tweet.save()
                     logger.info("Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, tr.text))
