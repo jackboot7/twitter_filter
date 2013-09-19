@@ -127,7 +127,8 @@ class Replacement(Keyword):
     def replace_in(self, string):
         txt = string
         if len(self.text.split()) > 1:
-            regexp = re.compile("(%s)|(%s)" % (self.text, self.normalized_text()), re.IGNORECASE)
+            regexp = re.compile(
+                "(%s)|(%s)" % (self.text, self.normalized_text()), re.IGNORECASE)
             txt = regexp.sub(self.replace_with, txt)
         else:
             words = self.get_words(string)

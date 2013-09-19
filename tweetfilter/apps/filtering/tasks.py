@@ -185,7 +185,7 @@ def banned_words_filter(tweet):
         filters = channel.get_filters()
         try:
             for filter in filters:
-                if filter.occurs_in(tweet.strip_mentions()):
+                if filter.occurs_in(tweet.strip_channel_mention()):
                     tweet.status = Tweet.STATUS_BLOCKED
                     tweet.save()
                     #print "Blocked #%s (found the word '%s')" % (tweet.tweet_id, filter.text)
