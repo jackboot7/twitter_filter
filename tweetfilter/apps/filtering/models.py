@@ -68,10 +68,12 @@ class Keyword(models.Model):
             return self.normalized_text() in words
 
     def get_words(self, string):
+        # returns string as a list of words, stripping punctuations, spaces and special chars
         return "".join((
             char if char.isalpha() or char.isdigit() or char == "@" or char == "_" or char == "#"
                         else " ") for char in string).split()
     def get_normalized_words(self, string):
+        # returns string as a list of normalized words
         return "".join((
             char if char.isalpha() or char.isdigit() or char == "@" or char == "_" or char == "#"
                         else " ") for char in self.normalize(string)).split()
@@ -132,7 +134,8 @@ class Replacement(Keyword):
             offset = len(self.replace_with) - len(self.text)
             count = 0
             for match in matches:
-                txt = txt[:match.start() + (offset * count)] + self.replace_with + string[match.end():]
+                txt = txt[:match.start() + (offset * count)] + \
+                      self.replace_with + string[match.end():]
                 count += 1
         else:
             words = self.get_words(string)
