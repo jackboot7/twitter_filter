@@ -126,10 +126,14 @@ class Replacement(Keyword):
 
     def replace_in(self, string):
         txt = string
-        if len(self.text.split()) > 1:
-            regexp = re.compile(
-                "(%s)|(%s)" % (self.text, self.normalized_text()), re.IGNORECASE)
-            txt = regexp.sub(self.replace_with, txt)
+
+        if len(self.text.split()) > 1:  # if replacement is a phrase
+            matches = re.finditer("(%s)" % self.normalized_text(), self.normalize(string))
+            offset = len(self.replace_with) - len(self.text)
+            count = 0
+            for match in matches:
+                txt = txt[:match.start() + (offset * count)] + self.replace_with + string[match.end():]
+                count += 1
         else:
             words = self.get_words(string)
             for word in words:
