@@ -100,7 +100,7 @@ class Channel(models.Model):
 
             handler.setLevel(logging.INFO)
             formatter = logging.Formatter(
-                '%(asctime)s [%(levelname)s]: %(message)s')
+                '%(asctime)s [%(levelname)s]: %(message)s', "%Y-%m-%d %H:%M:%S")
             handler.setFormatter(formatter)
 
             self.logger = logging.getLogger("twitter.channels")   # fail?

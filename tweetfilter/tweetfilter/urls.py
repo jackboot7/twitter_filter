@@ -11,7 +11,6 @@ urlpatterns = patterns('',
     # Examples:
     url(r'^$', HomeView.as_view(), name="home"),
     url(r'^success$', ChannelAddedView.as_view(), name="channel_added"),
-    url(r'^test$', 'tweetfilter.views.test'),
     url(r'^accounts/', include('apps.accounts.urls')),
     url(r'^tasks/', include('djcelery.urls')),
     url(r'^filtering/', include('apps.filtering.urls')),

@@ -9,7 +9,6 @@ from django.core.urlresolvers import reverse
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView
 from django.views.generic.base import View
-from django.views.generic.detail import DetailView
 from twython.api import Twython
 from apps.accounts.models import Channel
 from django.views.generic.edit import DeleteView, UpdateView
