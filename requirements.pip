@@ -15,4 +15,3 @@ amqp==1.0.12
 celery==3.0.21
 django-celery==3.0.17
 django-picklefield==0.3.0
-Unidecode==0.04.13
