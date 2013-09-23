@@ -1,6 +1,7 @@
 import datetime
 from exceptions import Exception
 import json
+import logging
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
@@ -11,6 +12,7 @@ from apps.control.models import ScheduleBlock
 from apps.filtering import tasks
 from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleBlock, Replacement
 
+logger = logging.getLogger('twitter')
 
 class FilteringDetailView(DetailView):
     """
@@ -55,7 +57,12 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
         try:
             if obj.filteringconfig.retweets_enabled:
                 # disable
-                obj.streaming_task.revoke(terminate=True)
+                logger.debug("terminating task %s" % obj.streaming_task.id)
+
+                from celery import current_app
+                current_app.control.revoke(obj.streaming_task.id, terminate=True)
+                #obj.streaming_task.revoke(terminate=True)
+
                 obj.filteringconfig.retweets_enabled = False
                 obj.filteringconfig.save()
             else:
@@ -67,7 +74,7 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
                 obj.filteringconfig.save()
             response_data = {'result': "ok"}
         except Exception as e:
-            print " Error in SwitchStatusView: %s" % e
+            logger.exception("Error in SwitchStatusView")
             response_data = {'result': "fail"}
 
         return HttpResponse(json.dumps(response_data),
@@ -98,7 +105,7 @@ class TriggerCreateView(CsrfExemptMixin, JSONResponseMixin,
                 trigger.save()
                 response_data = {'result': "ok"}
         except Exception, e:
-            print "Error al crear trigger: %s" % e
+            logger.exception("Error al crear trigger")
             response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),
@@ -159,7 +166,7 @@ class ReplacementCreateView(CsrfExemptMixin, JSONResponseMixin,
                 replacement.save()
                 response_data = {'result': "ok"}
         except Exception, e:
-            print "Error al crear supresor: %s" % e
+            logger.exception("Error al crear supresor")
             response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),
@@ -218,7 +225,7 @@ class FilterCreateView(CsrfExemptMixin, JSONResponseMixin,
                 filter.save()
                 response_data = {'result': "ok"}
         except Exception, e:
-            print "Error al crear filter: %s" % e
+            logger.exception("Error al crear filter")
             response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),
@@ -305,7 +312,7 @@ class BlockedUserCreateView(CsrfExemptMixin, JSONResponseMixin,
                 user.save()
                 response_data = {'result': "ok"}
             except Exception, e:
-                print "Error al bloquear usuario: %s" % e
+                logger.exception("Error al bloquear usuario")
                 response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),
@@ -398,10 +405,9 @@ class TimeBlockCreateView(CsrfExemptMixin, JSONResponseMixin,
             block.sunday = True if request.POST['sunday'] == "1" else False
             block.channel = chan
             block.save()
-            print "is now appliable? %s" % block.has_datetime(datetime.datetime.now())   #####
             response_data = {'result': "ok"}
         except Exception, e:
-            print "Error al crear timeblock: %s" % e
+            logger.exception("Error al crear timeblock")
             response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),
