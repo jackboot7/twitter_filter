@@ -23,16 +23,16 @@ LOGGING_ROOT = os.path.join(os.path.split(PROJECT_DIR)[0], 'server_logs', 'dev')
 if not os.path.exists(LOGGING_ROOT):
     os.mkdir(LOGGING_ROOT)
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': os.path.join(VAR_ROOT, 'twitter.db'),                    # Or path to database file if using sqlite3.
-        # The following settings are not used with sqlite3:
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(VAR_ROOT, 'twitter.db'),
         'USER': '',
         'PASSWORD': '',
-        'HOST': '',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
-        'PORT': '',                      # Set to empty string for default.
-    }
+        'HOST': '',
+        'PORT': '',
+        }
 }
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
@@ -159,7 +159,7 @@ INSTALLED_APPS = (
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
-
+#LOGGING_ROOT = os.path.join(PROJECT_DIR, 'server_logs', 'dev')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -180,14 +180,14 @@ LOGGING = {
         'default': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': LOGGING_ROOT + 'twitter-all.log',
-            'maxBytes': 1024*1024*5, # 5 MB
+            'filename': os.path.join(LOGGING_ROOT, 'twitter-all.log'),
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 5,
-            'formatter':'standard',
+            'formatter': 'standard',
         },
         'console': {
-            'level':'DEBUG',
-            'class':'logging.StreamHandler',
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
             'formatter': 'standard',
             'filters': ['require_debug_true'],
         },
