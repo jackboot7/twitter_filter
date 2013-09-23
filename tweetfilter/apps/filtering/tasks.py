@@ -14,6 +14,7 @@ from apps.twitter.api import ChannelAPI, Twitter
 from apps.twitter.models import Tweet
 
 logger = logging.getLogger('twitter')
+TASK_EXPIRES = 4200
 
 class RetweetDelayedTask(DelayedTask):
     """
@@ -126,52 +127,7 @@ def stream_channel(chan_id):
         return False
 
 
-@task(queue="tweets", ignore_result=True)
-def triggers_filter(tweet):
-    if tweet is not None and tweet.status is not Tweet.STATUS_BLOCKED:
-        channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
-        logger = channel.get_logger()
-        triggers = channel.get_triggers()
-        try:
-            for tr in triggers:
-                if tr.occurs_in(tweet.strip_channel_mention()):
-                    tweet.status = Tweet.STATUS_TRIGGERED
-                    tweet.save()
-                    logger.info("Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, tr.text))
-                    break
-            else:
-                logger.info("Marked #%s as NOT TRIGGERED" % tweet.tweet_id)
-                tweet.status = Tweet.STATUS_NOT_TRIGGERED
-                tweet.save()
-        except Exception, e:
-            logger.exception("error en triggers filter")
-    return tweet
-
-
-@task(queue="tweets", ignore_result=True)
-def banned_words_filter(tweet):
-    if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
-        channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
-        logger = channel.get_logger()
-        filters = channel.get_filters()
-        try:
-            for filter in filters:
-                if filter.occurs_in(tweet.strip_channel_mention()):
-                    tweet.status = Tweet.STATUS_BLOCKED
-                    tweet.save()
-                    logger.info("Blocked #%s (found the word '%s')" % (tweet.tweet_id, filter.text))
-                    break
-            else:
-                tweet.status = Tweet.STATUS_APPROVED
-                tweet.save()
-
-            return tweet
-        except Exception, e:
-            logger.exception("error en banned_words_filter")
-    return tweet
-
-
-@task(queue="tweets", ignore_result=True)
+@task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
 def filter_pipeline(data, screen_name):
     res =(
         store_tweet.s(data, screen_name) |
@@ -182,7 +138,7 @@ def filter_pipeline(data, screen_name):
         delay_retweet.s()).apply_async()
     return res
 
-@task(queue="tweets", ignore_result=True)
+@task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
 def filter_pipeline_dm(data):
     res =(
         store_dm.s(data) |
@@ -192,57 +148,6 @@ def filter_pipeline_dm(data):
         #replacements_filter.s() |
         delay_retweet.s()).apply_async()
     return res
-
-@task(queue="tweets", ignore_result=True)
-def is_user_allowed(tweet):
-    if tweet is not None:
-        from_user = tweet.screen_name
-        channel = Channel.objects.get(screen_name=tweet.mention_to)
-        logger = channel.get_logger()
-        #blocked_users = BlockedUser.objects.filter(channel=channel)
-        blocked_users = BlockedUser.objects.filter(channel=tweet.mention_to)
-        for user in blocked_users:
-            if user.screen_name.lower() == from_user.lower():
-                # user is blocked
-                tweet.status = Tweet.STATUS_BLOCKED
-                tweet.save()
-                logger.info("Tweet %s marked as BLOCKED (sent from blacklisted user @%s)" % (tweet.tweet_id, user.screen_name))
-    return tweet
-
-
-@task(queue="tweets", base=RetweetDelayedTask, ignore_result=True)
-def delay_retweet(tweet):
-    pass
-
-
-@task(queue="tweets", ignore_result=True)
-def retweet(tweet):
-    if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
-        channel = Channel.objects.get(screen_name=tweet.mention_to)
-        logger = channel.get_logger()
-
-        # Apply replacements
-        reps = Replacement.objects.filter(channel=tweet.mention_to)
-        txt = tweet.strip_channel_mention()
-        for rep in reps:
-            txt = rep.replace_in(txt)
-
-        txt = "via @%s: %s" % (tweet.screen_name, txt)
-        if len(txt) > 140:
-            txt = "%s..." % txt[0:136]
-
-        twitterAPI = ChannelAPI(channel)
-        try:
-            twitterAPI.tweet(txt)
-            logger.info("Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id)
-            tweet.status = Tweet.STATUS_SENT
-            tweet.retweeted_text = txt
-        except TwythonError, e:
-            # parsear texto del error (detectar "update limit")
-            tweet.status = Tweet.STATUS_NOT_SENT
-            logger.exception("Tweet #%s NOT SENT" % tweet.tweet_id)
-        tweet.save()
-    return tweet
 
 
 @task(queue="tweets", ignore_result=True)
@@ -286,13 +191,98 @@ def store_dm(dm):
         return None
 
 
-@task(queue="tweets", ignore_result=True)
-def send_tweet(tweet, twitterAPI):
-    text = tweet.text
-    if len(text) <= 140:
-        twitterAPI.tweet(text)
-    else:
-        twitterAPI.tweet("%s.." % text[0:137])
-    tweet.status = Tweet.STATUS_SENT
-    tweet.save()
+@task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
+def triggers_filter(tweet):
+    if tweet is not None and tweet.status is not Tweet.STATUS_BLOCKED:
+        channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
+        logger = channel.get_logger()
+        triggers = channel.get_triggers()
+        try:
+            for tr in triggers:
+                if tr.occurs_in(tweet.strip_channel_mention()):
+                    tweet.status = Tweet.STATUS_TRIGGERED
+                    tweet.save()
+                    logger.info("Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, tr.text))
+                    break
+            else:
+                logger.info("Marked #%s as NOT TRIGGERED" % tweet.tweet_id)
+                tweet.status = Tweet.STATUS_NOT_TRIGGERED
+                tweet.save()
+        except Exception, e:
+            logger.exception("error en triggers filter")
+    return tweet
+
+
+@task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
+def banned_words_filter(tweet):
+    if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
+        channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
+        logger = channel.get_logger()
+        filters = channel.get_filters()
+        try:
+            for filter in filters:
+                if filter.occurs_in(tweet.strip_channel_mention()):
+                    tweet.status = Tweet.STATUS_BLOCKED
+                    tweet.save()
+                    logger.info("Blocked #%s (found the word '%s')" % (tweet.tweet_id, filter.text))
+                    break
+            else:
+                tweet.status = Tweet.STATUS_APPROVED
+                tweet.save()
+
+            return tweet
+        except Exception, e:
+            logger.exception("error en banned_words_filter")
+    return tweet
+
+
+@task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
+def is_user_allowed(tweet):
+    if tweet is not None:
+        from_user = tweet.screen_name
+        channel = Channel.objects.get(screen_name=tweet.mention_to)
+        logger = channel.get_logger()
+        #blocked_users = BlockedUser.objects.filter(channel=channel)
+        blocked_users = BlockedUser.objects.filter(channel=tweet.mention_to)
+        for user in blocked_users:
+            if user.screen_name.lower() == from_user.lower():
+                # user is blocked
+                tweet.status = Tweet.STATUS_BLOCKED
+                tweet.save()
+                logger.info("Tweet %s marked as BLOCKED (sent from blacklisted user @%s)" % (tweet.tweet_id, user.screen_name))
+    return tweet
+
+
+@task(queue="tweets", base=RetweetDelayedTask, ignore_result=True, expires=TASK_EXPIRES)
+def delay_retweet(tweet):
+    pass
+
+
+@task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
+def retweet(tweet):
+    if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
+        channel = Channel.objects.get(screen_name=tweet.mention_to)
+        logger = channel.get_logger()
+
+        # Apply replacements
+        reps = Replacement.objects.filter(channel=tweet.mention_to)
+        txt = tweet.strip_channel_mention()
+        for rep in reps:
+            txt = rep.replace_in(txt)
+
+        txt = "via @%s: %s" % (tweet.screen_name, txt)
+        if len(txt) > 140:
+            txt = "%s..." % txt[0:136]
+
+        twitterAPI = ChannelAPI(channel)
+        try:
+            twitterAPI.tweet(txt)
+            logger.info("Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id)
+            tweet.status = Tweet.STATUS_SENT
+            tweet.retweeted_text = txt
+        except TwythonError, e:
+            # parsear texto del error (detectar "update limit")
+            tweet.status = Tweet.STATUS_NOT_SENT
+            logger.exception("Tweet #%s NOT SENT" % tweet.tweet_id)
+        tweet.save()
     return tweet
