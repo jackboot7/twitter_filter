@@ -94,7 +94,7 @@ class Channel(models.Model):
         from django.conf import settings
         if self.logger is None:
             handler = logging.handlers.RotatingFileHandler(
-                filename=os.path.join(settings.LOGGING_ROOT, self.screen_name, ".log"),
+                filename=os.path.join(settings.LOGGING_ROOT, "%s.log" % self.screen_name),
                 maxBytes=1024 * 1024 * 5,
                 backupCount=5)
 
