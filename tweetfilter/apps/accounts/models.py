@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+import logging
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
@@ -36,16 +37,26 @@ class Channel(models.Model):
     # indica quiénes pueden enviar mensajes al canal
     allow_messages = models.SmallIntegerField(choices=ALLOW_CHOICES, default=ALLOW_ALL)
 
+    logger = None   # Stores de logger object related to this channel
+
     def save(self, *args, **kwargs):
         super(Channel, self).save(*args, **kwargs)
         try:
             if self.filteringconfig is not None:
                 pass
         except ObjectDoesNotExist:
+            # if models is being saved for the first time,
+            # instantiate FilteringConfig and SchedulingConfig
             filtering_config = FilteringConfig(channel=self)
             filtering_config.save()
             scheduling_config = SchedulingConfig(channel=self)
             scheduling_config.save()
+
+    def delete(self):
+        schedules = self.scheduledtweet_set.all()
+        for schedule in schedules:
+            schedule.delete()
+        super(Channel, self).delete()
 
     def get_last_update(self):
         try:
@@ -77,6 +88,25 @@ class Channel(models.Model):
         except Exception, e:
             print e
             return False
+
+    def get_logger(self):
+        from django.conf import settings
+        if self.logger is None:
+            handler = logging.handlers.RotatingFileHandler(
+                filename = settings.LOGGING_ROOT + self.screen_name + ".log",
+                maxBytes = 1024*1024*5,
+                backupCount = 5)
+
+            handler.setLevel(logging.INFO)
+            formatter = logging.Formatter(
+                '%(asctime)s %(name)-12s %(levelname)-8s %(message)s', '%a, %Y-%m-%d %H:%M:%S')
+            handler.setFormatter(formatter)
+
+            self.logger = logging.getLogger("twitter.channels")   # fail?
+            self.logger.handlers = []
+            self.logger.addHandler(handler)
+
+        return self.logger
 
     """
     def init_streaming(self):

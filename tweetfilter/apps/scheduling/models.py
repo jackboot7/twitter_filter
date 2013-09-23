@@ -55,7 +55,7 @@ class ScheduledTweet(Schedule):
         cron = ptask.crontab
         cron.delete()
         ptask.delete()
-        #super(ScheduledTweet, self).delete()   # ??????
+        #super(ScheduledTweet, self).delete()   # somehow it's deleted already??????
 
     def get_excerpt(self):
         max_chars = 32

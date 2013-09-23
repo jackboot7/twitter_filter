@@ -10,6 +10,7 @@ class Tweet(models.Model):
     STATUS_SENT = 3
     STATUS_TRIGGERED = 4
     STATUS_NOT_TRIGGERED = 5
+    STATUS_NOT_SENT = 6
 
     TYPE_MENTION = 0
     TYPE_DM = 1
@@ -30,7 +31,7 @@ class Tweet(models.Model):
 
     text = models.CharField(max_length=140)
     screen_name = models.CharField(max_length=16)
-    tweet_id = models.CharField(max_length=32, unique=True)
+    tweet_id = models.CharField(max_length=32) # unique = True ????
     source = models.CharField(max_length=128)
     date_time = models.DateTimeField(auto_now_add=True, blank=True)
     hashtags = models.CharField(max_length=140, blank=True)

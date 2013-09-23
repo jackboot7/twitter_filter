@@ -5,7 +5,6 @@ from apps.twitter.api import Twitter
 
 @task(queue="scheduling", ignore_result=True)
 def schedule_tweet(channel_id, text):
-    print "sending scheduled tweet for %s" % channel_id
     channel = Channel.objects.filter(screen_name=channel_id)[0]
     twitter = Twitter(
         key=settings.TWITTER_APP_KEY,
@@ -13,4 +12,3 @@ def schedule_tweet(channel_id, text):
         token=channel.oauth_token,
         token_secret=channel.oauth_secret)
     twitter.tweet(text)
-    # capturar errores?

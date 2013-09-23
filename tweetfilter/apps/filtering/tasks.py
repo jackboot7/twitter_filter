@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import logging
 from django.conf import settings
 from exceptions import Exception
 from celery import task
+from twython.exceptions import TwythonError
 from twython.streaming.api import TwythonStreamer
 from apps.accounts.models import  Channel
 from apps.control.tasks import DelayedTask
@@ -11,6 +13,7 @@ from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
 from apps.twitter.api import ChannelAPI, Twitter
 from apps.twitter.models import Tweet
 
+logger = logging.getLogger('twitter')
 
 class RetweetDelayedTask(DelayedTask):
     """
@@ -26,13 +29,16 @@ class RetweetDelayedTask(DelayedTask):
         if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
             # calculate nearest ETA and delay itself until then
             self.screen_name = tweet.mention_to
+            channel = Channel.objects.get(screen_name=self.screen_name)
+            logger = channel.get_logger()
+
             eta = self.calculate_eta(tweet.type)
             if eta is None:
-                print "There are no blocks available for %s" % tweet.get_type_display()
+                logger.info("There are no blocks available for %s" % tweet.get_type_display())
             else:
                 countdown = (eta - datetime.datetime.now()).total_seconds()
                 if countdown > 1:
-                    print "Tweet %s has been DELAYED until %s" % (tweet.tweet_id, eta)
+                    logger.info("Tweet %s has been DELAYED until %s" % (tweet.tweet_id, eta))
                 retweet.s().apply_async(args=args, kwargs=kwargs, countdown=countdown)
                 return self.run(*args, **kwargs)
         else:
@@ -83,14 +89,6 @@ class ChannelStreamer(TwythonStreamer):
         self.channel = channel
 
     def on_success(self, data):
-        # stores mentions and DMs only
-
-        """
-        print "new data from twitter!"
-        print "data = %s" % json.dumps(data, sort_keys=True, indent=3)
-        print ""
-        print ""
-        # """
         self.handle_data(data)
 
     def handle_data(self, data):
@@ -108,68 +106,60 @@ class ChannelStreamer(TwythonStreamer):
             pass
 
     def on_error(self, status_code, data):
-        print "Error en streaming"
-        print status_code
-        print data
+        logger= self.channel.get_logger()
+        logger.error("Error en streaming")  # ampliar informacion
         self.disconnect()   # ???
 
 
 @task(queue="streaming", ignore_result=True)
 def stream_channel(chan_id):
-    print "Starting streaming for channel %s" % chan_id
+    chan = Channel.objects.filter(screen_name=chan_id)[0]
+    logger = chan.get_logger()
     try:
-        chan = Channel.objects.filter(screen_name=chan_id)[0]
-        streaming_task = chan.streaming_task
-        #print "streaming task status = %s" % streaming_task.status
-        #print "streaming task state = %s" % streaming_task.state
-        #print "streaming task is ready? = %s" % streaming_task.ready()
-        #from celery import current_app
-        #inspect = current_app.control.inspect()
-        #print "current active tasks = %s" % inspect.active()
+
+        logger.info("Starting streaming for channel %s" % chan_id)
         stream = ChannelStreamer(chan)
         stream.user(**{"with": "followings"})
         return True
     except Exception as e:
-        print "Error al iniciar streaming: %s" % e
+        logger.exception("Error al iniciar streaming")
         return False
 
 
 @task(queue="tweets", ignore_result=True)
 def triggers_filter(tweet):
     if tweet is not None and tweet.status is not Tweet.STATUS_BLOCKED:
-        #print "<%s>" % tweet.mention_to
-
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
+        logger = channel.get_logger()
         triggers = channel.get_triggers()
         try:
             for tr in triggers:
-                if tr.occurs_in(tweet.strip_mentions()):
+                if tr.occurs_in(tweet.strip_channel_mention()):
                     tweet.status = Tweet.STATUS_TRIGGERED
                     tweet.save()
-                    print "Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, tr.text)
+                    logger.info("Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, tr.text))
                     break
             else:
-                print "Marked #%s as NOT TRIGGERED" % tweet.tweet_id
+                logger.info("Marked #%s as NOT TRIGGERED" % tweet.tweet_id)
                 tweet.status = Tweet.STATUS_NOT_TRIGGERED
                 tweet.save()
         except Exception, e:
-            print "error en trigger update: %s" % e
-
+            logger.exception("error en triggers filter")
     return tweet
-
 
 
 @task(queue="tweets", ignore_result=True)
 def banned_words_filter(tweet):
     if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
+        logger = channel.get_logger()
         filters = channel.get_filters()
         try:
             for filter in filters:
-                if filter.occurs_in(tweet.strip_mentions()):
+                if filter.occurs_in(tweet.strip_channel_mention()):
                     tweet.status = Tweet.STATUS_BLOCKED
                     tweet.save()
-                    print "Blocked #%s (found the word '%s')" % (tweet.tweet_id, filter.text)
+                    logger.info("Blocked #%s (found the word '%s')" % (tweet.tweet_id, filter.text))
                     break
             else:
                 tweet.status = Tweet.STATUS_APPROVED
@@ -177,9 +167,9 @@ def banned_words_filter(tweet):
 
             return tweet
         except Exception, e:
-            print "error en banned_words_filter: %s" % e
-
+            logger.exception("error en banned_words_filter")
     return tweet
+
 
 @task(queue="tweets", ignore_result=True)
 def filter_pipeline(data, screen_name):
@@ -207,6 +197,8 @@ def filter_pipeline_dm(data):
 def is_user_allowed(tweet):
     if tweet is not None:
         from_user = tweet.screen_name
+        channel = Channel.objects.get(screen_name=tweet.mention_to)
+        logger = channel.get_logger()
         #blocked_users = BlockedUser.objects.filter(channel=channel)
         blocked_users = BlockedUser.objects.filter(channel=tweet.mention_to)
         for user in blocked_users:
@@ -214,34 +206,21 @@ def is_user_allowed(tweet):
                 # user is blocked
                 tweet.status = Tweet.STATUS_BLOCKED
                 tweet.save()
-                print "Tweet %s marked as BLOCKED (sent from blacklisted user @%s)" % (tweet.tweet_id, user.screen_name)
-
+                logger.info("Tweet %s marked as BLOCKED (sent from blacklisted user @%s)" % (tweet.tweet_id, user.screen_name))
     return tweet
+
 
 @task(queue="tweets", base=RetweetDelayedTask, ignore_result=True)
 def delay_retweet(tweet):
     pass
 
-"""
-@task(queue="tweets")
-def replacements_filter(tweet):
-    if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
-        txt = tweet.text
-        reps = Replacement.objects.filter(channel=tweet.mention_to)
-
-        for rep in reps:
-            if rep.occurs_in(tweet.text):
-                txt = txt.replace(rep.text, rep.replace_with)
-
-        tweet.retweeted_text = txt
-    return tweet
-"""
 
 @task(queue="tweets", ignore_result=True)
 def retweet(tweet):
-
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         channel = Channel.objects.get(screen_name=tweet.mention_to)
+        logger = channel.get_logger()
+
         # Apply replacements
         reps = Replacement.objects.filter(channel=tweet.mention_to)
         txt = tweet.strip_channel_mention()
@@ -253,18 +232,24 @@ def retweet(tweet):
             txt = "%s..." % txt[0:136]
 
         twitterAPI = ChannelAPI(channel)
-        twitterAPI.tweet(txt)
-        print "Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id
-        tweet.status = Tweet.STATUS_SENT
-        tweet.retweeted_text = txt
+        try:
+            twitterAPI.tweet(txt)
+            logger.info("Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id)
+            tweet.status = Tweet.STATUS_SENT
+            tweet.retweeted_text = txt
+        except TwythonError, e:
+            # parsear texto del error (detectar "update limit")
+            tweet.status = Tweet.STATUS_NOT_SENT
+            logger.exception("Tweet #%s NOT SENT" % tweet.tweet_id)
         tweet.save()
-
     return tweet
 
 
 @task(queue="tweets", ignore_result=True)
 def store_tweet(data, channel_id):
     try:
+        channel = Channel.objects.get(screen_name=channel_id)
+        logger = channel.get_logger()
         tweet = Tweet()
         tweet.screen_name = data['user']['screen_name']
         tweet.text = data['text']
@@ -273,13 +258,10 @@ def store_tweet(data, channel_id):
         tweet.mention_to = channel_id
         tweet.type = Tweet.TYPE_MENTION
         tweet.save()
-        print tweet
-        #print "stored tweet %s as PENDING" % data['id']
-        print ""
+        logger.info(tweet)
         return tweet
-
     except Exception, e:
-        print "Error trying to save tweet #%s: %s" % (data['id'], e)
+        logger.exception("Error trying to save tweet #%s" % data['id'])
         return None
 
 
@@ -287,6 +269,8 @@ def store_tweet(data, channel_id):
 def store_dm(dm):
     data = dm['direct_message']
     try:
+        channel = Channel.objects.get(screen_name=data['recipient_screen_name'])
+        logger = channel.get_logger()
         tweet = Tweet()
         tweet.screen_name = data['sender']['screen_name']
         tweet.text = data['text']
@@ -295,12 +279,10 @@ def store_dm(dm):
         tweet.mention_to = data['recipient_screen_name']
         tweet.type = Tweet.TYPE_DM
         tweet.save()
-        print tweet
-        #print "stored dm %s as PENDING" % data['id']
-        print ""
+        logger.info(tweet)
         return tweet
     except Exception, e:
-        print "Error trying to save dm #%s: %s" % (data['id'], e)
+        logger.exception("Error trying to save dm #%s" % data['id'])
         return None
 
 

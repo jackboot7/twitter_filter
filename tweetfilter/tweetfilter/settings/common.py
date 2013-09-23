@@ -73,7 +73,7 @@ MEDIA_URL = ''
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/var/www/example.com/static/"
 STATIC_ROOT = os.path.join(VAR_ROOT, 'static')
-#print STATIC_ROOT
+
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
 STATIC_URL = '/static/'
@@ -156,15 +156,38 @@ INSTALLED_APPS = (
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
+LOGGING_ROOT = "server_logs/dev/"
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s]: %(message)s'
+        }
+    },
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue'
         }
     },
     'handlers': {
+        'default': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOGGING_ROOT + 'twitter-all.log',
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter':'standard',
+        },
+        'console': {
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'standard',
+            'filters': ['require_debug_true'],
+        },
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
@@ -176,6 +199,16 @@ LOGGING = {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': True,
+        },
+        'twitter': {
+            'handlers': ['default', 'console'],
+            'level': 'DEBUG',
+            'propagate': False
+        },
+        'twitter.channels': {
+            'handlers': ['default'],    # esto se elimina en runtime
+            'level': 'DEBUG',
+            'propagate': True
         },
     }
 }
