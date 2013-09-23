@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-import logging
+#import logging
 
 from twython.api import Twython
 from twython.streaming.api import TwythonStreamer
 from django.conf import settings
 
-logger = logging.getLogger('twitter')
+#logger = logging.getLogger('twitter')
 
 class Streamer(TwythonStreamer):
     filter_mode = ''
@@ -15,7 +15,7 @@ class Streamer(TwythonStreamer):
             pass # do something with data
 
     def on_error(self, status_code, data):
-        logger.error("Error in streamer class %s" % status_code)
+        #logger.error("Error in streamer class %s" % status_code)
         self.disconnect()   # ???
 
 class Twitter():
