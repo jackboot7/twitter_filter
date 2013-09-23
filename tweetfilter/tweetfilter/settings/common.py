@@ -19,6 +19,10 @@ VAR_ROOT = os.path.join(os.path.split(PROJECT_DIR)[0], 'var')
 if not os.path.exists(VAR_ROOT):
     os.mkdir(VAR_ROOT)
 
+LOGGING_ROOT = os.path.join(os.path.split(PROJECT_DIR)[0], 'server_logs', 'dev')
+if not os.path.exists(LOGGING_ROOT):
+    os.mkdir(LOGGING_ROOT)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
@@ -155,7 +159,7 @@ INSTALLED_APPS = (
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
-LOGGING_ROOT = "server_logs/dev/"
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
