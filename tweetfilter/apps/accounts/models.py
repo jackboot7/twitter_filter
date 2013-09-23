@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+import os
 import logging
 
 from django.contrib.auth.models import User
@@ -93,9 +94,9 @@ class Channel(models.Model):
         from django.conf import settings
         if self.logger is None:
             handler = logging.handlers.RotatingFileHandler(
-                filename = settings.LOGGING_ROOT + self.screen_name + ".log",
-                maxBytes = 1024*1024*5,
-                backupCount = 5)
+                filename=os.path.join(settings.LOGGING_ROOT, "%s.log" % self.screen_name),
+                maxBytes=1024 * 1024 * 5,
+                backupCount=5)
 
             handler.setLevel(logging.INFO)
             formatter = logging.Formatter(

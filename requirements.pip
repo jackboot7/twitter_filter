@@ -2,7 +2,8 @@ Django==1.5.1
 Unidecode
 South==0.8.1
 anyjson==0.3.3
-distribute==0.6.15
+distribute
+MySQL-Python
 oauthlib==0.4.2
 requests==1.2.3
 requests-oauthlib==0.3.2
@@ -14,4 +15,3 @@ amqp==1.0.12
 celery==3.0.21
 django-celery==3.0.17
 django-picklefield==0.3.0
-Unidecode==0.04.13
