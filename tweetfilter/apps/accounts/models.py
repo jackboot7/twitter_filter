@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 import os
-#import logging
+import logging
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
@@ -91,7 +91,6 @@ class Channel(models.Model):
             return False
 
     def get_logger(self):
-        """
         from django.conf import settings
         if self.logger is None:
             handler = logging.handlers.RotatingFileHandler(
@@ -109,8 +108,6 @@ class Channel(models.Model):
             self.logger.addHandler(handler)
 
         return self.logger
-        """
-        return None
 
     """
     def init_streaming(self):

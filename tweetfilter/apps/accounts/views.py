@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 import json
-#import logging
+import logging
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
 from django.conf import settings
 from django.contrib.sites.models import RequestSite
@@ -14,7 +14,7 @@ from apps.accounts.models import Channel
 from django.views.generic.edit import DeleteView, UpdateView
 from apps.filtering import tasks
 
-#logger = logging.getLogger('twitter')
+logger = logging.getLogger('twitter')
 
 class TwitterAuthenticationView(View):
     def get(self, request, *args, **kwargs):
@@ -108,7 +108,7 @@ class DeleteChannelView(CsrfExemptMixin, JSONResponseMixin,
         try:
             obj.streaming_task.revoke(terminate=True)
         except Exception:
-            #logger.exception("Couldn't revoke streaming task for channel %s" % obj.screen_name)
+            logger.exception("Couldn't revoke streaming task for channel %s" % obj.screen_name)
             pass
         self.delete(request)
         response_data = {"result": "ok"}
@@ -136,7 +136,7 @@ class ChangeStatusView(CsrfExemptMixin, JSONResponseMixin,
                 obj.streaming_task.revoke(terminate=True)
             response_data = {'result': "ok"}
         except Exception as e:
-            #logger.exception("Error en ChangeStatus")
+            logger.exception("Error en ChangeStatus")
             response_data = {'result': "fail"}
 
         return HttpResponse(json.dumps(response_data),

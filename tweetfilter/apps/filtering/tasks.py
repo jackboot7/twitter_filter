@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-#import logging
+import logging
 from django.conf import settings
 from exceptions import Exception
 from celery import task
@@ -13,7 +13,7 @@ from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
 from apps.twitter.api import ChannelAPI, Twitter
 from apps.twitter.models import Tweet
 
-#logger = logging.getLogger('twitter')
+logger = logging.getLogger('twitter')
 TASK_EXPIRES = 4200
 
 class RetweetDelayedTask(DelayedTask):
@@ -31,16 +31,16 @@ class RetweetDelayedTask(DelayedTask):
             # calculate nearest ETA and delay itself until then
             self.screen_name = tweet.mention_to
             channel = Channel.objects.get(screen_name=self.screen_name)
-            #logger = channel.get_logger()
+            logger = channel.get_logger()
 
             eta = self.calculate_eta(tweet.type)
             if eta is None:
-                #logger.info("There are no blocks available for %s" % tweet.get_type_display())
+                logger.info("There are no blocks available for %s" % tweet.get_type_display())
                 pass
             else:
                 countdown = (eta - datetime.datetime.now()).total_seconds()
                 if countdown > 1:
-                    #logger.info("Tweet %s has been DELAYED until %s" % (tweet.tweet_id, eta))
+                    logger.info("Tweet %s has been DELAYED until %s" % (tweet.tweet_id, eta))
                     pass
                 retweet.s().apply_async(args=args, kwargs=kwargs, countdown=countdown)
                 return self.run(*args, **kwargs)
@@ -109,23 +109,23 @@ class ChannelStreamer(TwythonStreamer):
             pass
 
     def on_error(self, status_code, data):
-        #logger= self.channel.get_logger()
-        #logger.error("Error en streaming")  # ampliar informacion
+        logger= self.channel.get_logger()
+        logger.error("Error en streaming")  # ampliar informacion
         self.disconnect()   # ???
 
 
 @task(queue="streaming", ignore_result=True)
 def stream_channel(chan_id):
     chan = Channel.objects.filter(screen_name=chan_id)[0]
-    #logger = chan.get_logger()
+    logger = chan.get_logger()
     try:
 
-        #logger.info("Starting streaming for channel %s" % chan_id)
+        logger.info("Starting streaming for channel %s" % chan_id)
         stream = ChannelStreamer(chan)
         stream.user(**{"with": "followings"})
         return True
     except Exception as e:
-        #logger.exception("Error al iniciar streaming")
+        logger.exception("Error al iniciar streaming")
         return False
 
 
@@ -156,7 +156,7 @@ def filter_pipeline_dm(data):
 def store_tweet(data, channel_id):
     try:
         channel = Channel.objects.get(screen_name=channel_id)
-        #logger = channel.get_logger()
+        logger = channel.get_logger()
         tweet = Tweet()
         tweet.screen_name = data['user']['screen_name']
         tweet.text = data['text']
@@ -165,10 +165,10 @@ def store_tweet(data, channel_id):
         tweet.mention_to = channel_id
         tweet.type = Tweet.TYPE_MENTION
         tweet.save()
-        #logger.info(tweet)
+        logger.info(tweet)
         return tweet
     except Exception, e:
-        #logger.exception("Error trying to save tweet #%s" % data['id'])
+        logger.exception("Error trying to save tweet #%s" % data['id'])
         return None
 
 
@@ -177,7 +177,7 @@ def store_dm(dm):
     data = dm['direct_message']
     try:
         channel = Channel.objects.get(screen_name=data['recipient_screen_name'])
-        #logger = channel.get_logger()
+        logger = channel.get_logger()
         tweet = Tweet()
         tweet.screen_name = data['sender']['screen_name']
         tweet.text = data['text']
@@ -186,10 +186,10 @@ def store_dm(dm):
         tweet.mention_to = data['recipient_screen_name']
         tweet.type = Tweet.TYPE_DM
         tweet.save()
-        #logger.info(tweet)
+        logger.info(tweet)
         return tweet
     except Exception, e:
-        #logger.exception("Error trying to save dm #%s" % data['id'])
+        logger.exception("Error trying to save dm #%s" % data['id'])
         return None
 
 
@@ -197,21 +197,21 @@ def store_dm(dm):
 def triggers_filter(tweet):
     if tweet is not None and tweet.status is not Tweet.STATUS_BLOCKED:
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
-        #logger = channel.get_logger()
+        logger = channel.get_logger()
         triggers = channel.get_triggers()
         try:
             for tr in triggers:
                 if tr.occurs_in(tweet.strip_channel_mention()):
                     tweet.status = Tweet.STATUS_TRIGGERED
                     tweet.save()
-                    #logger.info("Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, tr.text))
+                    logger.info("Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, tr.text))
                     break
             else:
-                #logger.info("Marked #%s as NOT TRIGGERED" % tweet.tweet_id)
+                logger.info("Marked #%s as NOT TRIGGERED" % tweet.tweet_id)
                 tweet.status = Tweet.STATUS_NOT_TRIGGERED
                 tweet.save()
         except Exception, e:
-            #logger.exception("error en triggers filter")
+            logger.exception("error en triggers filter")
             pass
     return tweet
 
@@ -220,14 +220,14 @@ def triggers_filter(tweet):
 def banned_words_filter(tweet):
     if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
-        #logger = channel.get_logger()
+        logger = channel.get_logger()
         filters = channel.get_filters()
         try:
             for filter in filters:
                 if filter.occurs_in(tweet.strip_channel_mention()):
                     tweet.status = Tweet.STATUS_BLOCKED
                     tweet.save()
-                    #logger.info("Blocked #%s (found the word '%s')" % (tweet.tweet_id, filter.text))
+                    logger.info("Blocked #%s (found the word '%s')" % (tweet.tweet_id, filter.text))
                     break
             else:
                 tweet.status = Tweet.STATUS_APPROVED
@@ -235,7 +235,7 @@ def banned_words_filter(tweet):
 
             return tweet
         except Exception, e:
-            #logger.exception("error en banned_words_filter")
+            logger.exception("error en banned_words_filter")
             pass
     return tweet
 
@@ -245,15 +245,14 @@ def is_user_allowed(tweet):
     if tweet is not None:
         from_user = tweet.screen_name
         channel = Channel.objects.get(screen_name=tweet.mention_to)
-        #logger = channel.get_logger()
-        #blocked_users = BlockedUser.objects.filter(channel=channel)
+        logger = channel.get_logger()
         blocked_users = BlockedUser.objects.filter(channel=tweet.mention_to)
         for user in blocked_users:
             if user.screen_name.lower() == from_user.lower():
                 # user is blocked
                 tweet.status = Tweet.STATUS_BLOCKED
                 tweet.save()
-                #logger.info("Tweet %s marked as BLOCKED (sent from blacklisted user @%s)" % (tweet.tweet_id, user.screen_name))
+                logger.info("Tweet %s marked as BLOCKED (sent from blacklisted user @%s)" % (tweet.tweet_id, user.screen_name))
     return tweet
 
 
@@ -266,7 +265,7 @@ def delay_retweet(tweet):
 def retweet(tweet):
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         channel = Channel.objects.get(screen_name=tweet.mention_to)
-        #logger = channel.get_logger()
+        logger = channel.get_logger()
 
         # Apply replacements
         reps = Replacement.objects.filter(channel=tweet.mention_to)
@@ -281,12 +280,12 @@ def retweet(tweet):
         twitterAPI = ChannelAPI(channel)
         try:
             twitterAPI.tweet(txt)
-            #logger.info("Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id)
+            logger.info("Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id)
             tweet.status = Tweet.STATUS_SENT
             tweet.retweeted_text = txt
         except TwythonError, e:
             # parsear texto del error (detectar "update limit")
             tweet.status = Tweet.STATUS_NOT_SENT
-            #logger.exception("Tweet #%s NOT SENT" % tweet.tweet_id)
+            logger.exception("Tweet #%s NOT SENT" % tweet.tweet_id)
         tweet.save()
     return tweet

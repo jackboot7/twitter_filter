@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
-#import logging
+import logging
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
 import datetime
 from django.http.response import HttpResponse
@@ -12,7 +12,7 @@ from django.views.generic.edit import DeleteView, UpdateView
 from apps.accounts.models import Channel
 from apps.scheduling.models import ScheduledTweet
 
-#logger = logging.getLogger('twitter')
+logger = logging.getLogger('twitter')
 
 #==========================
 # Filtering Config
@@ -68,7 +68,7 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
                 obj.schedulingconfig.save()
             response_data = {'result': "ok"}
         except Exception as e:
-            #logger.exception("Error in SwitchStatusView")
+            logger.exception("Error in SwitchStatusView")
             response_data = {'result': "fail"}
 
         return HttpResponse(json.dumps(response_data),
@@ -143,7 +143,7 @@ class ScheduledTweetCreateView(CsrfExemptMixin, JSONResponseMixin,
             block.save()
             response_data = {'result': "ok"}
         except Exception, e:
-            #logger.exception("Error al crear scheduled tweet")
+            logger.exception("Error al crear scheduled tweet")
             response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),
