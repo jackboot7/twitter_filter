@@ -238,3 +238,15 @@ CELERYD_CONCURRENCY = 4
 CELERY_TIMEZONE = 'America/Caracas'
 CELERY_IMPORTS = ('apps.filtering.tasks',
                   'apps.scheduling.tasks')
+
+
+#==============================================================================
+# Cache
+#==============================================================================
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211'
+    }
+}
