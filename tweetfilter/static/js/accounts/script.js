@@ -125,4 +125,7 @@ $(document).ready(function () {
             }
         });
     });
+
+    $('#alert_warning_body').text("Actualmente se están realizando cambios en el servidor para garantizar la estabilidad de la aplicación. Agradecemos su paciencia.");
+    $('#alert_warning').show();
 });
