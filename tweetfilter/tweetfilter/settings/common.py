@@ -249,12 +249,10 @@ CELERY_IMPORTS = ('apps.filtering.tasks',
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': '127.0.0.1:11211'
+        'LOCATION': '127.0.0.1:11211',
     }
 }
 
-CACHE_MIDDLEWARE_ALIAS = 600
-CACHE_MIDDLEWARE_SECONDS = 'default'
+CACHE_MIDDLEWARE_ALIAS = 'default'
+CACHE_MIDDLEWARE_SECONDS = 600
 CACHE_MIDDLEWARE_KEY_PREFIX = ""
-
-
