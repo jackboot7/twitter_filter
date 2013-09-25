@@ -1,6 +1,7 @@
 /*global $, document, window, alert*/
 
 var
+    /*
     switch_row_style = function (name) {
         "use strict";
 
@@ -21,7 +22,8 @@ var
             link.attr('title', "Haga click para desactivar el canal");
         }
     },
-
+    //
+    */
     load_channel_table = function () {
         "use strict";
 
@@ -64,14 +66,6 @@ var
 
                     $('#delete_channel_' + elem.screen_name).click(function () {
                         $('#deleting_channel_id').text(elem.screen_name);
-                    });
-
-                    $('#change_status_' + elem.screen_name).click(function () {
-                        $.post("/accounts/changestatus/" + elem.screen_name, function (data) {
-                            if(data.result === "ok") {
-                                switch_row_style(elem.screen_name);
-                            }
-                        });
                     });
                 });
             }else{
