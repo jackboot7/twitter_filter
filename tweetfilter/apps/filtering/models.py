@@ -72,6 +72,7 @@ class Keyword(models.Model):
         return "".join((
             char if char.isalpha() or char.isdigit() or char == "@" or char == "_" or char == "#"
                         else " ") for char in string).split()
+
     def get_normalized_words(self, string):
         # returns string as a list of normalized words
         return "".join((

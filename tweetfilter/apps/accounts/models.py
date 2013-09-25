@@ -106,6 +106,7 @@ class Channel(models.Model):
             self.logger = logging.getLogger("twitter.channels")   # fail?
             self.logger.handlers = []
             self.logger.addHandler(handler)
+            # logger no persiste, conviene conseguir una mejor estrategia
 
         return self.logger
 
