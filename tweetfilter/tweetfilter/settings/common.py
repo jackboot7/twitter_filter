@@ -108,6 +108,7 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -115,6 +116,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
 )
 
 ROOT_URLCONF = 'tweetfilter.urls'
@@ -250,3 +252,9 @@ CACHES = {
         'LOCATION': '127.0.0.1:11211'
     }
 }
+
+CACHE_MIDDLEWARE_ALIAS = 600
+CACHE_MIDDLEWARE_SECONDS = 'default'
+CACHE_MIDDLEWARE_KEY_PREFIX = ""
+
+
