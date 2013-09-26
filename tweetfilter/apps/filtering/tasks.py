@@ -112,7 +112,7 @@ class ChannelStreamer(TwythonStreamer):
         self.disconnect()   # ???
 
 
-@task(queue="streaming", ignore_result=True)
+@task(queue="streaming", ignore_result=True, default_retry_delay=5 * 60, max_retries=10)    # retries after 5 min
 def stream_channel(chan_id):
     chan = Channel.objects.filter(screen_name=chan_id)[0]
     logger = chan.get_logger()
@@ -123,7 +123,8 @@ def stream_channel(chan_id):
         stream.user(**{"with": "followings"})
         return True
     except Exception as e:
-        logger.exception("Error al iniciar streaming")
+        logger.exception("Error starting streaming for %s. Will retry later" % chan_id)
+        stream_channel.retry(exc=e, chan_id=chan_id)
         return False
 
 
