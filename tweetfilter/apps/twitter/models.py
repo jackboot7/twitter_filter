@@ -47,13 +47,13 @@ class Tweet(models.Model):
         return "%s %s..." % (date_time, self.retweeted_text[0:max_chars])
 
     def strip_mentions(self):
-        regular_exp = re.compile("@(\w)+")
-        text = regular_exp.sub("", self.text)
+        regular_exp = re.compile(r"(\W|^)@(\w+)\b")
+        text = regular_exp.sub(r"\g<1>", self.text)
         return text
 
     def strip_channel_mention(self):
-        regular_exp = re.compile(re.escape("@" + self.mention_to), re.IGNORECASE)
-        text = regular_exp.sub("", self.text)
+        regular_exp = re.compile(r"(\W|^)(%s)\b" % re.escape("@" + self.mention_to), re.IGNORECASE)
+        text = regular_exp.sub(r"\g<1>", self.text)
         return text
 
     def get_words(self):

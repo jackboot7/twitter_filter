@@ -142,7 +142,6 @@ class Replacement(Keyword):
             words = self.get_words(string)
             for word in words:
                 if self.equals(word):
-                    regexp = re.compile(word, re.IGNORECASE)
-                    txt = regexp.sub(self.replace_with, txt)
-
+                    regexp = re.compile(r"(\W|^)(%s)\b" % word)
+                    txt = regexp.sub(r"\g<1>%s" % self.replace_with, txt)
         return txt
