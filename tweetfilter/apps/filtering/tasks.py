@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import logging
 from django.conf import settings
 from exceptions import Exception
 from celery import task
@@ -119,6 +120,8 @@ def stream_channel(chan_id):
     try:
 
         logger.info("Starting streaming for channel %s" % chan_id)
+        stream_log = logging.getLogger('streaming')
+        stream_log.info("Starting streaming for channel %s" % chan_id)
         stream = ChannelStreamer(chan)
         stream.user(**{"with": "followings"})
         return True
