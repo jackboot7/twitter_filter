@@ -293,6 +293,10 @@ def retweet(tweet):
             tweet.retweeted_text = txt
         except TwythonError, e:
             # parsear texto del error (detectar "update limit")
+            if "update limit" in e.message:
+                pass
+            if "duplicate" in e.message:
+                pass
             tweet.status = Tweet.STATUS_NOT_SENT
             logger.exception("Tweet #%s NOT SENT" % tweet.tweet_id)
         tweet.save()

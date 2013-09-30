@@ -32,6 +32,9 @@ class Channel(models.Model):
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=STATUS_ENABLED)
     user = models.ForeignKey(User, blank=True, null=True)
 
+    # tiempo máximo que debe esperarse antes de volver a enviar status
+    tweet_timedelta = models.IntegerField(default=60)
+
     # Resultado de la tarea de streaming (necesario para desactivar)
     streaming_task = PickledObjectField()
 
@@ -104,6 +107,7 @@ class Channel(models.Model):
             handler.setFormatter(formatter)
 
             self.logger = logging.getLogger("twitter.channels")   # fail?
+
             self.logger.handlers = []
             self.logger.addHandler(handler)
             # logger no persiste, conviene conseguir una mejor estrategia

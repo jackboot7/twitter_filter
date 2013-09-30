@@ -1,4 +1,4 @@
-from celery._state import current_task
+from celery._state import current_task, current_app
 #from celery.task.base import Task
 #from celery import Task
 import datetime
@@ -33,3 +33,14 @@ class DelayedTask(Task):
         eta = datetime.datetime.now()
         return eta
 
+# task(periodic,interval,blah)
+def monitor_streaming_tasks():
+
+    inspect = current_app.control.inspect()
+    active_tasks = inspect.active()
+    # para cada tarea de streaming de cada canal activo
+        # tarea existe en active_tasks?
+            #todobien
+        # no?
+            #activar streaming
+    pass

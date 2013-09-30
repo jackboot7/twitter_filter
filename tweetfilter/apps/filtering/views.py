@@ -62,7 +62,8 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
                 from celery import current_app
                 current_app.control.revoke(obj.streaming_task.id, terminate=True)
                 #obj.streaming_task.revoke(terminate=True)
-
+                log = logging.getLogger("streaming")
+                log.info("Stopped streaming for channel %s" % obj.screen_name)
                 obj.filteringconfig.retweets_enabled = False
                 obj.filteringconfig.save()
             else:
