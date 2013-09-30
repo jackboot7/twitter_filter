@@ -13,7 +13,6 @@ from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
 from apps.twitter.api import ChannelAPI, Twitter
 from apps.twitter.models import Tweet
 
-logger = logging.getLogger('twitter')
 TASK_EXPIRES = 4200
 
 class RetweetDelayedTask(DelayedTask):
@@ -114,18 +113,21 @@ class ChannelStreamer(TwythonStreamer):
         self.disconnect()   # ???
 
 
-@task(queue="streaming", ignore_result=True)
+@task(queue="streaming", ignore_result=True, default_retry_delay=5 * 60, max_retries=10)    # retries after 5 min
 def stream_channel(chan_id):
     chan = Channel.objects.filter(screen_name=chan_id)[0]
     logger = chan.get_logger()
     try:
 
         logger.info("Starting streaming for channel %s" % chan_id)
+        stream_log = logging.getLogger('streaming')
+        stream_log.info("Starting streaming for channel %s" % chan_id)
         stream = ChannelStreamer(chan)
         stream.user(**{"with": "followings"})
         return True
     except Exception as e:
-        logger.exception("Error al iniciar streaming")
+        logger.exception("Error starting streaming for %s. Will retry later" % chan_id)
+        stream_channel.retry(exc=e, chan_id=chan_id)
         return False
 
 
@@ -154,12 +156,15 @@ def filter_pipeline_dm(data):
 
 @task(queue="tweets", ignore_result=True)
 def store_tweet(data, channel_id):
+    channel = Channel.objects.get(screen_name=channel_id)
+    logger = channel.get_logger()
     try:
-        channel = Channel.objects.get(screen_name=channel_id)
-        logger = channel.get_logger()
+        import HTMLParser
+        html = HTMLParser.HTMLParser()
+
         tweet = Tweet()
         tweet.screen_name = data['user']['screen_name']
-        tweet.text = data['text']
+        tweet.text = html.unescape(data['text'])
         tweet.tweet_id = data['id']
         tweet.source = data['source']
         tweet.mention_to = channel_id
@@ -175,12 +180,15 @@ def store_tweet(data, channel_id):
 @task(queue="tweets", ignore_result=True)
 def store_dm(dm):
     data = dm['direct_message']
+    channel = Channel.objects.get(screen_name=data['recipient_screen_name'])
+    logger = channel.get_logger()
     try:
-        channel = Channel.objects.get(screen_name=data['recipient_screen_name'])
-        logger = channel.get_logger()
+        import HTMLParser
+        html = HTMLParser.HTMLParser()
+
         tweet = Tweet()
         tweet.screen_name = data['sender']['screen_name']
-        tweet.text = data['text']
+        tweet.text = html.unescape(data['text'])
         tweet.tweet_id = data['id']
         tweet.source = 'DM'
         tweet.mention_to = data['recipient_screen_name']
@@ -227,7 +235,7 @@ def banned_words_filter(tweet):
                 if filter.occurs_in(tweet.strip_channel_mention()):
                     tweet.status = Tweet.STATUS_BLOCKED
                     tweet.save()
-                    logger.info("Blocked #%s (found the word '%s')" % (tweet.tweet_id, filter.text))
+                    logger.info("BLOCKED tweet #%s (found the word '%s')" % (tweet.tweet_id, filter.text))
                     break
             else:
                 tweet.status = Tweet.STATUS_APPROVED
@@ -285,6 +293,10 @@ def retweet(tweet):
             tweet.retweeted_text = txt
         except TwythonError, e:
             # parsear texto del error (detectar "update limit")
+            if "update limit" in e.message:
+                pass
+            if "duplicate" in e.message:
+                pass
             tweet.status = Tweet.STATUS_NOT_SENT
             logger.exception("Tweet #%s NOT SENT" % tweet.tweet_id)
         tweet.save()

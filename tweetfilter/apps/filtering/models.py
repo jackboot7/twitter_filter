@@ -72,6 +72,7 @@ class Keyword(models.Model):
         return "".join((
             char if char.isalpha() or char.isdigit() or char == "@" or char == "_" or char == "#"
                         else " ") for char in string).split()
+
     def get_normalized_words(self, string):
         # returns string as a list of normalized words
         return "".join((
@@ -141,7 +142,6 @@ class Replacement(Keyword):
             words = self.get_words(string)
             for word in words:
                 if self.equals(word):
-                    regexp = re.compile(word, re.IGNORECASE)
-                    txt = regexp.sub(self.replace_with, txt)
-
+                    regexp = re.compile(r"(\W|^)(%s)\b" % word)
+                    txt = regexp.sub(r"\g<1>%s" % self.replace_with, txt)
         return txt

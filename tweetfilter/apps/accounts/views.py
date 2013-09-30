@@ -107,6 +107,8 @@ class DeleteChannelView(CsrfExemptMixin, JSONResponseMixin,
         obj = self.get_object()
         try:
             obj.streaming_task.revoke(terminate=True)
+            log = logging.getLogger("streaming")
+            log.info("Stopped streaming for channel %s" % obj.screen_name)
         except Exception:
             logger.exception("Couldn't revoke streaming task for channel %s" % obj.screen_name)
             pass
@@ -114,32 +116,3 @@ class DeleteChannelView(CsrfExemptMixin, JSONResponseMixin,
         response_data = {"result": "ok"}
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
-
-
-class ChangeStatusView(CsrfExemptMixin, JSONResponseMixin,
-    AjaxResponseMixin, UpdateView):
-    """
-    Switches a channel status: if it's enabled, it becomes disabled, and viceversa.
-    """
-    model = Channel
-    fields = ['status']
-
-    def post_ajax(self, request, *args, **kwargs):
-        obj = self.get_object()
-        obj.switch_status()
-        try:
-            if obj.status == Channel.STATUS_ENABLED:
-                task = tasks.stream_channel.delay(obj.screen_name)
-                obj.streaming_task = task   # tiene que haber un mejor lugar para guardar el task
-                obj.save()
-            else:
-                obj.streaming_task.revoke(terminate=True)
-            response_data = {'result': "ok"}
-        except Exception as e:
-            logger.exception("Error en ChangeStatus")
-            response_data = {'result': "fail"}
-
-        return HttpResponse(json.dumps(response_data),
-            content_type="application/json")
-
-

@@ -197,6 +197,14 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'streaming': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOGGING_ROOT, 'streaming.log'),
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'standard'
         }
     },
     'loggers': {
@@ -215,6 +223,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True
         },
+        'streaming': {
+            'handlers': ['streaming'],
+            'level': 'INFO',
+            'propagate': False
+        }
     }
 }
 

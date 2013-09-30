@@ -47,14 +47,26 @@ class Tweet(models.Model):
         return "%s %s..." % (date_time, self.retweeted_text[0:max_chars])
 
     def strip_mentions(self):
-        regular_exp = re.compile("@(\w)+")
-        text = regular_exp.sub("", self.text)
+        regular_exp = re.compile(r"(\W|^)@(\w+)\b")
+        text = regular_exp.sub(r"\g<1>", self.text)
         return text
 
     def strip_channel_mention(self):
-        regular_exp = re.compile(re.escape("@" + self.mention_to), re.IGNORECASE)
-        text = regular_exp.sub("", self.text)
+        regular_exp = re.compile(r"(\W|^)(%s)\b" % re.escape("@" + self.mention_to), re.IGNORECASE)
+        text = regular_exp.sub(r"\g<1>", self.text)
         return text
+
+    def get_words(self):
+        # returns string as a list of words, stripping punctuations, spaces and special chars
+            return "".join((
+                char if char.isalpha() or char.isdigit() or char == "@" or char == "_" or char == "#"
+                else " ") for char in self.text).split()
+
+    def get_normalized_words(self):
+        # returns string as a list of normalized words
+        return "".join((
+            char if char.isalpha() or char.isdigit() or char == "@" or char == "_" or char == "#"
+            else " ") for char in self.normalize(self.text)).split()
 
     def __unicode__(self):
         return "#%s (%s) from %s to %s: \"%s\"" % (
