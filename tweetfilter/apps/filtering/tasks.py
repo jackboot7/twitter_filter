@@ -271,7 +271,7 @@ def delay_retweet(tweet):
 
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
-def retweet(tweet):
+def retweet(tweet, txt=None):
     LOCK_EXPIRE = 60 * 5    # Lock expires in 5 minutes
     DELAY_DELTA = 60    # allows updating status each minute per channel
 
@@ -280,21 +280,20 @@ def retweet(tweet):
         logger = channel.get_logger()
 
         # Apply replacements
-        reps = Replacement.objects.filter(channel=tweet.mention_to)
-        txt = tweet.strip_channel_mention()
-        for rep in reps:
-            txt = rep.replace_in(txt)
+        if txt is None:
+            reps = Replacement.objects.filter(channel=tweet.mention_to)
+            txt = tweet.strip_channel_mention()
+            for rep in reps:
+                txt = rep.replace_in(txt)
 
-        txt = "via @%s: %s" % (tweet.screen_name, txt)
-        if len(txt) > 140:
-            txt = "%s..." % txt[0:136]
+            txt = "via @%s: %s" % (tweet.screen_name, txt)
+            if len(txt) > 140:
+                txt = "%s..." % txt[0:136]
 
         #while True: # CAUTION: THIS IS UGLY AS SHIT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if cache.add("%s_lock" % channel.screen_name, "true", LOCK_EXPIRE):  # acquire lock
-            print "got lock!!!"
             try:
                 last = cache.get('%s_last_tweet' % channel.screen_name)
-                print "last = %s" % last
                 if last is not None:
                     eta = last + datetime.timedelta(seconds=DELAY_DELTA)
                     cache.set('%s_last_tweet' % channel.screen_name, eta)
@@ -305,8 +304,9 @@ def retweet(tweet):
                     cache.set('%s_last_tweet' % channel.screen_name, datetime.datetime.now())
             finally:
                 cache.delete("%s_lock" % channel.screen_name)    # release lock
-                print "released lock!"
-                #break
+        else:
+            retweet.s().apply_async(args=[tweet, txt], countdown=5)
+            pass # retry
 
         """
         twitterAPI = ChannelAPI(channel)
