@@ -273,11 +273,10 @@ def delay_retweet(tweet):
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
 def retweet(tweet, txt=None):
     LOCK_EXPIRE = 60 * 5    # Lock expires in 5 minutes
-    DELAY_DELTA = 60    # allows updating status each minute per channel
+    DELAY_DELTA = 60        # allows updating status each minute per channel
 
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         channel = Channel.objects.get(screen_name=tweet.mention_to)
-        logger = channel.get_logger()
 
         # Apply replacements
         if txt is None:
@@ -290,7 +289,6 @@ def retweet(tweet, txt=None):
             if len(txt) > 140:
                 txt = "%s..." % txt[0:136]
 
-        #while True: # CAUTION: THIS IS UGLY AS SHIT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if cache.add("%s_lock" % channel.screen_name, "true", LOCK_EXPIRE):  # acquire lock
             try:
                 last = cache.get('%s_last_tweet' % channel.screen_name)
@@ -310,25 +308,8 @@ def retweet(tweet, txt=None):
                 cache.delete("%s_lock" % channel.screen_name)    # release lock
         else:
             retweet.s().apply_async(args=[tweet, txt], countdown=5)
-            pass # retry
+            # retry
 
-        """
-        twitterAPI = ChannelAPI(channel)
-        try:
-            twitterAPI.tweet(txt)
-            logger.info("Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id)
-            tweet.status = Tweet.STATUS_SENT
-            tweet.retweeted_text = txt
-        except TwythonError, e:
-            # parsear texto del error (detectar "update limit")
-            if "update limit" in e.message:
-                pass
-            if "duplicate" in e.message:
-                pass
-            tweet.status = Tweet.STATUS_NOT_SENT
-            logger.exception("Tweet #%s NOT SENT" % tweet.tweet_id)
-        tweet.save()
-        """
     return tweet
 
 
