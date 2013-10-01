@@ -33,7 +33,7 @@ class Channel(models.Model):
     user = models.ForeignKey(User, blank=True, null=True)
 
     # tiempo máximo que debe esperarse antes de volver a enviar status
-    tweet_timedelta = models.IntegerField(default=60)
+    # tweet_timedelta = models.IntegerField(default=60)
 
     # Resultado de la tarea de streaming (necesario para desactivar)
     streaming_task = PickledObjectField()

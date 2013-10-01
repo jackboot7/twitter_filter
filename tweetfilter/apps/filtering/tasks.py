@@ -5,6 +5,7 @@ import logging
 from django.conf import settings
 from exceptions import Exception
 from celery import task
+from django.core.cache import cache
 from twython.exceptions import TwythonError
 from twython.streaming.api import TwythonStreamer
 from apps.accounts.models import  Channel
@@ -271,6 +272,9 @@ def delay_retweet(tweet):
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
 def retweet(tweet):
+    LOCK_EXPIRE = 60 * 5    # Lock expires in 5 minutes
+    DELAY_DELTA = 60    # allows updating status each minute per channel
+
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         channel = Channel.objects.get(screen_name=tweet.mention_to)
         logger = channel.get_logger()
@@ -285,6 +289,26 @@ def retweet(tweet):
         if len(txt) > 140:
             txt = "%s..." % txt[0:136]
 
+        #while True: # CAUTION: THIS IS UGLY AS SHIT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if cache.add("%s_lock" % channel.screen_name, "true", LOCK_EXPIRE):  # acquire lock
+            print "got lock!!!"
+            try:
+                last = cache.get('%s_last_tweet' % channel.screen_name)
+                print "last = %s" % last
+                if last is not None:
+                    eta = last + datetime.timedelta(seconds=DELAY_DELTA)
+                    cache.set('%s_last_tweet' % channel.screen_name, eta)
+                    countdown = (eta - datetime.datetime.now()).total_seconds()
+                    update_status.s().apply_async(args=[channel.screen_name, tweet, txt], countdown=countdown)
+                else:
+                    update_status.s().apply_async(args=[channel.screen_name, tweet, txt], countdown=0)
+                    cache.set('%s_last_tweet' % channel.screen_name, datetime.datetime.now())
+            finally:
+                cache.delete("%s_lock" % channel.screen_name)    # release lock
+                print "released lock!"
+                #break
+
+        """
         twitterAPI = ChannelAPI(channel)
         try:
             twitterAPI.tweet(txt)
@@ -300,4 +324,25 @@ def retweet(tweet):
             tweet.status = Tweet.STATUS_NOT_SENT
             logger.exception("Tweet #%s NOT SENT" % tweet.tweet_id)
         tweet.save()
+        """
     return tweet
+
+
+@task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
+def update_status(channel_id, tweet, txt):
+    channel = Channel.objects.get(screen_name=channel_id)
+    logger = channel.get_logger()
+    try:
+        api = ChannelAPI(channel)
+        api.tweet(txt)
+        logger.info("Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id)
+        tweet.status = Tweet.STATUS_SENT
+        tweet.retweeted_text = txt
+    except TwythonError, e:
+        if "update limit" in e.message:
+            # save event for statistics
+            pass
+        if "duplicate" in e.message:
+            pass
+        tweet.status = Tweet.STATUS_NOT_SENT
+        logger.exception("Tweet #%s NOT SENT" % tweet.tweet_id)
