@@ -110,7 +110,7 @@ class ChannelStreamer(TwythonStreamer):
 
     def on_error(self, status_code, data):
         logger= self.channel.get_logger()
-        logger.error("Error en streaming")  # ampliar informacion
+        logger.error("Error en streaming: %s: %s" % (status_code, data))  # ampliar informacion
         self.disconnect()   # ???
 
 
@@ -294,14 +294,18 @@ def retweet(tweet, txt=None):
         if cache.add("%s_lock" % channel.screen_name, "true", LOCK_EXPIRE):  # acquire lock
             try:
                 last = cache.get('%s_last_tweet' % channel.screen_name)
-                if last is not None:
+                now = datetime.datetime.now()
+
+                if last is not None and (now - last).total_seconds() < DELAY_DELTA:
+                    # if it's first tweet or last tweet is recent, delay.
                     eta = last + datetime.timedelta(seconds=DELAY_DELTA)
                     cache.set('%s_last_tweet' % channel.screen_name, eta)
-                    countdown = (eta - datetime.datetime.now()).total_seconds()
+                    countdown = (eta - now).total_seconds()
                     update_status.s().apply_async(args=[channel.screen_name, tweet, txt], countdown=countdown)
                 else:
+                    # send now
                     update_status.s().apply_async(args=[channel.screen_name, tweet, txt], countdown=0)
-                    cache.set('%s_last_tweet' % channel.screen_name, datetime.datetime.now())
+                    cache.set('%s_last_tweet' % channel.screen_name, now)
             finally:
                 cache.delete("%s_lock" % channel.screen_name)    # release lock
         else:
