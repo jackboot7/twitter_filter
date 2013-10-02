@@ -14,7 +14,7 @@ from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
 from apps.twitter.api import ChannelAPI, Twitter
 from apps.twitter.models import Tweet
 
-TASK_EXPIRES = 4200
+TASK_EXPIRES = 900  # 15 min expiry
 
 class RetweetDelayedTask(DelayedTask):
     """
