@@ -9,6 +9,7 @@ from django.core.cache import cache
 from twython.exceptions import TwythonError
 from twython.streaming.api import TwythonStreamer
 from apps.accounts.models import  Channel
+from apps.control.models import UpdateLimit
 from apps.control.tasks import DelayedTask
 from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
 from apps.twitter.api import ChannelAPI, Twitter
@@ -326,8 +327,12 @@ def update_status(channel_id, tweet, txt):
     except TwythonError, e:
         if "update limit" in e.message:
             # save event for statistics
+            limit = UpdateLimit()
+            limit.channel = channel
+            limit.calculate_tweets()
+            limit.save()
             pass
         if "duplicate" in e.message:
             pass
         tweet.status = Tweet.STATUS_NOT_SENT
-        logger.exception("Tweet #%s NOT SENT" % tweet.tweet_id)
+        logger.exception("[%s] Tweet #%s NOT SENT" % (channel_id, tweet.tweet_id))
