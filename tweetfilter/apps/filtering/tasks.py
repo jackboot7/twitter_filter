@@ -128,6 +128,10 @@ def stream_channel(chan_id):
     except Exception as e:
         logger.exception("Error starting streaming for %s. Will retry later" % chan_id)
         stream_channel.retry(exc=e, chan_id=chan_id)
+
+        #disable channel automatic retweets
+        chan.filteringconfig.retweets_enabled = False
+        chan.filteringconfig.save()
         return False
 
 

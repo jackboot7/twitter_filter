@@ -23,6 +23,14 @@ $(document).ready(function () {
     "use strict";
 
     update_retweets_status();
+    $('.toggle').toggles();
+    $('.toggle').on('toggle', function (e, active) {
+        if (active) {
+            alert("activo");
+        } else {
+            alert("inactivo");
+        }
+    });
 
     $('#switch_retweets_btn').click(function () {
         $.post("/filtering/switch_status/" + $('#current_channel').val(), function (data) {

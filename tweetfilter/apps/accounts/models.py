@@ -158,7 +158,13 @@ class FilteringConfig(models.Model):
     channel = models.OneToOneField(Channel, parent_link=True)
     retweets_enabled = models.BooleanField(default=True)
     retweet_mentions = models.BooleanField(default=True)
-    retweet_dm = models.BooleanField(default=True)
+    retweet_dm = models.BooleanField(default=True)  # is module enabled
+
+    triggers_enabled = models.BooleanField(default=True)
+    replacements_enabled = models.BooleanField(default=True)
+    filters_enabled = models.BooleanField(default=True)
+    scheduleblocks_enabled = models.BooleanField(default=True)
+    blacklist_enabled = models.BooleanField(default=True)
 
     def __init__(self, *args, **kwargs):
         channel = kwargs.pop('channel', None)

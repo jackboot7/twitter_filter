@@ -34,11 +34,15 @@ class CheckStatusView(JSONResponseMixin, AjaxResponseMixin, DetailView):
 
     def get_ajax(self, request,  *args, **kwargs):
         obj = self.get_object()
+        print "scheduled blocks = %s" % obj.filteringconfig.scheduleblocks_enabled
 
-        if obj.filteringconfig.retweets_enabled:
-            response_data = {'result': "enabled"}
-        else:
-            response_data = {'result': "disabled"}
+        response_data = {'module_enabled': obj.filteringconfig.retweets_enabled,
+                         'scheduled_blocks': obj.filteringconfig.scheduleblocks_enabled,
+                         'blacklist':  obj.filteringconfig.blacklist_enabled,
+                         'triggers': obj.filteringconfig.triggers_enabled,
+                         'replacements': obj.filteringconfig.replacements_enabled,
+                         'filters': obj.filteringconfig.filters_enabled
+        }
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
@@ -79,6 +83,8 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
+
+
 
 
 #==========================
