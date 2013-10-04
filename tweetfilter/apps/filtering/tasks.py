@@ -32,7 +32,11 @@ class RetweetDelayedTask(DelayedTask):
             channel = Channel.objects.get(screen_name=self.screen_name)
             logger = channel.get_logger()
 
-            eta = self.calculate_eta(tweet.type)
+            if channel.filteringconfig.scheduleblocks_enabled:
+                eta = self.calculate_eta(tweet.type)
+            else:
+                eta = datetime.datetime.now()
+
             if eta is None:
                 logger.info("There are no blocks available for %s" % tweet.get_type_display())
                 pass
@@ -209,6 +213,11 @@ def store_dm(dm):
 def triggers_filter(tweet):
     if tweet is not None and tweet.status is not Tweet.STATUS_BLOCKED:
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
+
+        # if feature is disabled, pass the tweet
+        if not channel.filteringconfig.triggers_enabled:
+            return tweet
+
         logger = channel.get_logger()
         triggers = channel.get_triggers()
         try:
@@ -232,6 +241,11 @@ def triggers_filter(tweet):
 def banned_words_filter(tweet):
     if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
+
+        # if feature is disabled, pass the tweet
+        if not channel.filteringconfig.filters_enabled:
+            return tweet
+
         logger = channel.get_logger()
         filters = channel.get_filters()
         try:
@@ -257,6 +271,11 @@ def is_user_allowed(tweet):
     if tweet is not None:
         from_user = tweet.screen_name
         channel = Channel.objects.get(screen_name=tweet.mention_to)
+
+        # if feature is disabled, pass the tweet
+        if not channel.filteringconfig.blacklist_enabled:
+            return tweet
+
         logger = channel.get_logger()
         blocked_users = BlockedUser.objects.filter(channel=tweet.mention_to)
         for user in blocked_users:
@@ -278,12 +297,13 @@ def retweet(tweet):
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         channel = Channel.objects.get(screen_name=tweet.mention_to)
         logger = channel.get_logger()
-
-        # Apply replacements
-        reps = Replacement.objects.filter(channel=tweet.mention_to)
         txt = tweet.strip_channel_mention()
-        for rep in reps:
-            txt = rep.replace_in(txt)
+
+        # if replacements is enabled, apply.
+        if channel.filteringconfig.replacements_enabled:
+            reps = Replacement.objects.filter(channel=tweet.mention_to)
+            for rep in reps:
+                txt = rep.replace_in(txt)
 
         txt = "via @%s: %s" % (tweet.screen_name, txt)
         if len(txt) > 140:
