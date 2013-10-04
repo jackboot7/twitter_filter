@@ -34,7 +34,7 @@ class CheckStatusView(JSONResponseMixin, AjaxResponseMixin, DetailView):
 
     def get_ajax(self, request,  *args, **kwargs):
         obj = self.get_object()
-        print "scheduled blocks = %s" % obj.filteringconfig.scheduleblocks_enabled
+        print "triggers = %s" % obj.filteringconfig.triggers_enabled
 
         response_data = {'module_enabled': obj.filteringconfig.retweets_enabled,
                          'scheduled_blocks': obj.filteringconfig.scheduleblocks_enabled,
@@ -79,6 +79,147 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
             response_data = {'result': "ok"}
         except Exception as e:
             logger.exception("Error in SwitchStatusView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class SwitchScheduleBlocksView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Enables or disables filtering by time schedule blocks
+    """
+    model = Channel
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        try:
+            if obj.filteringconfig.scheduleblocks_enabled:
+                # disable
+                obj.filteringconfig.scheduleblocks_enabled = False
+                obj.filteringconfig.save()
+            else:
+                # enable
+                obj.filteringconfig.scheduleblocks_enabled = True
+                obj.filteringconfig.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            logger.exception("Error in SwitchScheduleBlocksView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class SwitchBlackListView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Enables or disables blocking blacklisted users
+    """
+    model = Channel
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        try:
+            if obj.filteringconfig.blacklist_enabled:
+                # disable
+                obj.filteringconfig.blacklist_enabled = False
+                obj.filteringconfig.save()
+            else:
+                # enable
+                obj.filteringconfig.blacklist_enabled = True
+                obj.filteringconfig.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            logger.exception("Error in SwitchBlackListView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+
+class SwitchTriggersView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Enables or disables filtering by triggers
+    """
+    model = Channel
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        try:
+            if obj.filteringconfig.triggers_enabled:
+                # disable
+                obj.filteringconfig.triggers_enabled = False
+                obj.filteringconfig.save()
+            else:
+                # enable
+                obj.filteringconfig.triggers_enabled = True
+                obj.filteringconfig.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            logger.exception("Error in SwitchTriggersView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class SwitchReplacementsView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Enables or disables word replacing
+    """
+    model = Channel
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        try:
+            if obj.filteringconfig.replacements_enabled:
+                # disable
+                obj.filteringconfig.replacements_enabled = False
+                obj.filteringconfig.save()
+            else:
+                # enable
+                obj.filteringconfig.replacements_enabled = True
+                obj.filteringconfig.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            logger.exception("Error in SwitchReplacementsView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class SwitchFiltersView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Enables or disables banned words filter
+    """
+    model = Channel
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        try:
+            if obj.filteringconfig.filters_enabled:
+                # disable
+                obj.filteringconfig.filters_enabled = False
+                obj.filteringconfig.save()
+            else:
+                # enable
+                obj.filteringconfig.filters_enabled = True
+                obj.filteringconfig.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            logger.exception("Error in SwitchFiltersView")
             response_data = {'result': "fail"}
 
         return HttpResponse(json.dumps(response_data),
