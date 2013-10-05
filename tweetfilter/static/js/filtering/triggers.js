@@ -11,16 +11,28 @@ var
                 //alert(JSON.stringify(data));
                 $.each(data, function (idx, elem) {
 
+                    var
+                        check_mentions = elem.enabled_mentions? "checked='true'" : "",
+                        check_dm = elem.enabled_dm? "checked='true'" : "";
+
                     $('#trigger_list_tbody').append(
                         "<tr>" +
                             "<td>" + elem.text + "</td>" +
-                            "<td><div class='offset2'><input id='mention_check' type='checkbox'"  + elem.mention_checked + "></div></td>" +
-                            "<td><div class='offset1'><input id='dm_check' type='checkbox'"  + elem.dm_checked + "></div></td>" +
+                            "<td><div class='offset2'><input id='mention_check_ " + elem.id + "' type='checkbox'" + check_mentions + "></div></td>" +
+                            "<td><div class='offset1'><input id='dm_check_"+ elem.id + "' type='checkbox'" + check_dm + "></div></td>" +
                             "<td><a id='delete_trigger_" + elem.id +"' class='delete_trigger' " +
                             "title='Haga click para eliminar disparador' href='#delete_confirm_modal' data-toggle='modal'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td>" +
                         "</tr>"
                     );
+
+                    $('#mention_check_' + elem.id).change(function () {
+                        //
+                    });
+
+                    $('#dm_check_' + elem.id).change(function () {
+                        //
+                    });
 
                     $('#delete_trigger_' + elem.id).click(function () {
                         $('#deleting_trigger_text').text(elem.text);
