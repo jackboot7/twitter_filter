@@ -23,6 +23,8 @@ urlpatterns = patterns('apps.filtering.views',
     url(r'^trigger/list/(?P<pk>\w+)', TriggerListView.as_view()),
     url(r'^trigger/delete/(?P<pk>\w+)', TriggerDeleteView.as_view()),
     url(r'^trigger/add', TriggerCreateView.as_view()),
+    url(r'^trigger/switch_dm/(?P<pk>\w+)', SwitchTriggerDMView.as_view()),
+    url(r'^trigger/switch_mention/(?P<pk>\w+)', SwitchTriggerMentionView.as_view()),
 
     url(r'^replacement/list/(?P<pk>\w+)', ReplacementListView.as_view()),
     url(r'^replacement/delete/(?P<pk>\w+)', ReplacementDeleteView.as_view()),

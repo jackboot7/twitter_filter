@@ -10,26 +10,33 @@ var
                 $('#trigger_list_table').show();
                 //alert(JSON.stringify(data));
                 $.each(data, function (idx, elem) {
-
+                    //alert(elem.enabled_mentions);
                     $('#trigger_list_tbody').append(
                         "<tr>" +
                             "<td>" + elem.text + "</td>" +
                             "<td><div class='offset2'><input id='trigger_mention_check_" + elem.id +
-                            "' type='checkbox' checked='"  + elem.enabled_mentions + "'></div></td>" +
+                            "' type='checkbox'></div></td>" +
                             "<td><div class='offset1'><input id='trigger_dm_check_" + elem.id +
-                            "' type='checkbox' checked='"  + elem.enabled_dm + "'></div></td>" +
+                            "' type='checkbox'></div></td>" +
                             "<td><a id='delete_trigger_" + elem.id +"' class='delete_trigger' " +
                             "title='Haga click para eliminar disparador' href='#delete_confirm_modal' data-toggle='modal'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td>" +
                         "</tr>"
                     );
 
-                    $('#mention_check_' + elem.id).change(function () {
-                        //
+                    $('#trigger_mention_check_' + elem.id).attr('checked', elem.enabled_mentions);
+                    $('#trigger_dm_check_' + elem.id).attr('checked', elem.enabled_dm);
+
+                    $('#trigger_mention_check_' + elem.id).change(function () {
+                        $.post("/filtering/trigger/switch_mention/" + elem.id, function () {
+
+                        });
                     });
 
-                    $('#dm_check_' + elem.id).change(function () {
-                        //
+                    $('#trigger_dm_check_' + elem.id).change(function () {
+                        $.post("/filtering/trigger/switch_dm/" + elem.id, function () {
+
+                        });
                     });
 
                     $('#delete_trigger_' + elem.id).click(function () {

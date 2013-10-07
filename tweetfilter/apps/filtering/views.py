@@ -225,18 +225,18 @@ class SwitchFiltersView(CsrfExemptMixin, JSONResponseMixin,
             content_type="application/json")
 
 
-class SwitchKeywordMentionView(CsrfExemptMixin, JSONResponseMixin,
+class SwitchTriggerMentionView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, UpdateView):
-    model = Keyword
+    model = Trigger
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
         try:
             if obj.enabled_mentions:
                 obj.enabled_mentions = False
-                obj.save()
             else:
                 obj.enabled_mentions = True
-                obj.save()
+            obj.save()
+            response_data = {'result': "ok"}
         except Exception:
             logger.exception("Error in SwitchKeywordMentionView")
             response_data = {'result': "fail"}
@@ -245,9 +245,49 @@ class SwitchKeywordMentionView(CsrfExemptMixin, JSONResponseMixin,
             content_type="application/json")
 
 
-class SwitchKeywordDMView(CsrfExemptMixin, JSONResponseMixin,
+class SwitchTriggerDMView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, UpdateView):
-    model = Keyword
+    model = Trigger
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            if obj.enabled_dm:
+                obj.enabled_dm = False
+            else:
+                obj.enabled_dm = True
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception:
+            logger.exception("Error in SwitchKeywordDMView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class SwitchFilterMentionView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = Filter
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            if obj.enabled_mentions:
+                obj.enabled_mentions = False
+            else:
+                obj.enabled_mentions = True
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception:
+            logger.exception("Error in SwitchFilterMentionView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class SwitchFilterDMView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = Filter
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
         try:
@@ -256,9 +296,50 @@ class SwitchKeywordDMView(CsrfExemptMixin, JSONResponseMixin,
                 obj.save()
             else:
                 obj.enabled_dm = True
-                obj.save()
+            obj.save()
+            response_data = {'result': "ok"}
         except Exception:
-            logger.exception("Error in SwitchKeywordDMView")
+            logger.exception("Error in SwitchFilterDMView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class SwitchReplacementMentionView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = Filter
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            if obj.enabled_mentions:
+                obj.enabled_mentions = False
+            else:
+                obj.enabled_mentions = True
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception:
+            logger.exception("Error in SwitchReplacementMentionView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class SwitchReplacementDMView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = Replacement
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            if obj.enabled_dm:
+                obj.enabled_dm = False
+            else:
+                obj.enabled_dm = True
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception:
+            logger.exception("Error in SwitchReplacementDMView")
             response_data = {'result': "fail"}
 
         return HttpResponse(json.dumps(response_data),
