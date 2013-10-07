@@ -47,6 +47,8 @@ class Keyword(models.Model):
     special-character insensitive) string comparison.
     """
     text = models.CharField(max_length=32)
+    enabled_mentions = models.BooleanField(default=True)
+    enabled_dm = models.BooleanField(default=True)
 
     def equals(self, other_text):
         return unidecode(self.text.lower()) == unidecode(other_text.lower())
@@ -59,9 +61,6 @@ class Keyword(models.Model):
             # else: searches for individual word occurrence
             words = "".join((char if char.isalpha() else " ") for char in unidecode(string.lower())).split()
             return unidecode(self.text.lower()) in words
-
-    enabled_mentions = models.BooleanField(default=True)
-    enabled_dm = models.BooleanField(default=True)
 
 
 class Trigger(Keyword):
