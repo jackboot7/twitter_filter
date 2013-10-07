@@ -17,7 +17,7 @@ var
                 label.removeClass('label-success').addClass('label-important');
             }
 
-            $('#activate_timeblocks_check').attr('checked', data.timeblocks);
+            $('#activate_timeblocks_check').attr('checked', data.scheduled_blocks);
             $('#activate_blacklist_check').attr('checked', data.blacklist);
             $('#activate_triggers_check').attr('checked', data.triggers);
             $('#activate_replacements_check').attr('checked', data.replacements);

@@ -10,7 +10,7 @@ from django.views.generic.edit import UpdateView
 from apps.accounts.models import Channel
 from apps.control.models import ScheduleBlock
 from apps.filtering import tasks
-from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleBlock, Replacement
+from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleBlock, Replacement, Keyword
 
 logger = logging.getLogger('twitter')
 
@@ -34,8 +34,6 @@ class CheckStatusView(JSONResponseMixin, AjaxResponseMixin, DetailView):
 
     def get_ajax(self, request,  *args, **kwargs):
         obj = self.get_object()
-        print "triggers = %s" % obj.filteringconfig.triggers_enabled
-
         response_data = {'module_enabled': obj.filteringconfig.retweets_enabled,
                          'scheduled_blocks': obj.filteringconfig.scheduleblocks_enabled,
                          'blacklist':  obj.filteringconfig.blacklist_enabled,
@@ -227,6 +225,44 @@ class SwitchFiltersView(CsrfExemptMixin, JSONResponseMixin,
             content_type="application/json")
 
 
+class SwitchKeywordMentionView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = Keyword
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            if obj.enabled_mentions:
+                obj.enabled_mentions = False
+                obj.save()
+            else:
+                obj.enabled_mentions = True
+                obj.save()
+        except Exception:
+            logger.exception("Error in SwitchKeywordMentionView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class SwitchKeywordDMView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = Keyword
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            if obj.enabled_dm:
+                obj.enabled_dm = False
+                obj.save()
+            else:
+                obj.enabled_dm = True
+                obj.save()
+        except Exception:
+            logger.exception("Error in SwitchKeywordDMView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
 
 
 #==========================

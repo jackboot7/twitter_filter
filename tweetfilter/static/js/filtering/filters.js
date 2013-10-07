@@ -14,6 +14,10 @@ var
                     $('#filter_list_tbody').append(
                         "<tr>" +
                             "<td>" + elem.text + "</td>" +
+                            "<td><div class='offset2'><input id='filter_mention_check_" + elem.id +
+                            "' type='checkbox' checked='"  + elem.enabled_mentions + "'></div></td>" +
+                            "<td><div class='offset1'><input id='filter_dm_check_" + elem.id +
+                            "' type='checkbox' checked='"  + elem.enabled_dm + "'></div></td>" +
                             "<td><a id='delete_filter_" + elem.id +"' class='delete_filter' " +
                             "title='Haga click para eliminar filtro' href='#delete_filter_confirm_modal' data-toggle='modal'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td>" +
@@ -23,6 +27,14 @@ var
                     $('#delete_filter_' + elem.id).click(function () {
                         $('#deleting_filter_text').text(elem.text);
                         $('#deleting_filter_id').val(elem.id);
+                    });
+
+                    $('#filter_mention_check_' + elem.id).change(function () {
+
+                    });
+
+                    $('#filter_dm_check_' + elem.id).change(function () {
+
                     });
                 });
                 $('#filter_list_div').slimscroll();
