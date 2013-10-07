@@ -24,17 +24,24 @@ var
                             "</tr>"
                     );
 
-                    $('#delete_filter_' + elem.id).click(function () {
-                        $('#deleting_filter_text').text(elem.text);
-                        $('#deleting_filter_id').val(elem.id);
-                    });
+                    $('#filter_mention_check_' + elem.id).attr('checked', elem.enabled_mentions);
+                    $('#filter_dm_check_' + elem.id).attr('checked', elem.enabled_dm);
 
                     $('#filter_mention_check_' + elem.id).change(function () {
+                        $.post("/filtering/filter/switch_mention/" + elem.id, function () {
 
+                        });
                     });
 
                     $('#filter_dm_check_' + elem.id).change(function () {
+                        $.post("/filtering/filter/switch_dm/" + elem.id, function () {
 
+                        });
+                    });
+
+                    $('#delete_filter_' + elem.id).click(function () {
+                        $('#deleting_filter_text').text(elem.text);
+                        $('#deleting_filter_id').val(elem.id);
                     });
                 });
                 $('#filter_list_div').slimscroll();

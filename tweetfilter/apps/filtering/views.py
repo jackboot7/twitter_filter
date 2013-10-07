@@ -308,7 +308,7 @@ class SwitchFilterDMView(CsrfExemptMixin, JSONResponseMixin,
 
 class SwitchReplacementMentionView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, UpdateView):
-    model = Filter
+    model = Replacement
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
         try:
