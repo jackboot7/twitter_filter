@@ -9,6 +9,12 @@ urlpatterns = patterns('apps.filtering.views',
     url(r'check_status/(?P<pk>\w+)', CheckStatusView.as_view()),
     url(r'switch_status/(?P<pk>\w+)', SwitchStatusView.as_view()),
 
+    url(r'switch_scheduledblocks/(?P<pk>\w+)', SwitchScheduleBlocksView.as_view()),
+    url(r'switch_blacklist/(?P<pk>\w+)', SwitchBlackListView.as_view()),
+    url(r'switch_triggers/(?P<pk>\w+)', SwitchTriggersView.as_view()),
+    url(r'switch_replacements/(?P<pk>\w+)', SwitchReplacementsView.as_view()),
+    url(r'switch_filters/(?P<pk>\w+)', SwitchFiltersView.as_view()),
+
     url(r'^timeblock/list/(?P<pk>\w+)', TimeBlockListView.as_view()),
     url(r'^timeblock/add/', TimeBlockCreateView.as_view()),
     url(r'^timeblock/delete/(?P<pk>\w+)', TimeBlockDeleteView.as_view()),

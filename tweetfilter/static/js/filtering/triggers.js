@@ -14,6 +14,8 @@ var
                     $('#trigger_list_tbody').append(
                         "<tr>" +
                             "<td>" + elem.text + "</td>" +
+                            "<td><div class='offset2'><input id='mention_check' type='checkbox'"  + elem.mention_checked + "></div></td>" +
+                            "<td><div class='offset1'><input id='dm_check' type='checkbox'"  + elem.dm_checked + "></div></td>" +
                             "<td><a id='delete_trigger_" + elem.id +"' class='delete_trigger' " +
                             "title='Haga click para eliminar disparador' href='#delete_confirm_modal' data-toggle='modal'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td>" +
@@ -64,6 +66,7 @@ var
 
 $(document).ready(function () {
     "use strict";
+
 
     $('#trigger_list_table').hide();
     $('#no_triggers_message').hide();

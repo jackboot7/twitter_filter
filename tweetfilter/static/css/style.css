@@ -61,3 +61,10 @@
 .scrollable {
     max-height: 250px;
 }
+
+#left_column {
+    margin-right: 16px;
+}
+#right_column {
+    margin-left: 0px;
+}

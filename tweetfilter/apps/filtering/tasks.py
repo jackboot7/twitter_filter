@@ -33,7 +33,11 @@ class RetweetDelayedTask(DelayedTask):
             channel = Channel.objects.get(screen_name=self.screen_name)
             logger = channel.get_logger()
 
-            eta = self.calculate_eta(tweet.type)
+            if channel.filteringconfig.scheduleblocks_enabled:
+                eta = self.calculate_eta(tweet.type)
+            else:
+                eta = datetime.datetime.now()
+
             if eta is None:
                 logger.info("There are no blocks available for %s" % tweet.get_type_display())
                 pass
@@ -129,6 +133,10 @@ def stream_channel(chan_id):
     except Exception as e:
         logger.exception("Error starting streaming for %s. Will retry later" % chan_id)
         stream_channel.retry(exc=e, chan_id=chan_id)
+
+        #disable channel automatic retweets
+        chan.filteringconfig.retweets_enabled = False
+        chan.filteringconfig.save()
         return False
 
 
@@ -206,6 +214,11 @@ def store_dm(dm):
 def triggers_filter(tweet):
     if tweet is not None and tweet.status is not Tweet.STATUS_BLOCKED:
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
+
+        # if feature is disabled, pass the tweet
+        if not channel.filteringconfig.triggers_enabled:
+            return tweet
+
         logger = channel.get_logger()
         triggers = channel.get_triggers()
         try:
@@ -229,6 +242,11 @@ def triggers_filter(tweet):
 def banned_words_filter(tweet):
     if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
+
+        # if feature is disabled, pass the tweet
+        if not channel.filteringconfig.filters_enabled:
+            return tweet
+
         logger = channel.get_logger()
         filters = channel.get_filters()
         try:
@@ -254,6 +272,11 @@ def is_user_allowed(tweet):
     if tweet is not None:
         from_user = tweet.screen_name
         channel = Channel.objects.get(screen_name=tweet.mention_to)
+
+        # if feature is disabled, pass the tweet
+        if not channel.filteringconfig.blacklist_enabled:
+            return tweet
+
         logger = channel.get_logger()
         blocked_users = BlockedUser.objects.filter(channel=tweet.mention_to)
         for user in blocked_users:
@@ -279,7 +302,8 @@ def retweet(tweet, txt=None):
         channel = Channel.objects.get(screen_name=tweet.mention_to)
 
         # Apply replacements
-        if txt is None:
+        if txt is None and channel.filteringconfig.replacements_enabled:
+
             reps = Replacement.objects.filter(channel=tweet.mention_to)
             txt = tweet.strip_channel_mention()
             for rep in reps:
