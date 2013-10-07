@@ -123,7 +123,7 @@ def stream_channel(chan_id):
     chan = Channel.objects.filter(screen_name=chan_id)[0]
     logger = chan.get_logger()
     try:
-
+        # if cache.add()
         logger.info("Starting streaming for channel %s" % chan_id)
         stream_log = logging.getLogger('streaming')
         stream_log.info("Starting streaming for channel %s" % chan_id)

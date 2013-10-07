@@ -10,6 +10,7 @@ var
                 $('#trigger_list_table').show();
                 //alert(JSON.stringify(data));
                 $.each(data, function (idx, elem) {
+
                     $('#trigger_list_tbody').append(
                         "<tr>" +
                             "<td>" + elem.text + "</td>" +
@@ -22,6 +23,14 @@ var
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td>" +
                         "</tr>"
                     );
+
+                    $('#mention_check_' + elem.id).change(function () {
+                        //
+                    });
+
+                    $('#dm_check_' + elem.id).change(function () {
+                        //
+                    });
 
                     $('#delete_trigger_' + elem.id).click(function () {
                         $('#deleting_trigger_text').text(elem.text);
