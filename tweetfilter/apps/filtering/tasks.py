@@ -2,6 +2,8 @@
 
 import datetime
 import logging
+from celery.app.task import Task
+from celery.signals import task_revoked
 from django.conf import settings
 from exceptions import Exception
 from celery import task
@@ -15,6 +17,26 @@ from apps.twitter.api import ChannelAPI, Twitter
 from apps.twitter.models import Tweet
 
 TASK_EXPIRES = 900  # 15 min expiry
+
+class ControlledStreamingTask(Task):
+    def __call__(self, *args, **kwargs):
+        chan_id = args[0]
+        if True or cache.add("%s_streaming_task" % chan_id, "true"):
+            stream_log = logging.getLogger("streaming")
+            stream_log.info("Starting streaming for %s LOL" % chan_id)
+            print "starting streaming"
+            return self.run(*args, **kwargs)
+        else:
+            print "trying to start yet another streaming for %s. Failed!" % chan_id
+            pass
+
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        chan = args[0]
+        print "streaming task for %s FAILED! releasing lock" % chan
+        cache.delete("%s_streaming_task" % chan)
+
+    def after_return(self, status, retval, task_id, args, kwargs, einfo):
+        print "ola ke ase? terminando o ke ase?"
 
 class RetweetDelayedTask(DelayedTask):
     """
@@ -114,19 +136,22 @@ class ChannelStreamer(TwythonStreamer):
 
     def on_error(self, status_code, data):
         logger= self.channel.get_logger()
-        logger.error("Error en streaming: %s: %s" % (status_code, data))  # ampliar informacion
+        logger.error("Error in streaming: %s: %s" % (status_code, data))  # ampliar informacion
         self.disconnect()   # ???
+        self.channel.filteringconfig.retweets_enabled = False
+        self.channel.filteringconfig.save()
 
 
-@task(queue="streaming", ignore_result=True, default_retry_delay=5 * 60, max_retries=10)    # retries after 5 min
+@task(queue="streaming", base=ControlledStreamingTask, ignore_result=True, default_retry_delay=5 * 60, max_retries=10)    # retries after 5 min
 def stream_channel(chan_id):
     chan = Channel.objects.filter(screen_name=chan_id)[0]
     logger = chan.get_logger()
     try:
-        # if cache.add()
-        logger.info("Starting streaming for channel %s" % chan_id)
-        stream_log = logging.getLogger('streaming')
-        stream_log.info("Starting streaming for channel %s" % chan_id)
+
+
+        #logger.info("Starting streaming for channel %s" % chan_id)
+        #stream_log = logging.getLogger('streaming')
+        #stream_log.info("Starting streaming for channel %s" % chan_id)
         stream = ChannelStreamer(chan)
         stream.user(**{"with": "followings"})
         return True
@@ -134,7 +159,7 @@ def stream_channel(chan_id):
         logger.exception("Error starting streaming for %s. Will retry later" % chan_id)
         stream_channel.retry(exc=e, chan_id=chan_id)
 
-        #disable channel automatic retweets
+        # automatic retweets remains disabled
         chan.filteringconfig.retweets_enabled = False
         chan.filteringconfig.save()
         return False
@@ -355,3 +380,18 @@ def update_status(channel_id, tweet, txt):
             pass
         tweet.status = Tweet.STATUS_NOT_SENT
         logger.exception("Tweet #%s NOT SENT" % tweet.tweet_id)
+
+
+@task_revoked.connect()
+def on_revoke_streaming(sender=None, task_id=None, task=None, args=None,
+                      kwargs=None, **kwds):
+    print "Task REVOKED!!!"
+    print "sender = %s" % sender
+    print "task_id = %s" % task_id
+    print "task = %s" % task
+    print "args = %s" % args
+    print "kwargs = %s" % kwargs
+#    chan_id = args[0]
+#    print 'Ya. Se acabo el show para %s' % chan_id
+#    cache.delete("%s_streaming_task" % chan_id) # release lock
+
