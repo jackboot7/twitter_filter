@@ -138,7 +138,7 @@ class Channel(models.Model):
         stream_log = logging.getLogger("streaming")
         channel_log = self.get_logger()
         try:
-            if self.streaming_task is not None:
+            if self.streaming_task is not None and hasattr(self.streaming_task, 'abort'):
                 self.streaming_task.abort()
                 message = "Stopping streaming for %s" % self.screen_name
             else:
@@ -150,7 +150,7 @@ class Channel(models.Model):
             return True
         except Exception, e:
             message = "Error while trying to stop streaming for %s" % self.screen_name
-            channel_log.info(message)
+            channel_log.exception(message)
             stream_log.exception(message)
             return False
 
