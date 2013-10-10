@@ -2,11 +2,10 @@
 
 import datetime
 import logging
-from billiard.exceptions import Terminated
+
 from celery._state import current_task
-from celery.app.task import Task
 from celery.contrib.abortable import AbortableTask
-from celery.signals import task_revoked
+from celery.signals import celeryd_init
 from django.conf import settings
 from exceptions import Exception
 from celery import task
@@ -103,7 +102,10 @@ class ChannelStreamer(TwythonStreamer):
         self.channel = channel
 
     def on_success(self, data):
-        self.handle_data(data)
+        if not self.task.is_aborted():
+            self.handle_data(data)
+        else:
+            self.disconnect()
 
     def handle_data(self, data):
         if 'direct_message' in data:
@@ -112,12 +114,8 @@ class ChannelStreamer(TwythonStreamer):
         elif 'text' in data:
             for mention in data['entities']['user_mentions']:
                 if self.channel.screen_name.lower() == mention['screen_name'].lower():
-                    # Invokes subtask chain for storing and retweeting
-                    if not self.task.is_aborted():
-                        print "task is not aborted"
-                        res = filter_pipeline.apply_async([data, self.channel.screen_name])
-                    else:
-                        self.disconnect()
+                    # Invokes subtask chain for storing, filtering and retweeting
+                    res = filter_pipeline.apply_async([data, self.channel.screen_name])
         else:
             # should we handle the rest of the tweets?
             # Maybe store them for future use.
@@ -126,10 +124,16 @@ class ChannelStreamer(TwythonStreamer):
     def on_error(self, status_code, data):
         logger= self.channel.get_logger()
         logger.error("Error in streaming: %s: %s" % (status_code, data))  # ampliar informacion
-        self.disconnect()   # ???
+        self.disconnect()
+        cache.delete("streaming_lock_%s" % self.channel.screen_name)
         self.channel.filteringconfig.retweets_enabled = False
         self.channel.filteringconfig.save()
 
+    def disconnect(self):
+        """Used to disconnect the streaming client manually"""
+        logger= self.channel.get_logger()
+        logger.info("Disconnecting stream client for channel %s" % self.channel.screen_name)
+        self.connected = False
 
 @task(queue="streaming", base=AbortableTask, ignore_result=True, default_retry_delay=60, max_retries=10)    # retries after 5 min
 def stream_channel(chan_id):
@@ -323,10 +327,12 @@ def retweet(tweet, txt=None):
         channel = Channel.objects.get(screen_name=tweet.mention_to)
 
         # Apply replacements
-        if txt is None and channel.filteringconfig.replacements_enabled:
-
-            reps = Replacement.objects.filter(channel=tweet.mention_to)
+        if txt is None:
             txt = tweet.strip_channel_mention()
+
+        if channel.filteringconfig.replacements_enabled:
+            reps = Replacement.objects.filter(channel=tweet.mention_to)
+
             for rep in reps:
                 txt = rep.replace_in(txt)
 
@@ -386,17 +392,9 @@ def update_status(channel_id, tweet, txt):
         logger.exception("Tweet #%s NOT SENT" % tweet.tweet_id)
 
 
-@task_revoked.connect()
-def on_revoke_streaming(sender=None, task_id=None, task=None, args=None,
-                      kwargs=None, **kwds):
-    print "current_task id = %s" % current_task.id
-    print "Task REVOKED!!!"
-    print "sender = %s" % sender
-    print "task_id = %s" % task_id
-    print "task = %s" % task
-    print "args = %s" % args
-    print "kwargs = %s" % kwargs
-#    chan_id = args[0]
-#    print 'Ya. Se acabo el show para %s' % chan_id
-#    cache.delete("%s_streaming_task" % chan_id) # release lock
-
+@celeryd_init.connect
+def initialize_streaming_tasks(sender=None, conf=None, **kwargs):
+    channels = Channel.objects.all()
+    for chan in channels:
+        if chan.filteringconfig.retweets_enabled:
+            chan.init_streaming()
