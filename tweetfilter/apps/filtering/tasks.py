@@ -2,7 +2,10 @@
 
 import datetime
 import logging
+from billiard.exceptions import Terminated
+from celery._state import current_task
 from celery.app.task import Task
+from celery.contrib.abortable import AbortableTask
 from celery.signals import task_revoked
 from django.conf import settings
 from exceptions import Exception
@@ -21,11 +24,18 @@ TASK_EXPIRES = 900  # 15 min expiry
 class ControlledStreamingTask(Task):
     def __call__(self, *args, **kwargs):
         chan_id = args[0]
+        chan = Channel.objects.filter(screen_name=chan_id)[0]
+
         if True or cache.add("%s_streaming_task" % chan_id, "true"):
             stream_log = logging.getLogger("streaming")
-            stream_log.info("Starting streaming for %s LOL" % chan_id)
-            print "starting streaming"
-            return self.run(*args, **kwargs)
+            chan_log = chan.get_logger()
+            chan_log.info("Starting streaming for %s" % chan_id)
+            stream_log.info("Starting streaming for %s" % chan_id)
+
+            try:
+                return self.run(*args, **kwargs)
+            except Terminated, t:
+                print "se termino todo bien el mio"
         else:
             print "trying to start yet another streaming for %s. Failed!" % chan_id
             pass
@@ -106,15 +116,16 @@ class ChannelStreamer(TwythonStreamer):
     """
     channel = {}
     twitter_api = {}
+    task = {}
 
-    def __init__(self, channel):
+    def __init__(self, channel, task):
         super(ChannelStreamer, self).__init__(
             app_key=settings.TWITTER_APP_KEY, app_secret=settings.TWITTER_APP_SECRET,
             oauth_token=channel.oauth_token, oauth_token_secret=channel.oauth_secret)
 
         self.twitter_api = Twitter(key=settings.TWITTER_APP_KEY, secret=settings.TWITTER_APP_SECRET,
             token=channel.oauth_token, token_secret=channel.oauth_secret)
-
+        self.task = task
         self.channel = channel
 
     def on_success(self, data):
@@ -128,7 +139,11 @@ class ChannelStreamer(TwythonStreamer):
             for mention in data['entities']['user_mentions']:
                 if self.channel.screen_name.lower() == mention['screen_name'].lower():
                     # Invokes subtask chain for storing and retweeting
-                    res = filter_pipeline.apply_async([data, self.channel.screen_name])
+                    if not self.task.is_aborted():
+                        res = filter_pipeline.apply_async([data, self.channel.screen_name])
+                    else:
+                        print "Streaming task for %s has been aborted" % self.channel.screen_name
+                        self.disconnect()
         else:
             # should we handle the rest of the tweets?
             # Maybe store them for future use.
@@ -142,17 +157,15 @@ class ChannelStreamer(TwythonStreamer):
         self.channel.filteringconfig.save()
 
 
-@task(queue="streaming", base=ControlledStreamingTask, ignore_result=True, default_retry_delay=5 * 60, max_retries=10)    # retries after 5 min
+@task(queue="streaming", base=AbortableTask, ignore_result=True, default_retry_delay=5 * 60, max_retries=10)    # retries after 5 min
 def stream_channel(chan_id):
     chan = Channel.objects.filter(screen_name=chan_id)[0]
     logger = chan.get_logger()
     try:
-
-
         #logger.info("Starting streaming for channel %s" % chan_id)
         #stream_log = logging.getLogger('streaming')
         #stream_log.info("Starting streaming for channel %s" % chan_id)
-        stream = ChannelStreamer(chan)
+        stream = ChannelStreamer(chan, current_task)
         stream.user(**{"with": "followings"})
         return True
     except Exception as e:
@@ -242,6 +255,8 @@ def triggers_filter(tweet):
 
         # if feature is disabled, pass the tweet
         if not channel.filteringconfig.triggers_enabled:
+            tweet.status = Tweet.STATUS_TRIGGERED
+            tweet.save()
             return tweet
 
         logger = channel.get_logger()
@@ -270,6 +285,8 @@ def banned_words_filter(tweet):
 
         # if feature is disabled, pass the tweet
         if not channel.filteringconfig.filters_enabled:
+            tweet.status = Tweet.STATUS_APPROVED
+            tweet.save()
             return tweet
 
         logger = channel.get_logger()
@@ -385,6 +402,7 @@ def update_status(channel_id, tweet, txt):
 @task_revoked.connect()
 def on_revoke_streaming(sender=None, task_id=None, task=None, args=None,
                       kwargs=None, **kwds):
+    print "current_task id = %s" % current_task.id
     print "Task REVOKED!!!"
     print "sender = %s" % sender
     print "task_id = %s" % task_id

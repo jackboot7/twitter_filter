@@ -61,21 +61,26 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
                 # disable
                 #logger.debug("terminating task %s" % obj.streaming_task.id)
 
-                from celery import current_app
-                current_app.control.revoke(obj.streaming_task.id, terminate=True)
+                #from celery import current_app
+                #current_app.control.revoke(obj.streaming_task.id, terminate=True)
                 #obj.streaming_task.revoke(terminate=True)
-                log = logging.getLogger("streaming")
-                log.info("Stopped streaming for channel %s" % obj.screen_name)
-                obj.filteringconfig.retweets_enabled = False
-                obj.filteringconfig.save()
+
+
+                if obj.stop_streaming():
+                    obj.filteringconfig.retweets_enabled = False
+                    obj.filteringconfig.save()
+                    response_data = {'result': "ok"}
+                else:
+                    response_data = {'result': "fail"}
             else:
                 # enable
-                task = tasks.stream_channel.delay(obj.screen_name)
-                obj.streaming_task = task   # tiene que haber un mejor lugar para guardar el task
-                obj.save()
-                obj.filteringconfig.retweets_enabled = True
-                obj.filteringconfig.save()
-            response_data = {'result': "ok"}
+                if obj.init_streaming():
+                    obj.filteringconfig.retweets_enabled = True
+                    obj.filteringconfig.save()
+                    response_data = {'result': "ok"}
+                else:
+                    response_data = {'result': "fail"}
+
         except Exception as e:
             logger.exception("Error in SwitchStatusView")
             response_data = {'result': "fail"}

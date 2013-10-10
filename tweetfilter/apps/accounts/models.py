@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+from django.core.cache import cache
 import os
 import logging
 
@@ -71,13 +72,14 @@ class Channel(models.Model):
 
     def activate(self):
         self.status = self.STATUS_ENABLED
-        self.save()
-        #self.init_streaming()
+        if self.init_streaming():
+            self.save()
 
     def deactivate(self):
         self.status = self.STATUS_DISABLED
-        self.save()
-        #self.stop_streaming()
+
+        if self.stop_streaming():
+            self.save()
 
     def is_active(self):
         return self.status == self.STATUS_ENABLED
@@ -114,21 +116,44 @@ class Channel(models.Model):
 
         return self.logger
 
-    """
-    def init_streaming(self):
-        task = stream_channel.delay(self)
-        self.streaming_task = task
-        print "Initializing task id = %s (%s)" % (task.id, self.screen_name)
-        self.save()
-    """
 
-    """
-    def stop_streaming(self):
+    def init_streaming(self):
+        from apps.filtering.tasks import  stream_channel
+        stream_log = logging.getLogger("streaming")
+        channel_log = self.get_logger()
         try:
-            self.streaming_task.revoke(terminate=True)
+            if cache.add("streaming_lock_%s" % self.screen_name, "true"):
+                task = stream_channel.delay(self.screen_name)
+                self.streaming_task = task
+                self.save()
+                message = "Starting streaming for %s" % self.screen_name
+                stream_log.info(message)
+                channel_log.info(message)
+                return True
+            else:
+                stream_log.warning("Second proccess tried to start streaming for %s. Couldn't get the lock." % self.screen_name)
+                return False
+        except Exception:
+            self.get_logger().exception("Error while trying to initialize streaming for %s" % self.screen_name)
+            return False
+
+
+    def stop_streaming(self):
+        stream_log = logging.getLogger("streaming")
+        channel_log = self.get_logger()
+        try:
+            self.streaming_task.abort()
+            message = "Stopped streaming for %s" % self.screen_name
+            stream_log.info(message)
+            self.get_logger().info(message)
+            cache.delete("streaming_lock_%s" % self.screen_name)
+            return True
         except Exception, e:
-            print "streaming task doesn't exist yet (%s)" % e
-    """
+            message = "Error while trying to stop streaming for %s" % self.screen_name
+            channel_log.info(message)
+            stream_log.exception(message)
+            return False
+
     """
     # pendiente por implementar
     def is_streaming(self):

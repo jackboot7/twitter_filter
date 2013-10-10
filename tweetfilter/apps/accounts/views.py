@@ -60,8 +60,9 @@ class AuthCallbackView(View):
         chan.save()
 
         #initializes streaming process
-        task = tasks.stream_channel.delay(chan.screen_name)
-        chan.streaming_task = task
+        #task = tasks.stream_channel.delay(chan.screen_name)
+        #chan.streaming_task = task
+        chan.init_streaming()
         chan.save()
 
         return HttpResponseRedirect(reverse("channel_added"))
@@ -105,15 +106,6 @@ class DeleteChannelView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
         #self.get_object().stop_streaming()
         obj = self.get_object()
-        try:
-            obj.streaming_task.revoke(terminate=True)
-            log = logging.getLogger("streaming")
-            chan_log = obj.getLogger()
-            chan_log.info("Stopped streaming for channel %s" % obj.screen_name)
-            log.info("Stopped streaming for channel %s" % obj.screen_name)
-        except Exception:
-            logger.exception("Couldn't revoke streaming task for channel %s" % obj.screen_name)
-            pass
         self.delete(request)
         response_data = {"result": "ok"}
         return HttpResponse(json.dumps(response_data),
