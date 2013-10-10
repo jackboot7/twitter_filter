@@ -21,32 +21,6 @@ from apps.twitter.models import Tweet
 
 TASK_EXPIRES = 900  # 15 min expiry
 
-class ControlledStreamingTask(Task):
-    def __call__(self, *args, **kwargs):
-        chan_id = args[0]
-        chan = Channel.objects.filter(screen_name=chan_id)[0]
-
-        if True or cache.add("%s_streaming_task" % chan_id, "true"):
-            stream_log = logging.getLogger("streaming")
-            chan_log = chan.get_logger()
-            chan_log.info("Starting streaming for %s" % chan_id)
-            stream_log.info("Starting streaming for %s" % chan_id)
-
-            try:
-                return self.run(*args, **kwargs)
-            except Terminated, t:
-                print "se termino todo bien el mio"
-        else:
-            print "trying to start yet another streaming for %s. Failed!" % chan_id
-            pass
-
-    def on_failure(self, exc, task_id, args, kwargs, einfo):
-        chan = args[0]
-        print "streaming task for %s FAILED! releasing lock" % chan
-        cache.delete("%s_streaming_task" % chan)
-
-    def after_return(self, status, retval, task_id, args, kwargs, einfo):
-        print "ola ke ase? terminando o ke ase?"
 
 class RetweetDelayedTask(DelayedTask):
     """
@@ -140,9 +114,9 @@ class ChannelStreamer(TwythonStreamer):
                 if self.channel.screen_name.lower() == mention['screen_name'].lower():
                     # Invokes subtask chain for storing and retweeting
                     if not self.task.is_aborted():
+                        print "task is not aborted"
                         res = filter_pipeline.apply_async([data, self.channel.screen_name])
                     else:
-                        print "Streaming task for %s has been aborted" % self.channel.screen_name
                         self.disconnect()
         else:
             # should we handle the rest of the tweets?
@@ -171,12 +145,12 @@ def stream_channel(chan_id):
             stream.user(**{"with": "followings"})
             return True
         else:
-            stream_log.warning("Second proccess tried to start streaming for %s. Couldn't get the lock." % self.screen_name)
+            logger.warning("Second proccess tried to start streaming for %s." % chan.screen_name)
             return False
     except Exception as e:
         logger.exception("Error starting streaming for %s. Will retry later" % chan_id)
         stream_channel.retry(exc=e, chan_id=chan_id)
-
+        cache.delete("streaming_lock_%s" % chan_id)
         # automatic retweets remains disabled
         # chan.filteringconfig.retweets_enabled = False
         # chan.filteringconfig.save()
@@ -388,12 +362,20 @@ def retweet(tweet, txt=None):
 def update_status(channel_id, tweet, txt):
     channel = Channel.objects.get(screen_name=channel_id)
     logger = channel.get_logger()
+
     try:
-        api = ChannelAPI(channel)
-        api.tweet(txt)
-        logger.info("Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id)
-        tweet.status = Tweet.STATUS_SENT
-        tweet.retweeted_text = txt
+        if channel.filteringconfig.retweets_enabled:
+            api = ChannelAPI(channel)
+            api.tweet(txt)
+            logger.info("Retweeted tweet #%s succesfully and marked it as SENT" % tweet.tweet_id)
+            tweet.status = Tweet.STATUS_SENT
+            tweet.retweeted_text = txt
+            tweet.save()
+        else:
+            logger.info("Tweet #%s marked as NOT_SENT (channel was disabled)" % tweet.tweet_id)
+            tweet.status = Tweet.STATUS_NOT_SENT
+            tweet.retweeted_text = txt
+            tweet.save()
     except TwythonError, e:
         if "update limit" in e.message:
             # save event for statistics

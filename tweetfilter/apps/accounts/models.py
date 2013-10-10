@@ -137,7 +137,7 @@ class Channel(models.Model):
         channel_log = self.get_logger()
         try:
             self.streaming_task.abort()
-            message = "Stopping streaming for %s" % self.screen_name
+            message = "Stopped streaming for %s" % self.screen_name
             stream_log.info(message)
             self.get_logger().info(message)
             cache.delete("streaming_lock_%s" % self.screen_name)
