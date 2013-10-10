@@ -14,16 +14,19 @@ var
                     $('#trigger_list_tbody').append(
                         "<tr>" +
                             "<td>" + elem.text + "</td>" +
+                            /*
                             "<td><div class='offset2'><input id='trigger_mention_check_" + elem.id +
                             "' type='checkbox'></div></td>" +
                             "<td><div class='offset1'><input id='trigger_dm_check_" + elem.id +
                             "' type='checkbox'></div></td>" +
+                            */
                             "<td><a id='delete_trigger_" + elem.id +"' class='delete_trigger' " +
                             "title='Haga click para eliminar disparador' href='#delete_confirm_modal' data-toggle='modal'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td>" +
                         "</tr>"
                     );
 
+                    /*
                     $('#trigger_mention_check_' + elem.id).attr('checked', elem.enabled_mentions);
                     $('#trigger_dm_check_' + elem.id).attr('checked', elem.enabled_dm);
 
@@ -38,6 +41,7 @@ var
 
                         });
                     });
+                    // */
 
                     $('#delete_trigger_' + elem.id).click(function () {
                         $('#deleting_trigger_text').text(elem.text);

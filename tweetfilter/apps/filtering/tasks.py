@@ -132,7 +132,7 @@ class ChannelStreamer(TwythonStreamer):
     def disconnect(self):
         """Used to disconnect the streaming client manually"""
         logger= self.channel.get_logger()
-        logger.info("Disconnecting stream client for channel %s" % self.channel.screen_name)
+        logger.info("Disconnected stream client for channel %s" % self.channel.screen_name)
         self.connected = False
 
 @task(queue="streaming", base=AbortableTask, ignore_result=True, default_retry_delay=60, max_retries=10)    # retries after 5 min

@@ -15,16 +15,19 @@ var
                         "<tr>" +
                             "<td>" + elem.text + "</td>" +
                             "<td>" + elem.replace_with + "</td>" +
+                            /*
                             "<td><div class='offset2'>" + "<input id='replacement_mention_check_" + elem.id +
                             "' type='checkbox'></div></td>" +
                             "<td><div class='offset2'><input id='replacement_dm_check_" + elem.id +
                             "' type='checkbox'></div></td>" +
+                            */
                             "<td><div class='offset2'><a id='delete_replacement_" + elem.id +"' class='delete_replacement' " +
                             "title='Haga click para eliminar el supresor' href='#delete_replacement_confirm_modal' data-toggle='modal'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</div></td>" +
                             "</tr>"
                     );
 
+                    /*
                     $('#replacement_mention_check_' + elem.id).attr('checked', elem.enabled_mentions);
                     $('#replacement_dm_check_' + elem.id).attr('checked', elem.enabled_dm);
 
@@ -39,6 +42,7 @@ var
 
                         });
                     });
+                    // */
 
                     $('#delete_replacement_' + elem.id).click(function () {
                         $('#deleting_replacement_text').text(elem.text);
