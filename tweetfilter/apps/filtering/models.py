@@ -50,17 +50,35 @@ class Keyword(models.Model):
     enabled_mentions = models.BooleanField(default=True)
     enabled_dm = models.BooleanField(default=True)
 
+    def normalize(self, string):
+        return unidecode(string.lower())    # convert to unicode
+
+    def normalized_text(self):
+        return self.normalize(self.text)
+
     def equals(self, other_text):
-        return unidecode(self.text.lower()) == unidecode(other_text.lower())
+        return self.normalized_text() == self.normalize(other_text)
 
     def occurs_in(self, string):
         if len(self.text.split()) > 1:
             # if the keyword is a phrase, searches for direct occurrence in the string
-            return unidecode(self.text.lower()) in unidecode(string.lower())
+            return self.normalized_text() in self.normalize(string)
         else:
             # else: searches for individual word occurrence
-            words = "".join((char if char.isalpha() else " ") for char in unidecode(string.lower())).split()
-            return unidecode(self.text.lower()) in words
+            words = self.get_normalized_words(string)
+            return self.normalized_text() in words
+
+    def get_words(self, string):
+        # returns string as a list of words, stripping punctuations, spaces and special chars
+        return "".join((
+            char if char.isalpha() or char.isdigit() or char == "@" or char == "_" or char == "#"
+            else " ") for char in string).split()
+
+    def get_normalized_words(self, string):
+        # returns string as a list of normalized words
+        return "".join((
+            char if char.isalpha() or char.isdigit() or char == "@" or char == "_" or char == "#"
+            else " ") for char in self.normalize(string)).split()
 
 
 class Trigger(Keyword):
@@ -104,3 +122,22 @@ class Replacement(Keyword):
     """
     channel = models.ForeignKey(Channel)
     replace_with = models.CharField(max_length=32)
+
+    def replace_in(self, string):
+        txt = string
+
+        if len(self.text.split()) > 1:  # if replacement is a phrase
+            matches = re.finditer("(%s)" % self.normalized_text(), self.normalize(string))
+            offset = len(self.replace_with) - len(self.text)
+            count = 0
+            for match in matches:
+                txt = txt[:match.start() + (offset * count)] +\
+                      self.replace_with + string[match.end():]
+                count += 1
+        else:
+            words = self.get_words(string)
+            for word in words:
+                if self.equals(word):
+                    regexp = re.compile(r"(\W|^)(%s)\b" % word)
+                    txt = regexp.sub(r"\g<1>%s" % self.replace_with, txt)
+        return txt

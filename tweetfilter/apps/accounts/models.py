@@ -122,17 +122,11 @@ class Channel(models.Model):
         stream_log = logging.getLogger("streaming")
         channel_log = self.get_logger()
         try:
-            if cache.add("streaming_lock_%s" % self.screen_name, "true"):
                 task = stream_channel.delay(self.screen_name)
                 self.streaming_task = task
                 self.save()
-                message = "Starting streaming for %s" % self.screen_name
-                stream_log.info(message)
-                channel_log.info(message)
                 return True
-            else:
-                stream_log.warning("Second proccess tried to start streaming for %s. Couldn't get the lock." % self.screen_name)
-                return False
+
         except Exception:
             self.get_logger().exception("Error while trying to initialize streaming for %s" % self.screen_name)
             return False
@@ -143,7 +137,7 @@ class Channel(models.Model):
         channel_log = self.get_logger()
         try:
             self.streaming_task.abort()
-            message = "Stopped streaming for %s" % self.screen_name
+            message = "Stopping streaming for %s" % self.screen_name
             stream_log.info(message)
             self.get_logger().info(message)
             cache.delete("streaming_lock_%s" % self.screen_name)

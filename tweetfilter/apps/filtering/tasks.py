@@ -157,24 +157,29 @@ class ChannelStreamer(TwythonStreamer):
         self.channel.filteringconfig.save()
 
 
-@task(queue="streaming", base=AbortableTask, ignore_result=True, default_retry_delay=5 * 60, max_retries=10)    # retries after 5 min
+@task(queue="streaming", base=AbortableTask, ignore_result=True, default_retry_delay=60, max_retries=10)    # retries after 5 min
 def stream_channel(chan_id):
     chan = Channel.objects.filter(screen_name=chan_id)[0]
+    stream_log = logging.getLogger('streaming')
     logger = chan.get_logger()
     try:
-        #logger.info("Starting streaming for channel %s" % chan_id)
-        #stream_log = logging.getLogger('streaming')
-        #stream_log.info("Starting streaming for channel %s" % chan_id)
-        stream = ChannelStreamer(chan, current_task)
-        stream.user(**{"with": "followings"})
-        return True
+        if cache.add("streaming_lock_%s" % chan_id, "true"):
+            message = "Starting streaming for %s" % chan.screen_name
+            stream_log.info(message)
+            logger.info(message)
+            stream = ChannelStreamer(chan, current_task)
+            stream.user(**{"with": "followings"})
+            return True
+        else:
+            stream_log.warning("Second proccess tried to start streaming for %s. Couldn't get the lock." % self.screen_name)
+            return False
     except Exception as e:
         logger.exception("Error starting streaming for %s. Will retry later" % chan_id)
         stream_channel.retry(exc=e, chan_id=chan_id)
 
         # automatic retweets remains disabled
-        chan.filteringconfig.retweets_enabled = False
-        chan.filteringconfig.save()
+        # chan.filteringconfig.retweets_enabled = False
+        # chan.filteringconfig.save()
         return False
 
 
