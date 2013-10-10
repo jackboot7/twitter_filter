@@ -96,8 +96,9 @@ class Channel(models.Model):
             return False
 
     def get_logger(self):
-        from django.conf import settings
-        if self.logger is None:
+        #from django.conf import settings
+        #if self.logger is None:
+        """
             handler = logging.handlers.RotatingFileHandler(
                 filename=os.path.join(settings.LOGGING_ROOT, "%s.log" % self.screen_name),
                 maxBytes=1024 * 1024 * 5,
@@ -112,9 +113,10 @@ class Channel(models.Model):
 
             self.logger.handlers = []
             self.logger.addHandler(handler)
-            # logger no persiste, conviene conseguir una mejor estrategia
-
-        return self.logger
+        """
+        # logger no persiste, conviene conseguir una mejor estrategia
+        return logging.getLogger("twitter")
+        #return self.logger
 
 
     def init_streaming(self):
