@@ -12,7 +12,7 @@ from django.views.generic.edit import DeleteView, UpdateView
 from apps.accounts.models import Channel
 from apps.scheduling.models import ScheduledTweet
 
-logger = logging.getLogger('twitter')
+logger = logging.getLogger('app')
 
 #==========================
 # Filtering Config
@@ -143,7 +143,7 @@ class ScheduledTweetCreateView(CsrfExemptMixin, JSONResponseMixin,
             block.save()
             response_data = {'result': "ok"}
         except Exception, e:
-            logger.exception("Error al crear scheduled tweet")
+            logger.exception("Error while creating scheduled tweet")
             response_data = {'result': e}
 
         return HttpResponse(json.dumps(response_data),

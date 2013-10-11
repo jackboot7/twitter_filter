@@ -5,7 +5,7 @@ from twython.api import Twython
 from twython.streaming.api import TwythonStreamer
 from django.conf import settings
 
-logger = logging.getLogger('twitter')
+logger = logging.getLogger('app')
 
 class Streamer(TwythonStreamer):
     filter_mode = ''

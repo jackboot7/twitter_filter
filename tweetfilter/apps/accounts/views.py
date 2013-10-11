@@ -14,7 +14,7 @@ from apps.accounts.models import Channel
 from django.views.generic.edit import DeleteView, UpdateView
 from apps.filtering import tasks
 
-logger = logging.getLogger('twitter')
+logger = logging.getLogger('app')
 
 class TwitterAuthenticationView(View):
     def get(self, request, *args, **kwargs):

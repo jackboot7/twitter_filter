@@ -12,7 +12,7 @@ from apps.control.models import ScheduleBlock
 from apps.filtering import tasks
 from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleBlock, Replacement, Keyword
 
-logger = logging.getLogger('twitter')
+logger = logging.getLogger('app')
 
 class FilteringDetailView(DetailView):
     """

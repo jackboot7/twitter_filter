@@ -115,14 +115,14 @@ class Channel(models.Model):
             self.logger.addHandler(handler)
         """
         # logger no persiste, conviene conseguir una mejor estrategia
-        return logging.getLogger("twitter")
-        #return self.logger
+        logger = logging.LoggerAdapter(logging.getLogger("twitter"), {
+            'screen_name': self.screen_name
+        })
+        return logger
 
 
     def init_streaming(self):
         from apps.filtering.tasks import  stream_channel
-        stream_log = logging.getLogger("streaming")
-        channel_log = self.get_logger()
         try:
                 task = stream_channel.delay(self.screen_name)
                 self.streaming_task = task

@@ -135,7 +135,8 @@ class ChannelStreamer(TwythonStreamer):
         logger.info("Disconnected stream client for channel %s" % self.channel.screen_name)
         self.connected = False
 
-@task(queue="streaming", base=AbortableTask, ignore_result=True, default_retry_delay=60, max_retries=10)    # retries after 5 min
+@task(queue="streaming", base=AbortableTask, ignore_result=True, default_retry_delay=60,
+    max_retries=10)    # retries after 5 min
 def stream_channel(chan_id):
     chan = Channel.objects.filter(screen_name=chan_id)[0]
     stream_log = logging.getLogger('streaming')
@@ -200,7 +201,7 @@ def store_tweet(data, channel_id):
         tweet.mention_to = channel_id
         tweet.type = Tweet.TYPE_MENTION
         tweet.save()
-        logger.info(tweet)
+        logger.info(tweet.__unicode__())
         return tweet
     except Exception, e:
         logger.exception("Error trying to save tweet #%s" % data['id'])
@@ -249,7 +250,8 @@ def triggers_filter(tweet):
                 if tr.occurs_in(tweet.strip_channel_mention()):
                     tweet.status = Tweet.STATUS_TRIGGERED
                     tweet.save()
-                    logger.info("Marked #%s as TRIGGERED (found the trigger '%s')" % (tweet.tweet_id, tr.text))
+                    logger.info("Marked #%s as TRIGGERED (found the trigger '%s')" %
+                                (tweet.tweet_id, tr.text))
                     break
             else:
                 logger.info("Marked #%s as NOT TRIGGERED" % tweet.tweet_id)
@@ -279,7 +281,8 @@ def banned_words_filter(tweet):
                 if filter.occurs_in(tweet.strip_channel_mention()):
                     tweet.status = Tweet.STATUS_BLOCKED
                     tweet.save()
-                    logger.info("BLOCKED tweet #%s (found the word '%s')" % (tweet.tweet_id, filter.text))
+                    logger.info("BLOCKED tweet #%s (found the word '%s')" %
+                                (tweet.tweet_id, filter.text))
                     break
             else:
                 tweet.status = Tweet.STATUS_APPROVED
@@ -309,7 +312,8 @@ def is_user_allowed(tweet):
                 # user is blocked
                 tweet.status = Tweet.STATUS_BLOCKED
                 tweet.save()
-                logger.info("Tweet %s marked as BLOCKED (sent from blacklisted user @%s)" % (tweet.tweet_id, user.screen_name))
+                logger.info("Tweet %s marked as BLOCKED (sent from blacklisted user @%s)" %
+                            (tweet.tweet_id, user.screen_name))
     return tweet
 
 
@@ -325,7 +329,7 @@ def retweet(tweet, txt=None):
 
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         channel = Channel.objects.get(screen_name=tweet.mention_to)
-
+        log = channel.get_logger()
         # Apply replacements
         if txt is None:
             txt = tweet.strip_channel_mention()
@@ -344,7 +348,6 @@ def retweet(tweet, txt=None):
             try:
                 last = cache.get('%s_last_tweet' % channel.screen_name)
                 now = datetime.datetime.now()
-                print "last tweet to send : %s" % last
 
                 if last is not None and (now - last).total_seconds() < DELAY_DELTA:
                     # if it's not first tweet and last tweet is recent, delay.
@@ -352,14 +355,18 @@ def retweet(tweet, txt=None):
                     countdown = (eta - now).total_seconds()
                     if countdown < TASK_EXPIRES:
                         cache.set('%s_last_tweet' % channel.screen_name, eta)
-                        update_status.s().apply_async(args=[channel.screen_name, tweet, txt], countdown=countdown)
+                        update_status.s().apply_async(args=[channel.screen_name, tweet, txt],
+                            countdown=countdown)
+                        log.debug("Tweet %s will be sent in %s seconds" %
+                                  (tweet.tweet_id, countdown))
                     else:
                         tweet.status = Tweet.STATUS_NOT_SENT
-                        log = logging.getLogger("twitter")
-                        log.info("Tweet %s marked as NOT SENT (Too many messages in queue)")
+                        log.info("Tweet %s marked as NOT SENT (Too many messages in queue)" %
+                                 tweet.tweet_id)
                 else:
                     # send now
-                    update_status.s().apply_async(args=[channel.screen_name, tweet, txt], countdown=0)
+                    update_status.s().apply_async(args=[channel.screen_name, tweet, txt],
+                        countdown=0)
                     cache.set('%s_last_tweet' % channel.screen_name, now)
             finally:
                 cache.delete("retweet_lock_%s" % channel.screen_name)    # release lock

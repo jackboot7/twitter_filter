@@ -168,6 +168,9 @@ LOGGING = {
     'formatters': {
         'standard': {
             'format': '%(asctime)s [%(levelname)s]: %(message)s'
+        },
+        'channel': {
+            'format': '%(asctime)s [%(screen_name)s] [%(levelname)s]: %(message)s'
         }
     },
     'filters': {
@@ -186,6 +189,14 @@ LOGGING = {
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 5,
             'formatter': 'standard',
+        },
+        'channels': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOGGING_ROOT, 'twitter-all.log'),
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'channel',
         },
         'console': {
             'level': 'DEBUG',
@@ -214,14 +225,14 @@ LOGGING = {
             'propagate': True,
         },
         'twitter': {
-            'handlers': ['default', 'console'],
+            'handlers': ['channels', 'console'],
             'level': 'DEBUG',
             'propagate': False
         },
-        'twitter.channels': {
-            'handlers': ['default'],    # esto se elimina en runtime
+        'app': {
+            'handlers': ['default', 'console'],
             'level': 'DEBUG',
-            'propagate': True
+            'propagate': False
         },
         'streaming': {
             'handlers': ['streaming'],
