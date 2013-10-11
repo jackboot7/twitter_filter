@@ -265,6 +265,8 @@ CELERY_TIMEZONE = 'America/Caracas'
 CELERY_IMPORTS = ('apps.filtering.tasks',
                   'apps.scheduling.tasks')
 
+CELERY_IGNORE_RESULT = True
+
 
 #==============================================================================
 # Cache
