@@ -1,3 +1,4 @@
+import re
 import django.db.models
 from unidecode import unidecode
 from apps.accounts.models import Channel
