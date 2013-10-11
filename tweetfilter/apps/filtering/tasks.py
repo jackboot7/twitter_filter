@@ -340,23 +340,29 @@ def retweet(tweet, txt=None):
             if len(txt) > 140:
                 txt = "%s..." % txt[0:136]
 
-        if cache.add("%s_lock" % channel.screen_name, "true", LOCK_EXPIRE):  # acquire lock
+        if cache.add("retweet_lock_%s" % channel.screen_name, "true", LOCK_EXPIRE):  # acquire lock
             try:
                 last = cache.get('%s_last_tweet' % channel.screen_name)
                 now = datetime.datetime.now()
+                print "last tweet to send : %s" % last
 
                 if last is not None and (now - last).total_seconds() < DELAY_DELTA:
-                    # if it's first tweet or last tweet is recent, delay.
+                    # if it's not first tweet and last tweet is recent, delay.
                     eta = last + datetime.timedelta(seconds=DELAY_DELTA)
-                    cache.set('%s_last_tweet' % channel.screen_name, eta)
                     countdown = (eta - now).total_seconds()
-                    update_status.s().apply_async(args=[channel.screen_name, tweet, txt], countdown=countdown)
+                    if countdown < TASK_EXPIRES:
+                        cache.set('%s_last_tweet' % channel.screen_name, eta)
+                        update_status.s().apply_async(args=[channel.screen_name, tweet, txt], countdown=countdown)
+                    else:
+                        tweet.status = Tweet.STATUS_NOT_SENT
+                        log = logging.getLogger("twitter")
+                        log.info("Tweet %s marked as NOT SENT (Too many messages in queue)")
                 else:
                     # send now
                     update_status.s().apply_async(args=[channel.screen_name, tweet, txt], countdown=0)
                     cache.set('%s_last_tweet' % channel.screen_name, now)
             finally:
-                cache.delete("%s_lock" % channel.screen_name)    # release lock
+                cache.delete("retweet_lock_%s" % channel.screen_name)    # release lock
         else:
             retweet.s().apply_async(args=[tweet, txt], countdown=5)
             # retry
