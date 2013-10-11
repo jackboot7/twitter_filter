@@ -183,7 +183,7 @@ LOGGING = {
     },
     'handlers': {
         'default': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(LOGGING_ROOT, 'twitter-all.log'),
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
@@ -191,7 +191,7 @@ LOGGING = {
             'formatter': 'standard',
         },
         'channels': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(LOGGING_ROOT, 'twitter-all.log'),
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
@@ -210,7 +210,7 @@ LOGGING = {
             'class': 'django.utils.log.AdminEmailHandler'
         },
         'streaming': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(LOGGING_ROOT, 'streaming.log'),
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
