@@ -124,10 +124,10 @@ class Channel(models.Model):
     def init_streaming(self):
         from apps.filtering.tasks import  stream_channel
         try:
-                task = stream_channel.delay(self.screen_name)
-                self.streaming_task = task
-                self.save()
-                return True
+            task = stream_channel.delay(self.screen_name)
+            self.streaming_task = task
+            self.save()
+            return True
 
         except Exception:
             self.get_logger().exception("Error while trying to initialize streaming for %s" % self.screen_name)

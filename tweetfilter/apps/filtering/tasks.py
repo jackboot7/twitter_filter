@@ -136,7 +136,7 @@ class ChannelStreamer(TwythonStreamer):
         self.connected = False
 
 @task(queue="streaming", base=AbortableTask, ignore_result=True, default_retry_delay=60,
-    max_retries=10)    # retries after 5 min
+    max_retries=10)    # retries after 1 min
 def stream_channel(chan_id):
     chan = Channel.objects.filter(screen_name=chan_id)[0]
     stream_log = logging.getLogger('streaming')
@@ -148,17 +148,17 @@ def stream_channel(chan_id):
             logger.info(message)
             stream = ChannelStreamer(chan, current_task)
             stream.user(**{"with": "followings"})
+
+            print "ola ke ase?"
             return True
         else:
             logger.warning("Second proccess tried to start streaming for %s." % chan.screen_name)
             return False
     except Exception as e:
         logger.exception("Error starting streaming for %s. Will retry later" % chan_id)
-        stream_channel.retry(exc=e, chan_id=chan_id)
         cache.delete("streaming_lock_%s" % chan_id)
-        # automatic retweets remains disabled
-        # chan.filteringconfig.retweets_enabled = False
-        # chan.filteringconfig.save()
+        stream_channel.retry(exc=e, chan_id=chan_id)
+
         return False
 
 
