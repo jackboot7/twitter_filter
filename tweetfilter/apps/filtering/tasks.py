@@ -4,7 +4,6 @@ import datetime
 import logging
 
 from celery._state import current_task
-from celery.contrib.abortable import AbortableTask
 from celery.signals import celeryd_init
 from django.conf import settings
 from exceptions import Exception
@@ -137,24 +136,18 @@ def stream_channel(chan_id):
     chan = Channel.objects.filter(screen_name=chan_id)[0]
     stream_log = logging.getLogger('streaming')
     logger = chan.get_logger()
-    try:
-        if cache.add("streaming_lock_%s" % chan_id, "true"):
-            message = "Starting streaming for %s" % chan.screen_name
-            stream_log.info(message)
-            logger.info(message)
-            stream = ChannelStreamer(chan, current_task)
-            stream.user(**{"with": "followings"})
 
-            print "ola ke ase?"
-            return True
-        else:
-            logger.warning("Second proccess tried to start streaming for %s." % chan.screen_name)
-            return False
+    try:
+        message = "Starting streaming for %s" % chan.screen_name
+        stream_log.info(message)
+        logger.info(message)
+        stream = ChannelStreamer(chan, current_task)
+        stream.user(**{"with": "followings"})
+        return True
     except Exception as e:
         logger.exception("Error starting streaming for %s. Will retry later" % chan_id)
         cache.delete("streaming_lock_%s" % chan_id)
         stream_channel.retry(exc=e, chan_id=chan_id)
-
         return False
 
 

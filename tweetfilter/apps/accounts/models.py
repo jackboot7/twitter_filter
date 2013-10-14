@@ -123,11 +123,16 @@ class Channel(models.Model):
 
     def init_streaming(self):
         from apps.filtering.tasks import  stream_channel
+        logger = self.get_logger()
         try:
-            task = stream_channel.delay(self.screen_name)
-            self.streaming_task = task
-            self.save()
-            return True
+            if cache.add("streaming_lock_%s" % self.screen_name, "true"):
+                task = stream_channel.delay(self.screen_name)
+                self.streaming_task = task
+                self.save()
+                return True
+            else:
+                logger.warning("Second proccess tried to start streaming for %s." % chan.screen_name)
+                return False
 
         except Exception:
             self.get_logger().exception("Error while trying to initialize streaming for %s" % self.screen_name)
