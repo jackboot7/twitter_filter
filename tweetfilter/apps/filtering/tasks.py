@@ -102,10 +102,7 @@ class ChannelStreamer(TwythonStreamer):
         self.channel = channel
 
     def on_success(self, data):
-        if not self.task.is_aborted():
-            self.handle_data(data)
-        else:
-            self.disconnect()
+        self.handle_data(data)
 
     def handle_data(self, data):
         if 'direct_message' in data:
@@ -135,8 +132,7 @@ class ChannelStreamer(TwythonStreamer):
         logger.info("Disconnected stream client for channel %s" % self.channel.screen_name)
         self.connected = False
 
-@task(queue="streaming", base=AbortableTask, ignore_result=True, default_retry_delay=60,
-    max_retries=10)    # retries after 1 min
+@task(queue="streaming", ignore_result=True, default_retry_delay=60, max_retries=10)
 def stream_channel(chan_id):
     chan = Channel.objects.filter(screen_name=chan_id)[0]
     stream_log = logging.getLogger('streaming')

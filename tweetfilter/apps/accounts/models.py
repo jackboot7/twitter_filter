@@ -138,8 +138,8 @@ class Channel(models.Model):
         stream_log = logging.getLogger("streaming")
         channel_log = self.get_logger()
         try:
-            if self.streaming_task is not None and hasattr(self.streaming_task, 'abort'):
-                self.streaming_task.abort()
+            if self.streaming_task is not None:
+                self.streaming_task.revoke(terminate=True)
                 message = "Stopping streaming for %s" % self.screen_name
             else:
                 message = "Streaming for %s is already stopped" % self.screen_name
