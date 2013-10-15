@@ -143,6 +143,7 @@ def stream_channel(chan_id):
     logger = chan.get_logger()
     try:
         if cache.add("streaming_lock_%s" % chan_id, "true"):
+            print u"el canal no tenía candado %s" % cache.get("streaming_lock_%s" % chan_id)
             message = "Starting streaming for %s" % chan.screen_name
             stream_log.info(message)
             logger.info(message)
@@ -150,6 +151,7 @@ def stream_channel(chan_id):
             stream.user(**{"with": "followings"})
             return True
         else:
+            print u"el canal tenía candado %s" % cache.get("streaming_lock_%s" % chan_id)
             logger.warning("Second proccess tried to start streaming for %s." % chan.screen_name)
             return False
     except Exception as e:

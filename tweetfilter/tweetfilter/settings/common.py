@@ -184,7 +184,7 @@ LOGGING = {
     'handlers': {
         'default': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'cloghandler.ConcurrentRotatingFileHandler',
             'filename': os.path.join(LOGGING_ROOT, 'twitter-all.log'),
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 5,
@@ -192,7 +192,7 @@ LOGGING = {
         },
         'channels': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'cloghandler.ConcurrentRotatingFileHandler',
             'filename': os.path.join(LOGGING_ROOT, 'twitter-all.log'),
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 5,
@@ -211,7 +211,7 @@ LOGGING = {
         },
         'streaming': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'cloghandler.ConcurrentRotatingFileHandler',
             'filename': os.path.join(LOGGING_ROOT, 'streaming.log'),
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 5,
