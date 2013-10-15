@@ -4,7 +4,6 @@ import datetime
 import logging
 
 from celery._state import current_task
-from celery.contrib.abortable import AbortableTask
 from celery.signals import celeryd_init
 from django.conf import settings
 from exceptions import Exception
@@ -102,10 +101,7 @@ class ChannelStreamer(TwythonStreamer):
         self.channel = channel
 
     def on_success(self, data):
-        if not self.task.is_aborted():
-            self.handle_data(data)
-        else:
-            self.disconnect()
+        self.handle_data(data)
 
     def handle_data(self, data):
         if 'direct_message' in data:
@@ -135,32 +131,23 @@ class ChannelStreamer(TwythonStreamer):
         logger.info("Disconnected stream client for channel %s" % self.channel.screen_name)
         self.connected = False
 
-@task(queue="streaming", base=AbortableTask, ignore_result=True, default_retry_delay=60,
-    max_retries=10)    # retries after 5 min
+@task(queue="streaming", ignore_result=True, default_retry_delay=60, max_retries=10)
 def stream_channel(chan_id):
     chan = Channel.objects.filter(screen_name=chan_id)[0]
     stream_log = logging.getLogger('streaming')
     logger = chan.get_logger()
+
     try:
-        if cache.add("streaming_lock_%s" % chan_id, "true"):
-            print u"el canal no tenía candado %s" % cache.get("streaming_lock_%s" % chan_id)
-            message = "Starting streaming for %s" % chan.screen_name
-            stream_log.info(message)
-            logger.info(message)
-            stream = ChannelStreamer(chan, current_task)
-            stream.user(**{"with": "followings"})
-            return True
-        else:
-            print u"el canal tenía candado %s" % cache.get("streaming_lock_%s" % chan_id)
-            logger.warning("Second proccess tried to start streaming for %s." % chan.screen_name)
-            return False
+        message = "Starting streaming for %s" % chan.screen_name
+        stream_log.info(message)
+        logger.info(message)
+        stream = ChannelStreamer(chan, current_task)
+        stream.user(**{"with": "followings"})
+        return True
     except Exception as e:
         logger.exception("Error starting streaming for %s. Will retry later" % chan_id)
-        stream_channel.retry(exc=e, chan_id=chan_id)
         cache.delete("streaming_lock_%s" % chan_id)
-        # automatic retweets remains disabled
-        # chan.filteringconfig.retweets_enabled = False
-        # chan.filteringconfig.save()
+        stream_channel.retry(exc=e, chan_id=chan_id)
         return False
 
 
