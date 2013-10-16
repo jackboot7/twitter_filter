@@ -10,7 +10,7 @@ HomeView uses cache_page decorator to cache results for 15 minutes
 """
 
 urlpatterns = patterns('',
-    url(r'^$', cache_page(HomeView.as_view(), 60 * 15), name="home"),
+    url(r'^$', cache_page(60 * 15)(HomeView.as_view()), name="home"),
     url(r'^success$', HomeView.as_view(channel_added="true"), name='channel_added'),
     url(r'^accounts/', include('apps.accounts.urls')),
     url(r'^tasks/', include('djcelery.urls')),
