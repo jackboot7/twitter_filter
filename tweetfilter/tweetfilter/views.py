@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.views.generic import ListView
+
 from apps.accounts.models import Channel
 
 
