@@ -124,6 +124,7 @@ class ChannelStreamer(TwythonStreamer):
         cache.delete("streaming_lock_%s" % self.channel.screen_name)
         self.channel.filteringconfig.retweets_enabled = False
         self.channel.filteringconfig.save()
+        # should retry??
 
     def disconnect(self):
         """Used to disconnect the streaming client manually"""

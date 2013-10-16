@@ -151,9 +151,7 @@ class Channel(models.Model):
 
             stream_log.info(message)
             self.get_logger().info(message)
-            print u"el valor del candado antes de borrar %s" % cache.get("streaming_lock_%s" % self.screen_name)
             cache.delete("streaming_lock_%s" % self.screen_name)
-            print u"el valor del candado después de borrar %s" % cache.get("streaming_lock_%s" % self.screen_name)
             return True
         except Exception, e:
             message = "Error while trying to stop streaming for %s" % self.screen_name
