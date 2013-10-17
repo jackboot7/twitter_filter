@@ -394,7 +394,7 @@ def update_status(channel_id, tweet, txt):
         if "duplicate" in e.message:
             pass
         tweet.status = Tweet.STATUS_NOT_SENT
-        logger.exception("Tweet #%s NOT SENT" % tweet.tweet_id)
+        logger.exception("Tweet #%s NOT SENT (%s: %s)" % (tweet.tweet_id, e.error_code, e.message))
 
 
 @celeryd_init.connect

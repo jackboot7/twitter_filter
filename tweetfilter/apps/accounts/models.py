@@ -124,6 +124,7 @@ class Channel(models.Model):
     def init_streaming(self):
         from apps.filtering.tasks import  stream_channel
         logger = self.get_logger()
+        stream_log = logging.getLogger("streaming")
         try:
             if cache.add("streaming_lock_%s" % self.screen_name, "true"):
                 task = stream_channel.delay(self.screen_name)
@@ -131,7 +132,9 @@ class Channel(models.Model):
                 self.save()
                 return True
             else:
-                logger.warning("Second proccess tried to start streaming for %s." % chan.screen_name)
+                message = "Second proccess tried to start streaming for %s." % self.screen_name
+                logger.warning(message)
+                stream_log.warning(message)
                 return False
 
         except Exception:
