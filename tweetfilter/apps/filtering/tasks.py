@@ -146,7 +146,9 @@ def stream_channel(chan_id):
         stream.user(**{"with": "followings"})
         return True
     except Exception as e:
-        logger.exception("Error starting streaming for %s. Will retry later" % chan_id)
+        message = "Error starting streaming for %s. Will retry later" % chan_id
+        logger.exception(message)
+        stream_log.exception(message)
         cache.delete("streaming_lock_%s" % chan_id)
         stream_channel.retry(exc=e, chan_id=chan_id)
         return False
