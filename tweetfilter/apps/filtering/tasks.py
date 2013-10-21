@@ -104,18 +104,7 @@ class ChannelStreamer(TwythonStreamer):
         self.handle_data(data)
 
     def handle_data(self, data):
-        if 'direct_message' in data:
-            # Invokes subtask chain for storing and retweeting
-            res = filter_pipeline_dm.apply_async([data])
-        elif 'text' in data:
-            for mention in data['entities']['user_mentions']:
-                if self.channel.screen_name.lower() == mention['screen_name'].lower():
-                    # Invokes subtask chain for storing, filtering and retweeting
-                    res = filter_pipeline.apply_async([data, self.channel.screen_name])
-        else:
-            # should we handle the rest of the tweets?
-            # Maybe store them for future use.
-            pass
+        filter_pipeline.apply_async([data, self.channel.screen_name])
 
     def on_error(self, status_code, data):
         logger= self.channel.get_logger()
@@ -165,64 +154,49 @@ def filter_pipeline(data, screen_name):
         delay_retweet.s()).apply_async()
     return res
 
-@task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
-def filter_pipeline_dm(data):
-    res =(
-        store_dm.s(data) |
-        is_user_allowed.s() |
-        triggers_filter.s() |
-        banned_words_filter.s() |
-        #replacements_filter.s() |
-        delay_retweet.s()).apply_async()
-    return res
-
 
 @task(queue="tweets", ignore_result=True)
 def store_tweet(data, channel_id):
+    import HTMLParser
+    html = HTMLParser.HTMLParser()
     channel = Channel.objects.get(screen_name=channel_id)
     logger = channel.get_logger()
     try:
-        import HTMLParser
-        html = HTMLParser.HTMLParser()
+        if 'direct_message' in data:
+            # it's a DM
+            data = data['direct_message']
+            tweet = Tweet()
+            tweet.screen_name = data['sender']['screen_name']
+            tweet.text = html.unescape(data['text'])
+            tweet.tweet_id = data['id']
+            tweet.source = 'DM'
+            tweet.mention_to = data['recipient_screen_name']
+            tweet.type = Tweet.TYPE_DM
+            tweet.save()
+            logger.info(tweet.__unicode__())
+            return tweet
 
-        tweet = Tweet()
-        tweet.screen_name = data['user']['screen_name']
-        tweet.text = html.unescape(data['text'])
-        tweet.tweet_id = data['id']
-        tweet.source = data['source']
-        tweet.mention_to = channel_id
-        tweet.type = Tweet.TYPE_MENTION
-        tweet.save()
-        logger.info(tweet.__unicode__())
-        return tweet
-    except Exception, e:
-        logger.exception("Error trying to save tweet #%s" % data['id'])
-        return None
+        elif 'text' in data:
+            for mention in data['entities']['user_mentions']:
+                if channel_id.lower() == mention['screen_name'].lower():
+                    # it's a channel mention
+                    tweet = Tweet()
+                    tweet.screen_name = data['user']['screen_name']
+                    tweet.text = html.unescape(data['text'])
+                    tweet.tweet_id = data['id']
+                    tweet.source = data['source']
+                    tweet.mention_to = channel_id
+                    tweet.type = Tweet.TYPE_MENTION
+                    tweet.save()
+                    logger.info(tweet.__unicode__())
+                    return tweet
 
-
-@task(queue="tweets", ignore_result=True)
-def store_dm(dm):
-    data = dm['direct_message']
-    channel = Channel.objects.get(screen_name=data['recipient_screen_name'])
-    logger = channel.get_logger()
-    try:
-        import HTMLParser
-        html = HTMLParser.HTMLParser()
-
-        tweet = Tweet()
-        tweet.screen_name = data['sender']['screen_name']
-        tweet.text = html.unescape(data['text'])
-        tweet.tweet_id = data['id']
-        tweet.source = 'DM'
-        tweet.mention_to = data['recipient_screen_name']
-        tweet.type = Tweet.TYPE_DM
-        tweet.save()
-        logger.info(tweet)
-        return tweet
-    except Exception, e:
-        logger.exception("Error trying to save dm #%s" % data['id'])
-        return None
-
+        else:
+            # should we handle the rest of the tweets?
+            # Maybe store them for future use.
+            return None
+    except Exception:
+        logger.exception("Error while trying to store tweet")
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
 def triggers_filter(tweet):
