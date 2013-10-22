@@ -44,7 +44,8 @@ class RetweetDelayedTask(DelayedTask):
 
             if eta is None:
                 logger.info("There are no blocks available for %s" % tweet.get_type_display())
-                pass
+                tweet.status = Tweet.STATUS_NOT_SENT
+                tweet.save()
             else:
                 countdown = (eta - datetime.datetime.now()).total_seconds()
                 if countdown > 1:
@@ -105,7 +106,7 @@ class ChannelStreamer(TwythonStreamer):
 
     def handle_data(self, data):
         if 'direct_message' in data or 'text' in data:
-            filter_pipeline.apply_async([data, self.channel.screen_name])
+            store_tweet.apply_async([data, self.channel.screen_name])
 
     def on_error(self, status_code, data):
         logger= self.channel.get_logger()
@@ -144,6 +145,7 @@ def stream_channel(chan_id):
         return False
 
 
+"""
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
 def filter_pipeline(data, screen_name):
     res =(
@@ -154,7 +156,7 @@ def filter_pipeline(data, screen_name):
         #replacements_filter.s() |
         delay_retweet.s()).apply_async()
     return res
-
+"""
 
 @task(queue="tweets", ignore_result=True)
 def store_tweet(data, channel_id):
@@ -175,7 +177,8 @@ def store_tweet(data, channel_id):
             tweet.type = Tweet.TYPE_DM
             tweet.save()
             logger.info(tweet.__unicode__())
-            return tweet
+            #return tweet
+            triggers_filter.apply_async(args=[tweet])
 
         elif 'text' in data:
             for mention in data['entities']['user_mentions']:
@@ -190,8 +193,8 @@ def store_tweet(data, channel_id):
                     tweet.type = Tweet.TYPE_MENTION
                     tweet.save()
                     logger.info(tweet.__unicode__())
-                    return tweet
-
+                    #return tweet
+                    triggers_filter.apply_async(args=[tweet])
         else:
             # should we handle the rest of the tweets?
             # Maybe store them for future use.
@@ -207,8 +210,9 @@ def triggers_filter(tweet):
         # if feature is disabled, pass the tweet
         if not channel.filteringconfig.triggers_enabled:
             tweet.status = Tweet.STATUS_TRIGGERED
-            tweet.save()
-            return tweet
+            tweet.save()    # ????
+            is_user_allowed.apply_async(args=[tweet])
+            return
 
         logger = channel.get_logger()
         triggers = channel.get_triggers()
@@ -216,18 +220,17 @@ def triggers_filter(tweet):
             for tr in triggers:
                 if tr.occurs_in(tweet.strip_channel_mention()):
                     tweet.status = Tweet.STATUS_TRIGGERED
-                    tweet.save()
+                    #tweet.save()
                     logger.info("Marked #%s as TRIGGERED (found the trigger '%s')" %
                                 (tweet.tweet_id, tr.text))
-                    break
+
+                    is_user_allowed.apply_async(args=[tweet])
             else:
                 logger.info("Marked #%s as NOT TRIGGERED" % tweet.tweet_id)
                 tweet.status = Tweet.STATUS_NOT_TRIGGERED
                 tweet.save()
         except Exception, e:
             logger.exception("error en triggers filter")
-            pass
-    return tweet
 
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
@@ -238,8 +241,9 @@ def banned_words_filter(tweet):
         # if feature is disabled, pass the tweet
         if not channel.filteringconfig.filters_enabled:
             tweet.status = Tweet.STATUS_APPROVED
-            tweet.save()
-            return tweet
+            #tweet.save()
+            delay_retweet.apply_async(args=[tweet])
+            return
 
         logger = channel.get_logger()
         filters = channel.get_filters()
@@ -253,13 +257,11 @@ def banned_words_filter(tweet):
                     break
             else:
                 tweet.status = Tweet.STATUS_APPROVED
-                tweet.save()
+                delay_retweet.apply_async(args=[tweet])
+                #tweet.save()
 
-            return tweet
         except Exception, e:
             logger.exception("error en banned_words_filter")
-            pass
-    return tweet
 
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
@@ -270,7 +272,8 @@ def is_user_allowed(tweet):
 
         # if feature is disabled, pass the tweet
         if not channel.filteringconfig.blacklist_enabled:
-            return tweet
+            banned_words_filter.apply_async(args=[tweet])
+            return
 
         logger = channel.get_logger()
         blocked_users = BlockedUser.objects.filter(channel=tweet.mention_to)
@@ -281,7 +284,8 @@ def is_user_allowed(tweet):
                 tweet.save()
                 logger.info("Tweet %s marked as BLOCKED (sent from blacklisted user @%s)" %
                             (tweet.tweet_id, user.screen_name))
-    return tweet
+        else:
+            banned_words_filter.apply_async(args=[tweet])
 
 
 @task(queue="tweets", base=RetweetDelayedTask, ignore_result=True, expires=TASK_EXPIRES)
@@ -340,7 +344,6 @@ def retweet(tweet, txt=None):
         else:
             retweet.s().apply_async(args=[tweet, txt], countdown=5)
             # retry
-
     return tweet
 
 
@@ -362,19 +365,23 @@ def update_status(channel_id, tweet, txt):
             tweet.status = Tweet.STATUS_NOT_SENT
             tweet.retweeted_text = txt
             tweet.save()
+
     except TwythonError, e:
         if "update limit" in e.message:
             # save event for statistics
             pass
         if "duplicate" in e.message:
             pass
+
         tweet.status = Tweet.STATUS_NOT_SENT
+        tweet.save()
         logger.exception("Tweet #%s NOT SENT (%s: %s)" % (tweet.tweet_id, e.error_code, e.message))
 
-
+"""
 @celeryd_init.connect
 def initialize_streaming_tasks(sender=None, conf=None, **kwargs):
     channels = Channel.objects.all()
     for chan in channels:
         if chan.filteringconfig.retweets_enabled:
             chan.init_streaming()
+"""
