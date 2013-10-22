@@ -104,7 +104,8 @@ class ChannelStreamer(TwythonStreamer):
         self.handle_data(data)
 
     def handle_data(self, data):
-        filter_pipeline.apply_async([data, self.channel.screen_name])
+        if 'direct_message' in data or 'text' in data:
+            filter_pipeline.apply_async([data, self.channel.screen_name])
 
     def on_error(self, status_code, data):
         logger= self.channel.get_logger()
