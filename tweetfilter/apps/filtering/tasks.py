@@ -17,6 +17,18 @@ from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
 from apps.twitter.api import ChannelAPI, Twitter
 from apps.twitter.models import Tweet
 
+"""
+Filtering tasks workflow:
+
+store_tweets -->
+triggers_filter -->
+is_user_allowed -->
+banned_words_filter -->
+delay_retweet -->
+retweet -->
+update_status
+
+"""
 TASK_EXPIRES = 900  # 15 min expiry
 
 
@@ -225,6 +237,7 @@ def triggers_filter(tweet):
                                 (tweet.tweet_id, tr.text))
 
                     is_user_allowed.apply_async(args=[tweet])
+                    break
             else:
                 logger.info("Marked #%s as NOT TRIGGERED" % tweet.tweet_id)
                 tweet.status = Tweet.STATUS_NOT_TRIGGERED
@@ -305,11 +318,11 @@ def retweet(tweet, txt=None):
         if txt is None:
             txt = tweet.strip_channel_mention()
 
-        if channel.filteringconfig.replacements_enabled:
-            reps = Replacement.objects.filter(channel=tweet.mention_to)
+            if channel.filteringconfig.replacements_enabled:
+                reps = Replacement.objects.filter(channel=tweet.mention_to)
 
-            for rep in reps:
-                txt = rep.replace_in(txt)
+                for rep in reps:
+                    txt = rep.replace_in(txt)
 
             txt = "via @%s: %s" % (tweet.screen_name, txt)
             if len(txt) > 140:
