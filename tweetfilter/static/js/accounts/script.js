@@ -19,7 +19,7 @@ var
 
                 $.each(data, function (idx, elem){
                     $('#channel_list_tbody').append(
-                        "<tr  id='channel_row_" + elem.screen_name + "'>"+
+                        "<tr id='channel_row_" + elem.screen_name + "'>"+
                         "<td><a href='/filtering/edit/" + elem.screen_name + "/'>" + elem.screen_name + "</a></td>" +
                         "<td>" + elem.filtering + "</td>" +
                         "<td>" + elem.scheduling + "</td>" +
@@ -79,6 +79,13 @@ $(document).ready(function () {
                 channel_delete_success();
                 load_channel_table();
             }
+        });
+    });
+
+    $('.delete_channel').each(function (index) {
+        var name = $(this).attr('id');
+        $(this).click(function () {
+            $('#deleting_channel_id').text(name.substr(15));
         });
     });
 
