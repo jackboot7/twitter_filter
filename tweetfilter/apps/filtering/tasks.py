@@ -326,7 +326,7 @@ def retweet(tweet, txt=None):
 
             txt = "via @%s: %s" % (tweet.screen_name, txt)
             if len(txt) > 140:
-                txt = "%s..." % txt[0:136]
+                txt = txt[0:140]
 
         if cache.add("retweet_lock_%s" % channel.screen_name, "true", LOCK_EXPIRE):  # acquire lock
             try:
@@ -380,10 +380,12 @@ def update_status(channel_id, tweet, txt):
             tweet.save()
 
     except TwythonError, e:
-        if "update limit" in e.message:
+        if "update limit" in e.args[0]:
             # save event for statistics
             pass
-        if "duplicate" in e.message:
+        if "duplicate" in e.args[0]:
+            pass
+        if "over 140" in e.args[0]:
             pass
 
         tweet.status = Tweet.STATUS_NOT_SENT
