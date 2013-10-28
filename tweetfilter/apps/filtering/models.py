@@ -142,3 +142,10 @@ class Replacement(Keyword):
                     regexp = re.compile(r"(\W|^)(%s)\b" % word)
                     txt = regexp.sub(r"\g<1>%s" % self.replace_with, txt)
         return txt
+
+
+
+class HashtagAdvertisement(models.Model):
+    text = models.CharField(max_length=32)
+    schedule = models.ForeignKey(ScheduleBlock)
+    quantity = models.IntegerField()
