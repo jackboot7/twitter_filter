@@ -96,25 +96,6 @@ class Channel(models.Model):
             return False
 
     def get_logger(self):
-        #from django.conf import settings
-        #if self.logger is None:
-        """
-            handler = logging.handlers.RotatingFileHandler(
-                filename=os.path.join(settings.LOGGING_ROOT, "%s.log" % self.screen_name),
-                maxBytes=1024 * 1024 * 5,
-                backupCount=5)
-
-            handler.setLevel(logging.INFO)
-            formatter = logging.Formatter(
-                '%(asctime)s [%(levelname)s]: %(message)s', "%Y-%m-%d %H:%M:%S")
-            handler.setFormatter(formatter)
-
-            self.logger = logging.getLogger("twitter.channels")   # fail?
-
-            self.logger.handlers = []
-            self.logger.addHandler(handler)
-        """
-        # logger no persiste, conviene conseguir una mejor estrategia
         logger = logging.LoggerAdapter(logging.getLogger("twitter"), {
             'screen_name': self.screen_name
         })
@@ -123,7 +104,7 @@ class Channel(models.Model):
 
     def init_streaming(self):
         from apps.filtering.tasks import  stream_channel
-        logger = self.get_logger()
+        #logger = self.get_logger()
         stream_log = logging.getLogger("streaming")
         try:
             if cache.add("streaming_lock_%s" % self.screen_name, "true"):
@@ -133,18 +114,18 @@ class Channel(models.Model):
                 return True
             else:
                 message = "Second proccess tried to start streaming for %s." % self.screen_name
-                logger.warning(message)
+                #logger.warning(message)
                 stream_log.warning(message)
                 return False
 
         except Exception:
-            self.get_logger().exception("Error while trying to initialize streaming for %s" % self.screen_name)
+            stream_log.exception("Error while trying to initialize streaming for %s" % self.screen_name)
             return False
 
 
     def stop_streaming(self):
         stream_log = logging.getLogger("streaming")
-        channel_log = self.get_logger()
+        #channel_log = self.get_logger()
         try:
             if self.streaming_task is not None:
                 self.streaming_task.revoke(terminate=True)
@@ -153,12 +134,12 @@ class Channel(models.Model):
                 message = "Streaming for %s is already stopped" % self.screen_name
 
             stream_log.info(message)
-            self.get_logger().info(message)
+            #self.get_logger().info(message)
             cache.delete("streaming_lock_%s" % self.screen_name)
             return True
         except Exception, e:
             message = "Error while trying to stop streaming for %s" % self.screen_name
-            channel_log.exception(message)
+            #channel_log.exception(message)
             stream_log.exception(message)
             return False
 
