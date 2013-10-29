@@ -120,7 +120,8 @@ class ChannelStreamer(TwythonStreamer):
     def handle_data(self, data):
         if 'direct_message' in data or 'text' in data:
             store_tweet.apply_async([data, self.channel.screen_name])
-            logger = logging.getLogger('app')
+            #logger = logging.getLogger('app')
+            """
             if 'text' in data:
                 logger.debug("[%s] Received #%s from %s: %s" % (self.channel.screen_name,
                                                                 data['id'],
@@ -131,6 +132,7 @@ class ChannelStreamer(TwythonStreamer):
                                                                 data['direct_message']['id'],
                                                                 data['direct_message']['sender']['screen_name'],
                                                                 data['direct_message']['text']))
+            """
 
 
 
