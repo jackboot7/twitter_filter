@@ -118,7 +118,11 @@ class ChannelStreamer(TwythonStreamer):
         self.handle_data(data)
 
     def handle_data(self, data):
-        if 'direct_message' in data or 'text' in data:
+        if 'text' in data:
+            for mention in data['entities']['user_mentions']:
+                if self.channel.screen_name.lower() == mention['screen_name'].lower():
+                    store_tweet.apply_async([data, self.channel.screen_name])
+        elif 'direct_message' in data:
             store_tweet.apply_async([data, self.channel.screen_name])
             #logger = logging.getLogger('app')
             """
