@@ -1,7 +1,6 @@
 # -*- encoding: utf-8 -*-
 
 import json
-import logging
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
 from django.conf import settings
 from django.contrib.sites.models import RequestSite
@@ -11,10 +10,8 @@ from django.views.generic import ListView
 from django.views.generic.base import View
 from twython.api import Twython
 from apps.accounts.models import Channel
-from django.views.generic.edit import DeleteView, UpdateView
-from apps.filtering import tasks
+from django.views.generic.edit import DeleteView
 
-logger = logging.getLogger('app')
 
 class TwitterAuthenticationView(View):
     def get(self, request, *args, **kwargs):

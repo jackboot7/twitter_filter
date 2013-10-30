@@ -58,14 +58,7 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
 
         try:
             if obj.filteringconfig.retweets_enabled:
-                # disable
-                #logger.debug("terminating task %s" % obj.streaming_task.id)
-
-                #from celery import current_app
-                #current_app.control.revoke(obj.streaming_task.id, terminate=True)
-                #obj.streaming_task.revoke(terminate=True)
-
-
+                # if enabled: disable.
                 if obj.stop_streaming():
                     obj.filteringconfig.retweets_enabled = False
                     obj.filteringconfig.save()
@@ -73,7 +66,7 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
                 else:
                     response_data = {'result': "fail"}
             else:
-                # enable
+                # else: enable
                 if obj.init_streaming():
                     obj.filteringconfig.retweets_enabled = True
                     obj.filteringconfig.save()

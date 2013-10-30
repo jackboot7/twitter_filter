@@ -42,8 +42,6 @@ class Channel(models.Model):
     # indica quiénes pueden enviar mensajes al canal
     allow_messages = models.SmallIntegerField(choices=ALLOW_CHOICES, default=ALLOW_ALL)
 
-    logger = None   # Stores de logger object related to this channel
-
     def save(self, *args, **kwargs):
         super(Channel, self).save(*args, **kwargs)
         try:
@@ -95,17 +93,9 @@ class Channel(models.Model):
             print e
             return False
 
-    def get_logger(self):
-        logger = logging.LoggerAdapter(logging.getLogger("twitter"), {
-            'screen_name': self.screen_name
-        })
-        return logger
-
 
     def init_streaming(self):
-        from apps.filtering.tasks import  stream_channel
-        #logger = self.get_logger()
-        stream_log = logging.getLogger("streaming")
+        from apps.filtering.tasks import stream_channel, channel_log_warning, channel_log_exception
         try:
             if cache.add("streaming_lock_%s" % self.screen_name, "true"):
                 task = stream_channel.delay(self.screen_name)
@@ -114,18 +104,16 @@ class Channel(models.Model):
                 return True
             else:
                 message = "Second proccess tried to start streaming for %s." % self.screen_name
-                #logger.warning(message)
-                stream_log.warning(message)
+                channel_log_warning.delay(message, self.screen_name)
                 return False
 
         except Exception:
-            stream_log.exception("Error while trying to initialize streaming for %s" % self.screen_name)
+            channel_log_exception.delay("Error while trying to initialize streaming", self.screen_name)
             return False
 
 
     def stop_streaming(self):
-        stream_log = logging.getLogger("streaming")
-        #channel_log = self.get_logger()
+        from apps.filtering.tasks import channel_log_info, channel_log_exception
         try:
             if self.streaming_task is not None:
                 self.streaming_task.revoke(terminate=True)
@@ -133,14 +121,12 @@ class Channel(models.Model):
             else:
                 message = "Streaming for %s is already stopped" % self.screen_name
 
-            stream_log.info(message)
-            #self.get_logger().info(message)
+            channel_log_info.delay(message, self.screen_name)
             cache.delete("streaming_lock_%s" % self.screen_name)
             return True
         except Exception, e:
             message = "Error while trying to stop streaming for %s" % self.screen_name
-            #channel_log.exception(message)
-            stream_log.exception(message)
+            channel_log_exception.delay(message, self.screen_name)
             return False
 
     """
