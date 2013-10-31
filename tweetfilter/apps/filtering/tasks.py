@@ -68,6 +68,7 @@ class RetweetDelayedTask(DelayedTask):
 
                 return self.run(*args, **kwargs)    # Does nothing
 
+
     def set_channel_id(self, id):
         self.screen_name = id
 
@@ -119,9 +120,22 @@ class ChannelStreamer(TwythonStreamer):
         if 'text' in data:
             for mention in data['entities']['user_mentions']:
                 if self.channel.screen_name.lower() == mention['screen_name'].lower():
-                    store_tweet.apply_async([data, self.channel.screen_name])
+                    (
+                        store_tweet.s(data, self.channel.screen_name) |
+                        triggers_filter.subtask(link_error=exit_task.s()) |
+                        is_user_allowed.subtask(link_error=exit_task.s()) |
+                        banned_words_filter.subtask(link_error=exit_task.s()) |
+                        delay_retweet.subtask(link_error=exit_task.s())
+                    ).apply_async()
+
         elif 'direct_message' in data:
-            store_tweet.apply_async([data, self.channel.screen_name])
+            (
+                store_tweet.s(data, self.channel.screen_name) |
+                triggers_filter.subtask(link_error=exit_task.s()) |
+                is_user_allowed.subtask(link_error=exit_task.s()) |
+                banned_words_filter.subtask(link_error=exit_task.s()) |
+                delay_retweet.subtask(link_error=exit_task.s())
+            ).apply_async()
 
     def on_error(self, status_code, data):
         msg = "Error in streaming: %s: %s" % (status_code, data)
@@ -172,7 +186,6 @@ def store_tweet(data, channel_id):
             tweet.source = 'DM'
             tweet.mention_to = data['recipient_screen_name']
             tweet.type = Tweet.TYPE_DM
-            triggers_filter.apply_async(args=[tweet])
             tweet.save()
             channel_log_info.delay(tweet.__unicode__(), channel_id)
         elif 'text' in data:
@@ -186,14 +199,14 @@ def store_tweet(data, channel_id):
                     tweet.source = data['source']
                     tweet.mention_to = channel_id
                     tweet.type = Tweet.TYPE_MENTION
-
-                    triggers_filter.apply_async(args=[tweet])
                     tweet.save()
                     channel_log_info.delay(tweet.__unicode__(), channel_id)
         else:
             # should we handle the rest of the tweets?
             # Maybe store them for future use.
             return None
+
+        return tweet
     except Exception:
         channel_log_exception.delay("Error while trying to store tweet", channel_id)
 
@@ -205,56 +218,24 @@ def triggers_filter(tweet):
         # if feature is disabled, pass the tweet
         if not channel.filteringconfig.triggers_enabled:
             tweet.status = Tweet.STATUS_TRIGGERED
-            is_user_allowed.apply_async(args=[tweet])
-            #tweet.save()    # ????
-            return
+            return tweet
 
         triggers = channel.get_triggers()
-        try:
-            for tr in triggers:
-                if tr.occurs_in(tweet.strip_channel_mention()):
-                    tweet.status = Tweet.STATUS_TRIGGERED
-                    is_user_allowed.apply_async(args=[tweet])
-                    msg = "Marked #%s as TRIGGERED (found trigger '%s')" % (tweet.tweet_id, tr.text)
-                    channel_log_info.delay(msg, channel.screen_name)
-                    break
-            else:
-                msg = "Marked #%s as NOT TRIGGERED" % tweet.tweet_id
+        #try:
+        for tr in triggers:
+            if tr.occurs_in(tweet.strip_channel_mention()):
+                tweet.status = Tweet.STATUS_TRIGGERED
+                msg = "Marked #%s as TRIGGERED (found trigger '%s')" % (tweet.tweet_id, tr.text)
                 channel_log_info.delay(msg, channel.screen_name)
-                tweet.status = Tweet.STATUS_NOT_TRIGGERED
-                tweet.save()
-                return
-        except Exception, e:
-            channel_log_exception.delay("Error in triggers_filter task", channel.screen_name)
-
-
-@task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
-def banned_words_filter(tweet):
-    if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
-        channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
-
-        # if feature is disabled, pass the tweet
-        if not channel.filteringconfig.filters_enabled:
-            tweet.status = Tweet.STATUS_APPROVED
-            delay_retweet.apply_async(args=[tweet])
-            return
-
-        filters = channel.get_filters()
-        try:
-            for filter in filters:
-                if filter.occurs_in(tweet.strip_channel_mention()):
-                    tweet.status = Tweet.STATUS_BLOCKED
-                    tweet.save()
-                    msg = "BLOCKED #%s (found word '%s')" % (tweet.tweet_id, filter.text)
-                    channel_log_info.delay(msg, channel.screen_name)
-                    break
-            else:
-                tweet.status = Tweet.STATUS_APPROVED
-                delay_retweet.apply_async(args=[tweet])
-                #tweet.save()
-
-        except Exception, e:
-            channel_log_exception.delay("Error in banned_words_filter", channel.screen_name)
+                return tweet
+        else:
+            msg = "Marked #%s as NOT TRIGGERED" % tweet.tweet_id
+            channel_log_info.delay(msg, channel.screen_name)
+            tweet.status = Tweet.STATUS_NOT_TRIGGERED
+            tweet.save()
+            raise Exception(msg)
+        #except Exception, e:
+        #    channel_log_exception.delay("Error in triggers_filter task", channel.screen_name)
 
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
@@ -265,8 +246,7 @@ def is_user_allowed(tweet):
 
         # if feature is disabled, pass the tweet
         if not channel.filteringconfig.blacklist_enabled:
-            banned_words_filter.apply_async(args=[tweet])
-            return
+            return tweet
 
         blocked_users = BlockedUser.objects.filter(channel=tweet.mention_to)
         for user in blocked_users:
@@ -276,9 +256,35 @@ def is_user_allowed(tweet):
                 tweet.save()
                 msg = "#%s marked as BLOCKED (sent from @%s)" % (tweet.tweet_id, user.screen_name)
                 channel_log_info.delay(msg, channel.screen_name)
-                break
+                raise Exception(msg)
         else:
-            banned_words_filter.apply_async(args=[tweet])
+            return tweet
+
+
+@task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
+def banned_words_filter(tweet):
+    if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
+        channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
+        # if feature is disabled, pass the tweet
+        if not channel.filteringconfig.filters_enabled:
+            tweet.status = Tweet.STATUS_APPROVED
+            return tweet
+
+        filters = channel.get_filters()
+        try:
+            for filter in filters:
+                if filter.occurs_in(tweet.strip_channel_mention()):
+                    tweet.status = Tweet.STATUS_BLOCKED
+                    tweet.save()
+                    msg = "BLOCKED #%s (found word '%s')" % (tweet.tweet_id, filter.text)
+                    channel_log_info.delay(msg, channel.screen_name)
+                    raise Exception(msg)
+            else:
+                tweet.status = Tweet.STATUS_APPROVED
+                return tweet
+
+        except Exception, e:
+            channel_log_exception.delay("Error in banned_words_filter", channel.screen_name)
 
 
 @task(queue="tweets", base=RetweetDelayedTask, ignore_result=True, expires=TASK_EXPIRES)
@@ -381,6 +387,7 @@ def update_status(channel_id, tweet, txt):
 ##################################
 @task(queue="logging", ignore_result=True)
 def channel_log(message, level, channel_id):
+    import logging
     logger = logging.LoggerAdapter(logging.getLogger("twitter"), {
         'screen_name': channel_id
     })
@@ -389,6 +396,7 @@ def channel_log(message, level, channel_id):
 
 @task(queue="logging", ignore_result=True)
 def channel_log_debug(message, channel_id):
+    import logging
     logger = logging.LoggerAdapter(logging.getLogger("twitter"), {
         'screen_name': channel_id
     })
@@ -397,6 +405,7 @@ def channel_log_debug(message, channel_id):
 
 @task(queue="logging", ignore_result=True)
 def channel_log_info(message, channel_id):
+    import logging
     logger = logging.LoggerAdapter(logging.getLogger("twitter"), {
         'screen_name': channel_id
     })
@@ -405,6 +414,7 @@ def channel_log_info(message, channel_id):
 
 @task(queue="logging", ignore_result=True)
 def channel_log_warning(message, channel_id):
+    import logging
     logger = logging.LoggerAdapter(logging.getLogger("twitter"), {
         'screen_name': channel_id
     })
@@ -413,6 +423,7 @@ def channel_log_warning(message, channel_id):
 
 @task(queue="logging", ignore_result=True)
 def channel_log_exception(message, channel_id):
+    import logging
     logger = logging.LoggerAdapter(logging.getLogger("twitter"), {
         'screen_name': channel_id
     })
@@ -421,8 +432,13 @@ def channel_log_exception(message, channel_id):
 
 @task(queue="logging", ignore_result=True)
 def channel_log_error(message, channel_id):
+    import logging
     logger = logging.LoggerAdapter(logging.getLogger("twitter"), {
         'screen_name': channel_id
     })
     logger.error(message)
     return
+
+@task(queue="tweets", ignore_result=True)
+def exit_task():
+    return True
