@@ -404,7 +404,7 @@ def retweet(tweet, txt=None):
                         update_status.s().apply_async(args=[channel.screen_name, tweet, txt],
                             countdown=countdown)
                         msg = "#%s will be sent in %s seconds" % (tweet.tweet_id, countdown)
-                        channel_log_debug.delay(msg, channel.screen_name)
+                        channel_log_info.delay(msg, channel.screen_name)
                     else:
                         tweet.status = Tweet.STATUS_NOT_SENT
                         tweet.save()
