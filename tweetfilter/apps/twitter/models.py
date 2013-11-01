@@ -56,23 +56,10 @@ class Tweet(models.Model):
         text = regular_exp.sub(r"\g<1>", self.text)
         return text
 
-    def get_words(self):
-        # returns string as a list of words, stripping punctuations, spaces and special chars
-            return "".join((
-                char if char.isalpha() or char.isdigit() or char == "@" or char == "_" or char == "#"
-                else " ") for char in self.text).split()
-
-    def get_normalized_words(self):
-        # returns string as a list of normalized words
-        return "".join((
-            char if char.isalpha() or char.isdigit() or char == "@" or char == "_" or char == "#"
-            else " ") for char in self.normalize(self.text)).split()
-
     def __unicode__(self):
-        return "#%s (%s) from %s to %s: \"%s\"" % (
+        return "#%s (%s) from @%s: \"%s\"" % (
             self.tweet_id,
             self.get_type_display(),
             self.screen_name,
-            self.mention_to,
             self.text
             )
