@@ -145,6 +145,7 @@ INSTALLED_APPS = (
     'apps.accounts',
     'apps.control',
     'apps.scheduling',
+    'apps.hashtags',
 
     # Third party modules
     'djcelery',

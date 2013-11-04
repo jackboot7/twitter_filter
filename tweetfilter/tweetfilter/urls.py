@@ -16,6 +16,7 @@ urlpatterns = patterns('',
     url(r'^tasks/', include('djcelery.urls')),
     url(r'^filtering/', include('apps.filtering.urls')),
     url(r'^scheduling/', include('apps.scheduling.urls')),
+    url(r'^hashtags/', include('apps.hashtags.urls')),
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
