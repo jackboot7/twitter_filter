@@ -188,3 +188,15 @@ class SchedulingConfig(models.Model):
         if channel is not None:
             self.channel = channel
             self.save()
+
+
+class HashtagsConfig(models.Model):
+    channel = models.OneToOneField(Channel, parent_link=True)
+    hashtags_enabled = models.BooleanField(default=True)
+
+    def __init__(self, *args, **kwargs):
+        channel = kwargs.pop('channel', None)
+        super(HashtagsConfig, self).__init__(*args, **kwargs)
+        if channel is not None:
+            self.channel = channel
+            self.save()

@@ -7,7 +7,6 @@ import datetime
 from django.http.response import HttpResponse
 from django.views.generic import DetailView
 from django.views.generic.base import View
-from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView, UpdateView
 from apps.accounts.models import Channel
 from apps.scheduling.models import ScheduledTweet
@@ -15,7 +14,7 @@ from apps.scheduling.models import ScheduledTweet
 logger = logging.getLogger('app')
 
 #==========================
-# Filtering Config
+# Scheduling Config
 #==========================
 class CheckStatusView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     """

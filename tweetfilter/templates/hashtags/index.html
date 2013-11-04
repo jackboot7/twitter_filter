@@ -26,7 +26,7 @@
             </li>
 
             <li class="active">
-                <a href="#">Hashtags publicitarios</a>
+                <a href="#">Hashtags</a>
             </li>
 
             <!--
@@ -48,9 +48,9 @@
 
     <div class="row-fluid">
         <div class="span5 rounded_box fill_white">
-            El módulo de tweets programados está:
-            <a class="no_decoration" id="switch_scheduling_btn" title=''>
-                &nbsp;<span id="switch_scheduling_label" class='label' ></span>
+            El módulo de hashtags está:
+            <a class="no_decoration" id="switch_hashtags_btn" title=''>
+                &nbsp;<span id="switch_hashtags_label" class='label' ></span>
             </a>
         </div>
     </div>
@@ -59,18 +59,18 @@
 
         <div class="span6"> <!-- left column -->
             <div class="rounded_box fill_gray">
-                <h4>Bloques de publicación automática</h4>
+                <h4>Hashtags Publicitarios</h4>
 
                 <div id="scheduled_post_list">
-                    <span>El canal publicará automáticamente los siguientes mensajes:</span>
+                    <span><!-- Descripcion --></span>
 
-                    <table class="table" id="scheduled_post_list_table">
+                    <table class="table" id="hashtag_list_table">
                         <thead>
                         <tr>
-                            <th>Mensaje</th><th>Hora y fecha</th><th>Eliminar</th>
+                            <th>Texto</th><th>Cantidad</th><th>Horario</th>
                         </tr>
                         </thead>
-                        <tbody id="scheduled_post_list_tbody">
+                        <tbody id="hashtag_list_tbody">
 
                         </tbody>
 
@@ -78,72 +78,46 @@
                 </div>
 
             <span id="no_scheduled_posts_message">
-                Actualmente no hay bloques de publicación automática
+                Actualmente no hay hashtags definidos.
             </span>
                 <br><br>
-                <a id="add_scheduled_post_btn" href="#add_scheduled_post_modal" class="btn btn-primary btn-small" data-toggle='modal'>Agregar mensaje automático</a>
+                <a id="add_hashtag_btn" href="#add_hashtag_modal" class="btn btn-primary btn-small" data-toggle='modal'>Agregar hashtag</a>
 
-                <div id="add_scheduled_post_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                    <input type="hidden" id="editing_scheduled_post_id">
+                <div id="add_hashtag_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <input type="hidden" id="editing_hashtag_id">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                         <h3 id="scheduled_post_modal_title">
-                            Añadir tweet programado
+                            Añadir hashtag
                         </h3>
                     </div>
                     <div class="modal-body">
-                        <div class="span8">
-                            <table>
-                                <tr>
-                                    <td class="td_right_padding"><label>Mensaje: </label>
-                                        <span class="float_right" id="tweet_char_count"></span></td><td><textarea id="scheduled_post_text"></textarea></td>
-                                </tr>
-                                <tr>
-                                    <td><label>Hora de publicación: </label></td>
-                                    <td><!--<select class="input-mini" id="start_hour_select"></select>-->
-                                        <!--<select class="input-mini" id="start_minute_select"></select>-->
-                                        <input type="text" class="input-mini" id="scheduled_post_timepicker">
-                                    </td>
-                                </tr>
-                            </table>
-                            <br>
-
-                        </div>
-
-                        <div class="span4" id="weekdays_select_div">
-                            <label class="checkbox"><input type="checkbox" id="monday_check"> Lunes</label>
-                            <label class="checkbox"><input type="checkbox" id="tuesday_check"> Martes</label>
-                            <label class="checkbox"><input type="checkbox" id="wednesday_check"> Miércoles</label>
-                            <label class="checkbox"><input type="checkbox" id="thursday_check"> Jueves</label>
-                            <label class="checkbox"><input type="checkbox" id="friday_check"> Viernes</label>
-                            <label class="checkbox"><input type="checkbox" id="saturday_check"> Sábado</label>
-                            <label class="checkbox"><input type="checkbox" id="sunday_check"> Domingo</label>
-                        </div>
+                        <!-- Cuerpo de la ventana modal para agregar hashtags -->
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_scheduled_post_btn">Guardar</button>
+                        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_hashtag_btn">Guardar</button>
                         <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
                     </div>
-                </div> <!-- Add scheduled_post modal -->
+                </div> <!-- Add hashtag modal -->
 
-                <div id="delete_scheduled_post_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div id="delete_hashtag_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                         <h3>
-                            Eliminar mensaje automático
+                            Eliminar hashtag
                         </h3>
                     </div>
                     <div class="modal-body">
-                        <input type="hidden" id="deleting_scheduled_post_id" value="">
+                        <input type="hidden" id="deleting_hashtag_id" value="">
                         <p>
-                            Está seguro de que desea eliminar el bloque de publicación seleccionado?
+                            Está seguro de que desea eliminar el hashtag seleccionado?
                         </p>
                     </div>
                     <div class="modal-footer">
                         <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
-                        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_scheduled_post_confirmed">Sí, eliminar</button>
+                        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_hashtag_confirmed">Sí, eliminar</button>
                     </div>
-                </div> <!-- delete scheduled_post modal -->
+                </div> <!-- delete hashtag modal -->
             </div>
         </div>
 
@@ -165,7 +139,7 @@
 {% endblock %} <!-- endblock section_body -->
 
 {% block page_scripts %}
-    <script type="text/javascript" src="{{ STATIC_URL }}js/scheduling/script.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/hashtags/script.js"></script>
 {% endblock %}
 
 {% block modal_header %}
