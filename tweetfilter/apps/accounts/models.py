@@ -59,6 +59,7 @@ class Channel(models.Model):
     hashtags_enabled = models.BooleanField(default=True)
 
     def delete(self):
+        self.stop_streaming()
         schedules = self.scheduledtweet_set.all()
         for schedule in schedules:
             schedule.delete()
