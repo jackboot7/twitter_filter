@@ -3,8 +3,9 @@ import logging
 from braces.views import JSONResponseMixin, AjaxResponseMixin, CsrfExemptMixin
 from django.forms.models import model_to_dict
 from django.http.response import HttpResponse
+from django.views.generic.base import View
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import UpdateView
+from django.views.generic.edit import UpdateView, DeleteView
 from apps.accounts.models import Channel
 from apps.hashtags.models import HashtagAdvertisement
 
@@ -75,3 +76,55 @@ class HashtagListView(CsrfExemptMixin, JSONResponseMixin,
             json_list.append(model_to_dict(hashtag))
 
         return self.render_json_response(json_list)
+
+class HashtagCreateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, View):
+    model = HashtagAdvertisement
+
+    def post_ajax(self, request, *args, **kwargs):
+
+        try:
+            chan = Channel.objects.filter(screen_name=request.POST['channel'])[0]
+            hashtag = HashtagAdvertisement()
+            hashtag.text = request.POST['text']
+            hashtag.quantity = request.POST['qty']
+            hashtag.channel = chan
+            hashtag.save()
+            response_data = {'result': "ok"}
+        except Exception, e:
+            logger.exception("Error while creating scheduled tweet")
+            response_data = {'result': e.args[0]}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+class HashtagDeleteView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, DeleteView):
+    model = HashtagAdvertisement
+    success_url = "/"
+
+    def post_ajax(self, request, *args, **kwargs):
+        #obj = self.get_object()
+        self.delete(request)
+        response_data = {'result': "ok"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class HashtagUpdateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = HashtagAdvertisement
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            obj.text = request.POST['text']
+            obj.quantity = request.POST['qty']
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception, e:
+            response_data = {'result': e.args[0]}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")

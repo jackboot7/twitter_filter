@@ -12,7 +12,7 @@ class Migration(SchemaMigration):
         db.create_table(u'hashtags_hashtagadvertisement', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('text', self.gf('django.db.models.fields.CharField')(max_length=32)),
-            ('schedule', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['control.ScheduleBlock'])),
+            ('schedule', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['control.ScheduleBlock'], null=True, blank=True)),
             ('quantity', self.gf('django.db.models.fields.IntegerField')()),
         ))
         db.send_create_signal(u'hashtags', ['HashtagAdvertisement'])
@@ -41,7 +41,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'HashtagAdvertisement'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'quantity': ('django.db.models.fields.IntegerField', [], {}),
-            'schedule': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['control.ScheduleBlock']"}),
+            'schedule': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['control.ScheduleBlock']", 'null': 'True', 'blank': 'True'}),
             'text': ('django.db.models.fields.CharField', [], {'max_length': '32'})
         }
     }

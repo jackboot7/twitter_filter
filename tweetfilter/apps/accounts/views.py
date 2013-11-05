@@ -79,10 +79,13 @@ class ChannelListView(JSONResponseMixin, AjaxResponseMixin, ListView):
         for channel in objs:
             retweets = channel.retweets_enabled
             scheduling = channel.scheduling_enabled
+            hashtags  = channel.hashtags_enabled
+
             json_list.append({
                 'screen_name': channel.screen_name,
                 'filtering': u"Sí" if retweets else u"No",
                 'scheduling': u"Sí" if scheduling else u"No",
+                'hashtags': u"Sí" if hashtags else u"No",
                 'status' : channel.get_status_display()
             })
 

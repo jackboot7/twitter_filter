@@ -6,8 +6,8 @@ var
         //alert(JSON.stringify(scheduled_post));
         $('#hashtag_modal_title').text("Editar hashtag");
         $('#editing_hashtag_id').val(hashtag.id);
-
-        $('#hashtag_text').val(hashtag.text);
+        $('#add_hashtag_text').val(hashtag.text);
+        $('#add_hashtag_qty').val(hashtag.quantity);
 
     },
 
@@ -45,9 +45,9 @@ var
 
                     $('#hashtag_list_tbody').append(
                         "<tr>" +
-                            "<td><a id='edit_hashtag_" + elem.id + "' href='#add_hashtag_modal' data-toggle='modal'>" + elem.text + "</a></td>" +
+                            "<td><a id='edit_hashtag_" + elem.id + "' href='#add_hashtag_modal' data-toggle='modal'>#" + elem.text + "</a></td>" +
                             "<td>" + elem.quantity + "</td>" +
-                            "<td>"+ "</td>" +   // horario
+                            //"<td>"+ "</td>" +   // horario
                             "<td><a id='delete_hashtag_" + elem.id +"' class='delete_hashtag' " +
                             "title='Haga click para eliminar el hashtag' href='#delete_hashtag_confirm_modal' data-toggle='modal'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td>" +
@@ -62,9 +62,9 @@ var
                         $('#deleting_hashtag_id').val(elem.id);
                     });
                 });
-                $('#hashtag_list').show();
+                $('#hashtag_list_table').show();
             }else{
-                $('#hashtag_list').hide();
+                $('#hashtag_list_table').hide();
                 $('#no_hashtags_message').show();
             }
         });
@@ -82,20 +82,22 @@ var
 
         var url;
 
-        if ($('#editing_scheduled_post_id').val() === "") {
+        if ($('#editing_hashtag_id').val() === "") {
             url = "/hashtags/add/";
         }else{
             url = "/hashtags/update/" + $('#editing_hashtag_id').val();
         }
 
         $.post(url, {
-            'text':$.trim($('#hashtag_text').val())
+            'text': $.trim($('#add_hashtag_text').val()),
+            'qty': $.trim($('#add_hashtag_qty').val()),
+            'channel': $('#current_channel').val()
             // otros campos
         }, function (data) {
 
             if(data.result === "ok") {
                 load_hashtag_table();
-                //clear_add_hashtag_form();
+                clear_add_hashtag_form();
             }else{
                 hashtag_add_error(data.result);
             }
@@ -105,19 +107,26 @@ var
 
     clear_add_hashtag_form = function () {
         "use strict";
-        // limpiar formulario
+        $('#editing_hashtag_id').val('');
+        $('#add_hashtag_text').val('');
+        $('#add_hashtag_qty').val('');
     },
 
     validate_add_hashtag_form = function () {
         "use strict";
 
-        if($.trim($('#hashtag_text').val()) === ""){
+        if($.trim($('#add_hashtag_text').val()) === ""){
             alert("Debe ingresar un texto para el hashtag");
             return false;
         }
 
-        if($.trim($('#hashtag_text').val()).length > 32){
-            alert("Debe ingresar un texto menor a 32 caracteres");
+        if(/[~`!#$%\^@&*+=\-\[\]\\';,\/{}|\\":<>\?]/g.test($.trim($('#add_hashtag_text').val()))){
+            alert("El texto no debe contener '#' ni otros caracteres especiales");
+            return false;
+        }
+
+        if(!/^[0-9]+$/.test($.trim($('#add_hashtag_qty').val()))){
+            alert("Debe ingresar un número entero como cantidad");
             return false;
         }
 
@@ -128,7 +137,7 @@ var
 $(document).ready(function () {
     "use strict";
 
-    $('#hashtag_list').hide();
+    $('#hashtag_list_table').hide();
     $('#no_hashtags_message').hide();
 
     update_hashtags_status();
