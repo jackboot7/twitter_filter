@@ -13,4 +13,4 @@ def schedule_tweet(channel_id, text):
             token=channel.oauth_token,
             token_secret=channel.oauth_secret)
         twitter.tweet(text)
-    
+

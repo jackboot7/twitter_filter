@@ -118,8 +118,8 @@ class RetweetDelayedTask(DelayedTask):
                 eta = datetime.datetime.now()
 
             if eta is None:
-                msg = "#%s marked as NOT SENT: No time blocks for %s" % (tweet.tweet_id,
-                                                                         tweet.get_type_display())
+                msg = "#%s marked as NOT SENT: No schedules for %s" % (tweet.tweet_id,
+                                                                       tweet.get_type_display())
                 channel_log_info.delay(msg, self.screen_name)
                 tweet.status = Tweet.STATUS_NOT_SENT
                 tweet.save()

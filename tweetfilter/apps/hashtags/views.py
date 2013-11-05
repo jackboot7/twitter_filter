@@ -1,10 +1,12 @@
 import json
 import logging
 from braces.views import JSONResponseMixin, AjaxResponseMixin, CsrfExemptMixin
+from django.forms.models import model_to_dict
 from django.http.response import HttpResponse
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView
 from apps.accounts.models import Channel
+from apps.hashtags.models import HashtagAdvertisement
 
 logger = logging.getLogger('app')
 
@@ -58,3 +60,18 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
+
+
+class HashtagListView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, DetailView):
+    model = Channel
+    context_object_name = "hashtag_list"
+
+    def get_ajax(self, request, *args, **kwargs):
+        objs = HashtagAdvertisement.objects.filter(channel=self.get_object())
+        json_list = []
+
+        for hashtag in objs:
+            json_list.append(model_to_dict(hashtag))
+
+        return self.render_json_response(json_list)
