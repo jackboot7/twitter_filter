@@ -23,7 +23,7 @@ class CheckStatusView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     def get_ajax(self, request,  *args, **kwargs):
         obj = self.get_object()
 
-        if obj.hashtagsconfig.hashtags_enabled:
+        if obj.hashtags_enabled:
             response_data = {'result': "enabled"}
         else:
             response_data = {'result': "disabled"}
@@ -43,14 +43,14 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
         obj = self.get_object()
 
         try:
-            if obj.hashtagsconfig.hashtags_enabled:
+            if obj.hashtags_enabled:
                 # disable
-                obj.hashtagsconfig.hashtags_enabled = False
-                obj.hashtagsconfig.save()
+                obj.hashtags_enabled = False
+                obj.save()
             else:
                 # enable
-                obj.hashtagsconfig.hashtags_enabled = True
-                obj.hashtagsconfig.save()
+                obj.hashtags_enabled = True
+                obj.save()
             response_data = {'result': "ok"}
         except Exception as e:
             logger.exception("Error in hashtags.views.SwitchStatusView")

@@ -8,17 +8,21 @@
 <div class="row-fluid">
     <div class="span8">
         <input type="hidden" id="channel_added" value="{{ channel_added }}">
+        {% if channel_list %}
         <table class="table" id="channel_list_table">
             <thead>
             <tr>
                 <th>
-                    Canal
+                    Canales
                 </th>
                 <th>
                     Retweets automáticos
                 </th>
                 <th>
                     Tweets programados
+                </th>
+                <th>
+                    Hashtags
                 </th>
                 <th>
                     Eliminar
@@ -32,16 +36,18 @@
                 <tr  id='channel_row_{{ channel.screen_name }}'>
                     <td><a href="{% url 'edit_channel' channel.screen_name %}"/>{{ channel.screen_name }}</a></td>
 
-                    <td> {% if channel.filteringconfig.retweets_enabled %} Sí {% else %} No {% endif %} </td>
-                    <td> {% if channel.schedulingconfig.retweets_enabled %} Sí {% else %} No {% endif %} </td>
+                    <td> {% if channel.retweets_enabled %} Sí {% else %} No {% endif %} </td>
+                    <td> {% if channel.retweets_enabled %} Sí {% else %} No {% endif %} </td>
+                    <td> {% if channel.hashtags_enabled %} Sí {% else %} No {% endif %} </td>
                     <td> <a id='delete_channel_{{ channel.screen_name }}' class='delete_channel' title='Haga click para eliminar canal' href='#delete_confirm_modal' data-toggle='modal'><span class='badge badge-important' contenteditable='false'>x</span></a></td>
                 </tr>
 
                 {% endfor %}
             </tbody>
         </table>
-
+        {% else %}
         <span id="no_channels_message">No hay canales suscritos</span> <br><br>
+        {% endif %}<!-- end if channel_list.length -->
         <a id="call_twitter_auth" href="#" role="button" class="btn btn-primary" data-toggle="modal">Agregar canal</a>
 
     </div> <!-- end span8 -->

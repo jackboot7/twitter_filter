@@ -112,7 +112,7 @@ class RetweetDelayedTask(DelayedTask):
             self.screen_name = tweet.mention_to
             channel = Channel.objects.get(screen_name=self.screen_name)
 
-            if channel.filteringconfig.scheduleblocks_enabled:
+            if channel.scheduleblocks_enabled:
                 eta = self.calculate_eta(tweet.type)
             else:
                 eta = datetime.datetime.now()
@@ -207,8 +207,8 @@ class ChannelStreamer(TwythonStreamer):
         channel_log_error.delay(msg, self.channel.screen_name)
         self.disconnect()
         cache.delete("streaming_lock_%s" % self.channel.screen_name)
-        self.channel.filteringconfig.retweets_enabled = False
-        self.channel.filteringconfig.save()
+        self.channel.retweets_enabled = False
+        self.channel.save()
         # should retry??
 
     def disconnect(self):
@@ -283,7 +283,7 @@ def triggers_filter(tweet):
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
 
         # if feature is disabled, pass the tweet
-        if not channel.filteringconfig.triggers_enabled:
+        if not channel.triggers_enabled:
             tweet.status = Tweet.STATUS_TRIGGERED
             return tweet
 
@@ -314,7 +314,7 @@ def is_user_allowed(tweet):
 
         try:
             # if feature is disabled, pass the tweet
-            if not channel.filteringconfig.blacklist_enabled:
+            if not channel.blacklist_enabled:
                 return tweet
 
             blocked_users = BlockedUser.objects.filter(channel=tweet.mention_to)
@@ -340,7 +340,7 @@ def banned_words_filter(tweet):
     if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
         # if feature is disabled, pass the tweet
-        if not channel.filteringconfig.filters_enabled:
+        if not channel.filters_enabled:
             tweet.status = Tweet.STATUS_APPROVED
             return tweet
 
@@ -379,7 +379,7 @@ def retweet(tweet, txt=None):
         if txt is None:
             txt = tweet.strip_channel_mention()
 
-            if channel.filteringconfig.replacements_enabled:
+            if channel.replacements_enabled:
                 reps = Replacement.objects.filter(channel=tweet.mention_to)
 
                 for rep in reps:
@@ -427,7 +427,7 @@ def retweet(tweet, txt=None):
 def update_status(channel_id, tweet, txt):
     channel = Channel.objects.get(screen_name=channel_id)
     try:
-        if channel.filteringconfig.retweets_enabled:
+        if channel.retweets_enabled:
             api = ChannelAPI(channel)
             api.tweet(txt)
             tweet.status = Tweet.STATUS_SENT

@@ -25,7 +25,7 @@ class CheckStatusView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     def get_ajax(self, request,  *args, **kwargs):
         obj = self.get_object()
 
-        if obj.schedulingconfig.scheduling_enabled:
+        if obj.scheduling_enabled:
             response_data = {'result': "enabled"}
         else:
             response_data = {'result': "disabled"}
@@ -45,7 +45,7 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
         obj = self.get_object()
 
         try:
-            if obj.schedulingconfig.scheduling_enabled:
+            if obj.scheduling_enabled:
                 # disable
                 scheduled_tweets = ScheduledTweet.objects.filter(channel=obj.screen_name)
                 for tweet in scheduled_tweets:
@@ -53,8 +53,8 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
                         pt = tweet.periodic_task
                         pt.enabled = False
                         pt.save()
-                obj.schedulingconfig.scheduling_enabled = False
-                obj.schedulingconfig.save()
+                obj.scheduling_enabled = False
+                obj.save()
             else:
                 # enable
                 scheduled_tweets = ScheduledTweet.objects.filter(channel=obj.screen_name)
@@ -63,8 +63,8 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
                         pt = tweet.periodic_task
                         pt.enabled = True
                         pt.save()
-                obj.schedulingconfig.scheduling_enabled = True
-                obj.schedulingconfig.save()
+                obj.scheduling_enabled = True
+                obj.save()
             response_data = {'result': "ok"}
         except Exception as e:
             logger.exception("Error in SwitchStatusView")
