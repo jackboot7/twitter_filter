@@ -1,6 +1,7 @@
 import json
 import logging
 from braces.views import JSONResponseMixin, AjaxResponseMixin, CsrfExemptMixin
+import datetime
 from django.forms.models import model_to_dict
 from django.http.response import HttpResponse
 from django.views.generic.base import View
@@ -86,9 +87,18 @@ class HashtagCreateView(CsrfExemptMixin, JSONResponseMixin,
         try:
             chan = Channel.objects.filter(screen_name=request.POST['channel'])[0]
             hashtag = HashtagAdvertisement()
+            hashtag.channel = chan
             hashtag.text = request.POST['text']
             hashtag.quantity = request.POST['qty']
-            hashtag.channel = chan
+            hashtag.start = datetime.datetime.strptime(request.POST['start'], "%H:%M").time()
+            hashtag.end = datetime.datetime.strptime(request.POST['end'], "%H:%M").time()
+            hashtag.monday = True if request.POST['monday'] == "1" else False
+            hashtag.tuesday = True if request.POST['tuesday'] == "1" else False
+            hashtag.wednesday = True if request.POST['wednesday'] == "1" else False
+            hashtag.thursday = True if request.POST['thursday'] == "1" else False
+            hashtag.friday = True if request.POST['friday'] == "1" else False
+            hashtag.saturday = True if request.POST['saturday'] == "1" else False
+            hashtag.sunday = True if request.POST['sunday'] == "1" else False
             hashtag.save()
             response_data = {'result': "ok"}
         except Exception, e:
@@ -121,6 +131,15 @@ class HashtagUpdateView(CsrfExemptMixin, JSONResponseMixin,
         try:
             obj.text = request.POST['text']
             obj.quantity = request.POST['qty']
+            obj.start = datetime.datetime.strptime(request.POST['start'], "%H:%M").time()
+            obj.end = datetime.datetime.strptime(request.POST['end'], "%H:%M").time()
+            obj.monday = True if request.POST['monday'] == "1" else False
+            obj.tuesday = True if request.POST['tuesday'] == "1" else False
+            obj.wednesday = True if request.POST['wednesday'] == "1" else False
+            obj.thursday = True if request.POST['thursday'] == "1" else False
+            obj.friday = True if request.POST['friday'] == "1" else False
+            obj.saturday = True if request.POST['saturday'] == "1" else False
+            obj.sunday = True if request.POST['sunday'] == "1" else False
             obj.save()
             response_data = {'result': "ok"}
         except Exception, e:

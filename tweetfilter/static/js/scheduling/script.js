@@ -91,7 +91,7 @@ var
 
         var url;
 
-        if ($('#editing_scheduled_post_id').val() == "") {
+        if ($('#editing_scheduled_post_id').val() === "") {
             url = "/scheduling/add/";
         }else{
             url = "/scheduling/update/" + $('#editing_scheduled_post_id').val();

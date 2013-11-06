@@ -88,11 +88,12 @@
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                         <h3 id="hashtag_modal_title">
-                            Añadir hashtag
+                            Añadir hashtag publicitario
                         </h3>
                     </div>
                     <div class="modal-body">
-                        <div class="span8">
+                        <div class="span7">
+                            <h5>Hashtag</h5>
                             <table>
                                 <tr>
                                     <td><label>Texto:&nbsp;</label></td>
@@ -102,7 +103,33 @@
                                     <td><label>Cantidad:&nbsp;</label></td>
                                     <td><input id="add_hashtag_qty" type="text" class="span4" value="0"></td>
                                 </tr>
+                                <tr>
+                                    <td><h5>Horario</h5></td><td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td><label>Hora de inicio: </label></td>
+                                    <td>
+                                        <input type="text" class="input-mini" id="add_hashtag_start_timepicker">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Hora de fin: </label></td>
+                                    <td>
+                                        <input type="text" class="input-mini" id="add_hashtag_end_timepicker">
+                                    </td>
+                                </tr>
                             </table>
+                        </div>
+                        <div class="span5">
+
+                            <h5>Días de la semana</h5>
+                            <label class="checkbox"><input type="checkbox" id="add_hashtag_monday_check"> Lunes</label>
+                            <label class="checkbox"><input type="checkbox" id="add_hashtag_tuesday_check"> Martes</label>
+                            <label class="checkbox"><input type="checkbox" id="add_hashtag_wednesday_check"> Miércoles</label>
+                            <label class="checkbox"><input type="checkbox" id="add_hashtag_thursday_check"> Jueves</label>
+                            <label class="checkbox"><input type="checkbox" id="add_hashtag_friday_check"> Viernes</label>
+                            <label class="checkbox"><input type="checkbox" id="add_hashtag_saturday_check"> Sábado</label>
+                            <label class="checkbox"><input type="checkbox" id="add_hashtag_sunday_check"> Domingo</label>
                         </div>
                     </div>
                     <div class="modal-footer">

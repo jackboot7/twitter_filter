@@ -9,6 +9,15 @@ var
         $('#add_hashtag_text').val(hashtag.text);
         $('#add_hashtag_qty').val(hashtag.quantity);
 
+        $('#add_hashtag_start_timepicker').val(hashtag.start);
+        $('#add_hashtag_end_timepicker').val(hashtag.end);
+        $('#add_hashtag_monday_check').attr('checked', hashtag.monday);
+        $('#add_hashtag_tuesday_check').attr('checked', hashtag.tuesday);
+        $('#add_hashtag_wednesday_check').attr('checked', hashtag.wednesday);
+        $('#add_hashtag_thursday_check').attr('checked', hashtag.thursday);
+        $('#add_hashtag_friday_check').attr('checked', hashtag.friday);
+        $('#add_hashtag_saturday_check').attr('checked', hashtag.saturday);
+        $('#add_hashtag_sunday_check').attr('checked', hashtag.sunday);
     },
 
     update_hashtags_status = function () {
@@ -91,7 +100,16 @@ var
         $.post(url, {
             'text': $.trim($('#add_hashtag_text').val()),
             'qty': $.trim($('#add_hashtag_qty').val()),
-            'channel': $('#current_channel').val()
+            'channel': $('#current_channel').val(),
+            'start': $('#add_hashtag_start_timepicker').val(),
+            'end': $('#add_hashtag_end_timepicker').val(),
+            'monday': $('#add_hashtag_monday_check').is(':checked') ? 1 : 0,
+            'tuesday': $('#add_hashtag_tuesday_check').is(':checked') ? 1 : 0,
+            'wednesday': $('#add_hashtag_wednesday_check').is(':checked') ? 1 : 0,
+            'thursday': $('#add_hashtag_thursday_check').is(':checked') ? 1 : 0,
+            'friday': $('#add_hashtag_friday_check').is(':checked') ? 1 : 0,
+            'saturday': $('#add_hashtag_saturday_check').is(':checked') ? 1 : 0,
+            'sunday': $('#add_hashtag_sunday_check').is(':checked') ? 1 : 0
             // otros campos
         }, function (data) {
 
@@ -110,6 +128,16 @@ var
         $('#editing_hashtag_id').val('');
         $('#add_hashtag_text').val('');
         $('#add_hashtag_qty').val('');
+
+        $('#add_hashtag_start_timepicker').val('');
+        $('#add_hashtag_end_timepicker').val('');
+        $('#add_hashtag_monday_check').attr('checked', true);
+        $('#add_hashtag_tuesday_check').attr('checked', true);
+        $('#add_hashtag_wednesday_check').attr('checked', true);
+        $('#add_hashtag_thursday_check').attr('checked', true);
+        $('#add_hashtag_friday_check').attr('checked', true);
+        $('#add_hashtag_saturday_check').attr('checked', true);
+        $('#add_hashtag_sunday_check').attr('checked', true);
     },
 
     validate_add_hashtag_form = function () {
@@ -127,6 +155,33 @@ var
 
         if(!/^[0-9]+$/.test($.trim($('#add_hashtag_qty').val()))){
             alert("Debe ingresar un número entero como cantidad");
+            return false;
+        }
+
+        if($('#add_hashtag_start_timepicker').val() === ""){
+            alert("Debe ingresar una hora de inicio");
+            return false;
+        }
+
+        if($('#add_hashtag_end_timepicker').val() === ""){
+            alert("Debe ingresar una hora de finalización");
+            return false;
+        }
+
+        if($('#start_timepicker').val() >= $('#end_timepicker').val()) {
+            alert("El tiempo de inicio debe ser menor al tiempo de fin");
+            return false;
+        }
+
+        if (!($('#add_hashtag_monday_check').is(':checked') ||
+            $('#add_hashtag_tuesday_check').is(':checked') ||
+            $('#add_hashtag_wednesday_check').is(':checked') ||
+            $('#add_hashtag_thursday_check').is(':checked') ||
+            $('#add_hashtag_friday_check').is(':checked') ||
+            $('#add_hashtag_saturday_check').is(':checked') ||
+            $('#add_hashtag_sunday_check').is(':checked'))){
+            //Si no está chequeado ningún día
+            alert("Debe seleccionar al menos un día de la semana");
             return false;
         }
 
@@ -172,4 +227,15 @@ $(document).ready(function () {
         $('#hashtag_modal_title').text("Añadir hashtag");
         clear_add_hashtag_form();
     });
+
+    $('#add_hashtag_start_timepicker').timepicker({
+        hourText: 'Hora',
+        minuteText: 'Minutos'
+    });
+
+    $('#add_hashtag_end_timepicker').timepicker({
+        hourText: 'Hora',
+        minuteText: 'Minutos'
+    });
+
 });
