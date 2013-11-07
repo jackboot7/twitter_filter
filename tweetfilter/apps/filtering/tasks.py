@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+from random import randint
 
 from celery._state import current_task
 from celery.app.task import Task
@@ -14,6 +15,7 @@ from twython.streaming.api import TwythonStreamer
 from apps.accounts.models import  Channel
 from apps.control.tasks import DelayedTask
 from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
+from apps.hashtags.models import HashtagAdvertisement
 from apps.twitter.api import ChannelAPI, Twitter
 from apps.twitter.models import Tweet
 
@@ -139,7 +141,7 @@ class RetweetDelayedTask(DelayedTask):
 
     def calculate_eta(self, tweet_type):
         blocks = ChannelScheduleBlock.objects.filter(channel=self.screen_name)
-        eta = datetime.datetime.max     # does this even work???
+        eta = datetime.datetime.max
         #eta = blocks[0].next_datetime()
         if not len(blocks) > 0:
             # if there are no blocks, there are no restrictions, execute now.
@@ -375,10 +377,10 @@ def retweet(tweet, txt=None):
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         channel = Channel.objects.get(screen_name=tweet.mention_to)
 
-        # Apply replacements
         if txt is None:
             txt = tweet.strip_channel_mention()
 
+            # Apply replacements
             if channel.replacements_enabled:
                 reps = Replacement.objects.filter(channel=tweet.mention_to)
 
@@ -388,6 +390,24 @@ def retweet(tweet, txt=None):
             txt = "via @%s: %s" % (tweet.screen_name, txt)
             if len(txt) > 140:
                 txt = txt[0:140]
+
+            # Apply hashtags
+            if channel.hashtags_enabled:
+                hashtag_list = []
+                hashtags = HashtagAdvertisement.objects.filter(channel=channel.screen_name)
+                for hashtag in hashtags:
+                    if hashtag.applies_now() and len(hashtag.text) + 1 <= 140 - len(txt) \
+                    and hashtag.count < hashtag.quantity:
+                        hashtag_list.append(hashtag)
+
+                if len(hashtag_list) > 0:
+                    applying_hashtag = hashtag_list[randint(0, len(hashtag_list) - 1)]
+                    txt = "%s #%s" % (txt, applying_hashtag.text)
+                    applying_hashtag.count += 1
+                    applying_hashtag.save()
+                    # registrar en el log?
+
+                # seleccionar mejor candidato
 
         # acquire lock
         if cache.add("retweet_lock_%s" % channel.screen_name, "true", LOCK_EXPIRE):
@@ -455,3 +475,4 @@ def update_status(channel_id, tweet, txt):
         tweet.save()
         msg = "#%s marked as NOT SENT (%s: %s)" % (tweet.tweet_id, e.error_code, e.message)
         channel_log_exception.delay(msg, channel.screen_name)
+

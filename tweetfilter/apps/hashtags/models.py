@@ -10,4 +10,5 @@ class HashtagAdvertisement(ScheduleBlock):
     #schedule = models.ForeignKey(ScheduleBlock, blank=True, null=True)
     text = models.CharField(max_length=32)
     quantity = models.IntegerField()
+    count = models.IntegerField(default=0)
     enabled = models.BooleanField(default=True)
