@@ -273,8 +273,8 @@ def store_tweet(data, channel_id):
             return None
 
         return tweet
-    except Exception:
-        channel_log_exception.delay("Unexpected error in store_tweet task", channel_id)
+    except Exception as e:
+        channel_log_exception.delay("Unexpected error in store_tweet task\n%s", (channel_id,e))
 
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
@@ -331,7 +331,8 @@ def is_user_allowed(tweet):
         except FilterNotPassed as exc:
             raise
         except:
-            channel_log_exception.delay("Unexpected error in is_user_allowed task",
+            import sys
+            channel_log_exception.delay("Unexpected error in is_user_allowed task: %s" % sys.exc_info()[0],
                 channel.screen_name)
 
 
@@ -358,7 +359,8 @@ def banned_words_filter(tweet):
         except FilterNotPassed as exc:
             raise
         except:
-            channel_log_exception.delay("Unexpected error in banned_words_filter task",
+            import sys
+            channel_log_exception.delay("Unexpected error in banned_words_filter task: %s" % sys.exc_info()[0],
                 channel.screen_name)
 
 
@@ -445,6 +447,7 @@ def update_status(channel_id, tweet, txt):
     except TwythonError, e:
         if "update limit" in e.args[0]:
             # save event for statistics
+
             pass
         if "duplicate" in e.args[0]:
             pass
@@ -453,5 +456,5 @@ def update_status(channel_id, tweet, txt):
 
         tweet.status = Tweet.STATUS_NOT_SENT
         tweet.save()
-        msg = "#%s marked as NOT SENT (%s: %s)" % (tweet.tweet_id, e.error_code, e.message)
+        msg = "#%s marked as NOT SENT: %s" % (tweet.tweet_id, e)
         channel_log_exception.delay(msg, channel.screen_name)
