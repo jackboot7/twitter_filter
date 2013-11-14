@@ -229,7 +229,7 @@ def stream_channel(chan_id):
         stream.user(**{"with": "followings"})
         return True
     except Exception as e:
-        message = "Error starting streaming for %s. Will retry later" % chan_id
+        message = "Error starting streaming for %s. Will retry later: %s" % (chan_id, e)
         channel_log_exception.delay(message, chan.screen_name)
         cache.delete("streaming_lock_%s" % chan_id)
         stream_channel.retry(exc=e, chan_id=chan_id)
@@ -303,7 +303,8 @@ def triggers_filter(tweet):
         except FilterNotPassed:
             raise
         except:
-            channel_log_exception.delay("Unexpected error in triggers_filter task", channel.screen_name)
+            import sys
+            channel_log_exception.delay("Unexpected error in triggers_filter task: %s" % sys.exc_info()[0], channel.screen_name)
 
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
