@@ -34,12 +34,12 @@ class CheckStatusView(JSONResponseMixin, AjaxResponseMixin, DetailView):
 
     def get_ajax(self, request,  *args, **kwargs):
         obj = self.get_object()
-        response_data = {'module_enabled': obj.filteringconfig.retweets_enabled,
-                         'scheduled_blocks': obj.filteringconfig.scheduleblocks_enabled,
-                         'blacklist':  obj.filteringconfig.blacklist_enabled,
-                         'triggers': obj.filteringconfig.triggers_enabled,
-                         'replacements': obj.filteringconfig.replacements_enabled,
-                         'filters': obj.filteringconfig.filters_enabled
+        response_data = {'module_enabled': obj.retweets_enabled,
+                         'scheduled_blocks': obj.scheduleblocks_enabled,
+                         'blacklist':  obj.blacklist_enabled,
+                         'triggers': obj.triggers_enabled,
+                         'replacements': obj.replacements_enabled,
+                         'filters': obj.filters_enabled
         }
 
         return HttpResponse(json.dumps(response_data),
@@ -57,19 +57,19 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
         obj = self.get_object()
 
         try:
-            if obj.filteringconfig.retweets_enabled:
+            if obj.retweets_enabled:
                 # if enabled: disable.
                 if obj.stop_streaming():
-                    obj.filteringconfig.retweets_enabled = False
-                    obj.filteringconfig.save()
+                    obj.retweets_enabled = False
+                    obj.save()
                     response_data = {'result': "ok"}
                 else:
                     response_data = {'result': "fail"}
             else:
                 # else: enable
                 if obj.init_streaming():
-                    obj.filteringconfig.retweets_enabled = True
-                    obj.filteringconfig.save()
+                    obj.retweets_enabled = True
+                    obj.save()
                     response_data = {'result': "ok"}
                 else:
                     response_data = {'result': "fail"}
@@ -93,14 +93,14 @@ class SwitchScheduleBlocksView(CsrfExemptMixin, JSONResponseMixin,
         obj = self.get_object()
 
         try:
-            if obj.filteringconfig.scheduleblocks_enabled:
+            if obj.scheduleblocks_enabled:
                 # disable
-                obj.filteringconfig.scheduleblocks_enabled = False
-                obj.filteringconfig.save()
+                obj.scheduleblocks_enabled = False
+                obj.save()
             else:
                 # enable
-                obj.filteringconfig.scheduleblocks_enabled = True
-                obj.filteringconfig.save()
+                obj.scheduleblocks_enabled = True
+                obj.save()
             response_data = {'result': "ok"}
         except Exception as e:
             logger.exception("Error in SwitchScheduleBlocksView")
@@ -121,14 +121,14 @@ class SwitchBlackListView(CsrfExemptMixin, JSONResponseMixin,
         obj = self.get_object()
 
         try:
-            if obj.filteringconfig.blacklist_enabled:
+            if obj.blacklist_enabled:
                 # disable
-                obj.filteringconfig.blacklist_enabled = False
-                obj.filteringconfig.save()
+                obj.blacklist_enabled = False
+                obj.save()
             else:
                 # enable
-                obj.filteringconfig.blacklist_enabled = True
-                obj.filteringconfig.save()
+                obj.blacklist_enabled = True
+                obj.save()
             response_data = {'result': "ok"}
         except Exception as e:
             logger.exception("Error in SwitchBlackListView")
@@ -150,14 +150,14 @@ class SwitchTriggersView(CsrfExemptMixin, JSONResponseMixin,
         obj = self.get_object()
 
         try:
-            if obj.filteringconfig.triggers_enabled:
+            if obj.triggers_enabled:
                 # disable
-                obj.filteringconfig.triggers_enabled = False
-                obj.filteringconfig.save()
+                obj.triggers_enabled = False
+                obj.save()
             else:
                 # enable
-                obj.filteringconfig.triggers_enabled = True
-                obj.filteringconfig.save()
+                obj.triggers_enabled = True
+                obj.save()
             response_data = {'result': "ok"}
         except Exception as e:
             logger.exception("Error in SwitchTriggersView")
@@ -178,14 +178,14 @@ class SwitchReplacementsView(CsrfExemptMixin, JSONResponseMixin,
         obj = self.get_object()
 
         try:
-            if obj.filteringconfig.replacements_enabled:
+            if obj.replacements_enabled:
                 # disable
-                obj.filteringconfig.replacements_enabled = False
-                obj.filteringconfig.save()
+                obj.replacements_enabled = False
+                obj.save()
             else:
                 # enable
-                obj.filteringconfig.replacements_enabled = True
-                obj.filteringconfig.save()
+                obj.replacements_enabled = True
+                obj.save()
             response_data = {'result': "ok"}
         except Exception as e:
             logger.exception("Error in SwitchReplacementsView")
@@ -206,14 +206,14 @@ class SwitchFiltersView(CsrfExemptMixin, JSONResponseMixin,
         obj = self.get_object()
 
         try:
-            if obj.filteringconfig.filters_enabled:
+            if obj.filters_enabled:
                 # disable
-                obj.filteringconfig.filters_enabled = False
-                obj.filteringconfig.save()
+                obj.filters_enabled = False
+                obj.save()
             else:
                 # enable
-                obj.filteringconfig.filters_enabled = True
-                obj.filteringconfig.save()
+                obj.filters_enabled = True
+                obj.save()
             response_data = {'result': "ok"}
         except Exception as e:
             logger.exception("Error in SwitchFiltersView")

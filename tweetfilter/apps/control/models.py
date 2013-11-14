@@ -173,3 +173,6 @@ class ScheduleBlock(models.Model):
             minute=self.start.minute)
 
         return next_datetime
+
+    def applies_now(self):
+        return self.has_datetime(datetime.datetime.now())

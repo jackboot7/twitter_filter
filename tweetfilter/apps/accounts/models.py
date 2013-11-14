@@ -42,20 +42,24 @@ class Channel(models.Model):
     # indica quiénes pueden enviar mensajes al canal
     allow_messages = models.SmallIntegerField(choices=ALLOW_CHOICES, default=ALLOW_ALL)
 
-    def save(self, *args, **kwargs):
-        super(Channel, self).save(*args, **kwargs)
-        try:
-            if self.filteringconfig is not None:
-                pass
-        except ObjectDoesNotExist:
-            # if models is being saved for the first time,
-            # instantiate FilteringConfig and SchedulingConfig
-            filtering_config = FilteringConfig(channel=self)
-            filtering_config.save()
-            scheduling_config = SchedulingConfig(channel=self)
-            scheduling_config.save()
+    # Filtering config
+    retweets_enabled = models.BooleanField(default=True)
+    retweet_mentions = models.BooleanField(default=True)
+    retweet_dm = models.BooleanField(default=True)  # is module enabled
+    triggers_enabled = models.BooleanField(default=True)
+    replacements_enabled = models.BooleanField(default=True)
+    filters_enabled = models.BooleanField(default=True)
+    scheduleblocks_enabled = models.BooleanField(default=True)
+    blacklist_enabled = models.BooleanField(default=True)
+
+    # Scheduling config
+    scheduling_enabled = models.BooleanField(default=True)
+
+    # Hashtags config
+    hashtags_enabled = models.BooleanField(default=True)
 
     def delete(self):
+        self.stop_streaming()
         schedules = self.scheduledtweet_set.all()
         for schedule in schedules:
             schedule.delete()
@@ -157,7 +161,7 @@ class Channel(models.Model):
         #return filters
         return self.filter_set.all()
 
-
+"""
 class FilteringConfig(models.Model):
     channel = models.OneToOneField(Channel, parent_link=True)
     retweets_enabled = models.BooleanField(default=True)
@@ -188,3 +192,16 @@ class SchedulingConfig(models.Model):
         if channel is not None:
             self.channel = channel
             self.save()
+
+
+class HashtagsConfig(models.Model):
+    channel = models.OneToOneField(Channel, parent_link=True)
+    hashtags_enabled = models.BooleanField(default=True)
+
+    def __init__(self, *args, **kwargs):
+        channel = kwargs.pop('channel', None)
+        super(HashtagsConfig, self).__init__(*args, **kwargs)
+        if channel is not None:
+            self.channel = channel
+            self.save()
+"""

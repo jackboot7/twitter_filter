@@ -1,5 +1,4 @@
 import re
-import django.db.models
 from unidecode import unidecode
 from apps.accounts.models import Channel
 from django.db import models
@@ -145,7 +144,3 @@ class Replacement(Keyword):
 
 
 
-class HashtagAdvertisement(models.Model):
-    text = models.CharField(max_length=32)
-    schedule = models.ForeignKey(ScheduleBlock)
-    quantity = models.IntegerField()
