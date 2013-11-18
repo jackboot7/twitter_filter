@@ -151,6 +151,8 @@ INSTALLED_APPS = (
     'apps.scheduling',
 
     # Third party modules
+    'crispy_forms',
+    'registration',
     'djcelery',
     'south',
 
@@ -288,3 +290,6 @@ CACHE_MIDDLEWARE_SECONDS = 600
 CACHE_MIDDLEWARE_KEY_PREFIX = ""
 
 MESSAGE_STORAGE = "django.contrib.messages.storage.fallback.FallbackStorage"
+
+# Crispy form configuration
+CRISPY_TEMPLATE_PACK = 'bootstrap'
