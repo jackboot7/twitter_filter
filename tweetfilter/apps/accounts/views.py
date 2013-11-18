@@ -1,16 +1,19 @@
 # -*- encoding: utf-8 -*-
 
 import json
-from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
+
 from django.conf import settings
 from django.contrib.sites.models import RequestSite
 from django.core.urlresolvers import reverse
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView
 from django.views.generic.base import View
-from twython.api import Twython
-from apps.accounts.models import Channel
 from django.views.generic.edit import DeleteView
+
+from twython.api import Twython
+from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
+
+from apps.accounts.models import Channel
 
 
 class TwitterAuthenticationView(View):
