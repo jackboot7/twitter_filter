@@ -2,10 +2,12 @@
 
 from django.views.generic import ListView
 
+from braces.views import LoginRequiredMixin
 from apps.accounts.models import Channel
 
 
-class HomeView(ListView):
+
+class HomeView(LoginRequiredMixin, ListView):
     model = Channel
     template_name = "accounts/index.html"
     context_object_name = 'channel_list'

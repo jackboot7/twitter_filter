@@ -2,7 +2,7 @@ import datetime
 from exceptions import Exception
 import json
 import logging
-from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
+from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin, LoginRequiredMixin
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.views.generic import DetailView, View, DeleteView
@@ -14,7 +14,7 @@ from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleB
 
 logger = logging.getLogger('app')
 
-class FilteringDetailView(DetailView):
+class FilteringDetailView(LoginRequiredMixin, DetailView):
     """
     Renders the main interface for filtering module config
     """

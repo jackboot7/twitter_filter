@@ -62,6 +62,13 @@ USE_L10N = True
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
 
+#=====================================================================
+# Project URL and media settings
+#=====================================================================
+LOGIN_URL = '/login/'
+LOGOUT_URL = '/logout/'
+LOGIN_REDIRECT_URL = '/'
+
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
 MEDIA_ROOT = ''
@@ -76,9 +83,6 @@ MEDIA_URL = ''
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/var/www/example.com/static/"
 STATIC_ROOT = os.path.join(VAR_ROOT, 'static')
-
-# URL prefix for static files.
-# Example: "http://example.com/static/", "http://static.example.com/"
 STATIC_URL = '/static/'
 
 # Additional locations of static files
@@ -148,6 +152,8 @@ INSTALLED_APPS = (
     'apps.hashtags',
 
     # Third party modules
+    'crispy_forms',
+    'registration',
     'djcelery',
     'south',
     'notifications',
@@ -284,3 +290,7 @@ CACHES = {
 CACHE_MIDDLEWARE_ALIAS = 'default'
 CACHE_MIDDLEWARE_SECONDS = 600
 CACHE_MIDDLEWARE_KEY_PREFIX = ""
+
+# Crispy form configuration
+CRISPY_TEMPLATE_PACK = 'bootstrap'
+
