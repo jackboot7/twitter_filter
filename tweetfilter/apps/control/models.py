@@ -2,6 +2,7 @@
 from time import strptime
 import datetime
 from django.db import models
+from apps.twitter.models import Tweet
 
 
 class Schedule(models.Model):
@@ -176,3 +177,46 @@ class ScheduleBlock(models.Model):
 
     def applies_now(self):
         return self.has_datetime(datetime.datetime.now())
+
+
+class UpdateLimit(models.Model):
+    """
+    Represents an instance of an event where daily update limit was reached
+    It saves relevant statistical info as:
+      * Total tweets sent that day (before reaching limit)
+      * Tweets sent the last hour
+      * Tweets sent the last 15 minutes
+    """
+    from apps.accounts.models import Channel
+    channel = models.ForeignKey(Channel)
+    time = models.DateTimeField(auto_now=True)
+    total_tweets_sent = models.IntegerField(default=0)
+    tweets_sent_last_hour = models.IntegerField(default=0)
+    tweets_sent_last_15min = models.IntegerField(default=0)
+
+    def __init__(self, *args, **kwargs):
+        super(models.Model, self).__init__(*args, **kwargs)
+        self.channel = kwargs.pop('channel', None)
+        self.calculate_tweets()
+        self.save()
+
+    def calculate_tweets(self):
+        today_min = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
+        today_max = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
+        sent_tweets = Tweet.objects.filter(
+            mention_to=self.channel.screen_name).filter(
+            status=Tweet.STATUS_SENT)
+
+        day_tweets = sent_tweets.filter(date_time__range=(today_min, today_max))
+        self.total_tweets_sent = len(day_tweets)
+
+        now = datetime.datetime.now()
+        one_hour_ago = now - datetime.timedelta(hours=1)
+        hour_tweets = day_tweets.filter(date_time__range=(one_hour_ago, now))
+        self.tweets_sent_last_hour = len(hour_tweets)
+
+        fifteen_minutes_ago = now - datetime.timedelta(minutes=15)
+        minute_tweets = day_tweets.filter(date_time__range=(fifteen_minutes_ago, now))
+        self.tweets_sent_last_15min = len(minute_tweets)
+
+        # caller is responsible for saving

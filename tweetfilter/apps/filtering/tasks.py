@@ -13,6 +13,7 @@ from django.core.cache import cache
 from twython.exceptions import TwythonError
 from twython.streaming.api import TwythonStreamer
 from apps.accounts.models import  Channel
+from apps.control.models import UpdateLimit
 from apps.control.tasks import DelayedTask
 from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
 from apps.hashtags.models import HashtagAdvertisement
@@ -468,9 +469,11 @@ def update_status(channel_id, tweet, txt):
     except TwythonError, e:
         if "update limit" in e.args[0]:
             # save event for statistics
+            limit = UpdateLimit(channel)
+            # notify.send()
 
-            pass
         if "duplicate" in e.args[0]:
+
             pass
         if "over 140" in e.args[0]:
             pass
