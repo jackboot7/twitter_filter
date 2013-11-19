@@ -66,26 +66,23 @@
                                     <a href="/">Canales</a>
                                 </li>
                                 <li>
-                                    <a href="#">Configuración</a>
+                                    <!--<a href="#">Configuración</a>-->
                                 </li>
-                                <li>
-                                {% if request.user.is_authenticated %} <a href="/logout/">Salir</a>  {% endif %}
-                                </li>
+
                                 <li>
                                     <!--<a href="#">Link</a>-->
                                 </li>
                             </ul>
                             <ul class="nav pull-right">
-                                <!--<li>
-                                    <a href="#">Configuración</a>
-                                </li>-->
-                                <li class="divider-vertical">
-                                </li>
+                                <!--
                                 <li>
                                     <a>Buscar:</a>
                                 </li>
                                 <li>
-                                    <input class="input-medium search-query center-search" type="text" /> <!--<button type="submit" class="btn">Search</button>-->
+                                    <input class="input-medium search-query center-search" type="text" /> <!--<button type="submit" class="btn">Search</button>
+                                </li>-->
+                                <li>
+                                    <a href="/logout/">Salir</a>
                                 </li>
                                 <!--
                                 <li class="dropdown">

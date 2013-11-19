@@ -2,7 +2,7 @@
 
 import json
 import logging
-from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
+from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin, LoginRequiredMixin
 import datetime
 from django.http.response import HttpResponse
 from django.views.generic import DetailView
@@ -12,6 +12,12 @@ from apps.accounts.models import Channel
 from apps.scheduling.models import ScheduledTweet
 
 logger = logging.getLogger('app')
+
+class ScheduledPostsDetailView(LoginRequiredMixin, DetailView):
+    model = Channel
+    template_name = "scheduling/index.html"
+    context_object_name = "channel"
+
 
 #==========================
 # Scheduling Config
@@ -160,12 +166,6 @@ class ScheduledTweetDeleteView(CsrfExemptMixin, JSONResponseMixin,
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
-
-
-class ScheduledPostsDetailView(DetailView):
-    model = Channel
-    template_name = "scheduling/index.html"
-    context_object_name = "channel"
 
 
 class ScheduledTweetUpdateView(CsrfExemptMixin, JSONResponseMixin,

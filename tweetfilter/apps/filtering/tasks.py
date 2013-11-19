@@ -376,7 +376,7 @@ def delay_retweet(tweet):
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
 def retweet(tweet, txt=None):
     LOCK_EXPIRE = 60 * 5    # Lock expires in 5 minutes
-    DELAY_DELTA = 60        # allows updating status each minute per channel
+    DELAY_DELTA = 90        # allows updating status each minute per channel
 
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         channel = Channel.objects.get(screen_name=tweet.mention_to)
@@ -451,29 +451,39 @@ def retweet(tweet, txt=None):
 def update_status(channel_id, tweet, txt):
     channel = Channel.objects.get(screen_name=channel_id)
     try:
-        if channel.retweets_enabled:
+        update_limit = cache.get('%s_limit_waiting' % channel.screen_name)
+        if channel.retweets_enabled and update_limit is None:
             api = ChannelAPI(channel)
             api.tweet(txt)
             tweet.status = Tweet.STATUS_SENT
             tweet.retweeted_text = txt
             tweet.save()
+            cache.delete('%s_limit_count' % channel.screen_name)
             msg = "Retweeted #%s succesfully and marked it as SENT" % tweet.tweet_id
             channel_log_info.delay(msg, channel.screen_name)
         else:
             tweet.status = Tweet.STATUS_NOT_SENT
             tweet.retweeted_text = txt
             tweet.save()
-            msg = "#%s marked as NOT SENT (channel was disabled)" % tweet.tweet_id
+            reason = "channel was disabled" if update_limit is None else "update limit"
+            msg = "#%s marked as NOT SENT (%s)" % (tweet.tweet_id, reason)
             channel_log_info.delay(msg, channel.screen_name)
 
     except TwythonError, e:
         if "update limit" in e.args[0]:
-            # save event for statistics
-            limit = UpdateLimit(channel)
-            # notify.send()
+            HOLD_ON_WINDOW = 300   # 5 minutes
 
+            count = cache.get('%s_limit_count' % channel.screen_name)
+            if count is None:
+                count = 1
+            else:
+                count += 1
+            cache.set('%s_limit_count' % channel.screen_name, count)
+            cache.set('%s_limit_waiting' % channel.screen_name, True, HOLD_ON_WINDOW * count)
+
+            limit = UpdateLimit.create(channel)
+            channel_log_warning.delay(limit, channel.screen_name)
         if "duplicate" in e.args[0]:
-
             pass
         if "over 140" in e.args[0]:
             pass

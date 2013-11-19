@@ -1,6 +1,6 @@
 import json
 import logging
-from braces.views import JSONResponseMixin, AjaxResponseMixin, CsrfExemptMixin
+from braces.views import JSONResponseMixin, AjaxResponseMixin, CsrfExemptMixin, LoginRequiredMixin
 import datetime
 from django.forms.models import model_to_dict
 from django.http.response import HttpResponse
@@ -12,7 +12,7 @@ from apps.hashtags.models import HashtagAdvertisement
 
 logger = logging.getLogger('app')
 
-class HashtagsDetailView(DetailView):
+class HashtagsDetailView(LoginRequiredMixin, DetailView):
     model = Channel
     template_name = "hashtags/index.html"
     context_object_name = "channel"

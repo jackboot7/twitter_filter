@@ -150,13 +150,13 @@ INSTALLED_APPS = (
     'apps.control',
     'apps.scheduling',
     'apps.hashtags',
+    'apps.notifications',
 
     # Third party modules
     'crispy_forms',
     'registration',
     'djcelery',
     'south',
-    'notifications',
 
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',

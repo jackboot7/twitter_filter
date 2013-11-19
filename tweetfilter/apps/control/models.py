@@ -194,11 +194,13 @@ class UpdateLimit(models.Model):
     tweets_sent_last_hour = models.IntegerField(default=0)
     tweets_sent_last_15min = models.IntegerField(default=0)
 
-    def __init__(self, *args, **kwargs):
-        super(models.Model, self).__init__(*args, **kwargs)
-        self.channel = kwargs.pop('channel', None)
-        self.calculate_tweets()
-        self.save()
+    @classmethod
+    def create(cls, channel):
+        limit = cls()
+        limit.channel = channel
+        limit.calculate_tweets()
+        limit.save()
+        return limit
 
     def calculate_tweets(self):
         today_min = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
@@ -220,3 +222,10 @@ class UpdateLimit(models.Model):
         self.tweets_sent_last_15min = len(minute_tweets)
 
         # caller is responsible for saving
+
+    def __unicode__(self):
+        return "Update limit event reached for channel %s: %s tweets sent today, " \
+        "%s sent last hour, %s sent last 15 minutes" % (self.channel_id,
+                                      self.total_tweets_sent,
+                                      self.tweets_sent_last_hour,
+                                      self.tweets_sent_last_15min)
