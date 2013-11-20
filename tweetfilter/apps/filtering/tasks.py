@@ -447,7 +447,7 @@ def retweet(tweet, txt=None):
     return tweet
 
 
-@task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
+@task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES, max_retries=3)
 def update_status(channel_id, tweet, txt):
     channel = Channel.objects.get(screen_name=channel_id)
     try:
@@ -483,11 +483,20 @@ def update_status(channel_id, tweet, txt):
 
             limit = UpdateLimit.create(channel)
             channel_log_warning.delay(limit, channel.screen_name)
-        if "duplicate" in e.args[0]:
+        elif "duplicate" in e.args[0]:
             pass
-        if "over 140" in e.args[0]:
+        elif "over 140" in e.args[0]:
             pass
+        else:
+            # unknown error ocurred, retry later
+            raise update_status.retry(exc=e)
 
+        tweet.status = Tweet.STATUS_NOT_SENT
+        tweet.save()
+        msg = "#%s marked as NOT SENT: %s" % (tweet.tweet_id, e)
+        channel_log_exception.delay(msg, channel.screen_name)
+
+    except  Task.MaxRetriesExceeded, e:
         tweet.status = Tweet.STATUS_NOT_SENT
         tweet.save()
         msg = "#%s marked as NOT SENT: %s" % (tweet.tweet_id, e)
