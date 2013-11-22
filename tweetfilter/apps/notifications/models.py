@@ -10,5 +10,12 @@ class Notification(models.Model):
     description = models.TextField(max_length=140)
     url = models.URLField(blank=True, null=True)
 
+    time = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     read = models.BooleanField(default=False)
 
+    @classmethod
+    def create(cls, user, channel=None, desc=""):
+        notify = cls(recipient=user)
+        notify.channel = channel
+        notify.description = desc
+        return notify

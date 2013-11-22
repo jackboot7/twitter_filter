@@ -453,6 +453,7 @@ def update_status(channel_id, tweet, txt):
     try:
         update_limit = cache.get('%s_limit_waiting' % channel.screen_name)
         if channel.retweets_enabled and update_limit is None:
+            raise TwythonError("update limit por ese culo no joda!")
             api = ChannelAPI(channel)
             api.tweet(txt)
             tweet.status = Tweet.STATUS_SENT
@@ -479,7 +480,7 @@ def update_status(channel_id, tweet, txt):
             else:
                 count += 1
             cache.set('%s_limit_count' % channel.screen_name, count)
-            cache.set('%s_limit_waiting' % channel.screen_name, True, HOLD_ON_WINDOW * count)
+            cache.set('%s_limit_waiting' % channel.screen_name, HOLD_ON_WINDOW * count, HOLD_ON_WINDOW * count)
 
             limit = UpdateLimit.create(channel)
             channel_log_warning.delay(limit, channel.screen_name)

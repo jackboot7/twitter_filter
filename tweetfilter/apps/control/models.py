@@ -2,6 +2,8 @@
 from time import strptime
 import datetime
 from django.db import models
+from django.core.cache import cache
+from apps.notifications.models import Notification
 from apps.twitter.models import Tweet
 
 
@@ -200,6 +202,17 @@ class UpdateLimit(models.Model):
         limit.channel = channel
         limit.calculate_tweets()
         limit.save()
+
+
+        seconds_to_wait = cache.get('%s_limit_waiting' % channel.screen_name)
+        if seconds_to_wait is not None:
+            minutes = "%s" % (seconds_to_wait / 60)
+        else:
+            minutes = "unos"
+
+        notify = Notification.create(channel.user, channel,
+            u"%s alcanzó la condición de 'update limit'. El canal quedará en espera por %s minutos" % (channel.screen_name, minutes))
+        notify.save()
         return limit
 
     def calculate_tweets(self):
@@ -210,16 +223,19 @@ class UpdateLimit(models.Model):
             status=Tweet.STATUS_SENT)
 
         day_tweets = sent_tweets.filter(date_time__range=(today_min, today_max))
-        self.total_tweets_sent = len(day_tweets)
+        #self.total_tweets_sent = len(day_tweets)
+        self.total_tweets_sent = day_tweets.count()
 
         now = datetime.datetime.now()
         one_hour_ago = now - datetime.timedelta(hours=1)
-        hour_tweets = day_tweets.filter(date_time__range=(one_hour_ago, now))
-        self.tweets_sent_last_hour = len(hour_tweets)
+        hour_tweets = sent_tweets.filter(date_time__range=(one_hour_ago, now))
+        #self.tweets_sent_last_hour = len(hour_tweets)
+        self.tweets_sent_last_hour = hour_tweets.count()
 
         fifteen_minutes_ago = now - datetime.timedelta(minutes=15)
-        minute_tweets = day_tweets.filter(date_time__range=(fifteen_minutes_ago, now))
-        self.tweets_sent_last_15min = len(minute_tweets)
+        minute_tweets = sent_tweets.filter(date_time__range=(fifteen_minutes_ago, now))
+        #self.tweets_sent_last_15min = len(minute_tweets)
+        self.tweets_sent_last_15min = minute_tweets.count()
 
         # caller is responsible for saving
 

@@ -1,8 +1,5 @@
 {% extends 'base.html' %}
 
-{% load notifications_tags %}
-{% notifications_unread as unread_count %}
-
 {% block section_title %}
     Administración de Canales
 {% endblock %}
@@ -55,12 +52,13 @@
 
     </div> <!-- end span8 -->
     <div class="span4">
-        {% if unread_count %}
+        {% if notification_list %}
         <span class="label">Notificaciones</span>
         <br><br>
         <ul>
-
-
+            {% for notification in notification_list %}
+                <li>{{ notification.time}}: {{ notification.description }}</li>
+            {% endfor %}
         </ul>
         <a style="float:right" href="#" >Ver historial</a>
         {% endif %}
