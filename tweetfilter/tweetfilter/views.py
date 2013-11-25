@@ -15,5 +15,5 @@ class HomeView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super(HomeView, self).get_context_data(**kwargs)
         context["channel_added"] = self.channel_added
-        context["notification_list"] = Notification.objects.filter(recipient=self.request.user).order_by("-time")[0:10]
+        context["notification_list"] = Notification.objects.filter(recipient=self.request.user).order_by("-time")[0:7]
         return context
