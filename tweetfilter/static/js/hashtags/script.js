@@ -148,7 +148,7 @@ var
             return false;
         }
 
-        if(/[~`!#$%\^@&*+=\-\[\]\\';,\/{}|\\":<>\?]/g.test($.trim($('#add_hashtag_text').val()))){
+        if((/^[a-zA-Z_][a-zA-Z0-9_]{1,138}$/g).test($.trim($('#add_hashtag_text').val()))){
             alert("El texto no debe contener '#' ni otros caracteres especiales");
             return false;
         }
