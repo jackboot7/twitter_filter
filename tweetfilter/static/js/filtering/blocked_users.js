@@ -44,7 +44,7 @@ var
     validate_new_blocked_user = function () {
         "use strict";
 
-        return !/[~`!#$%\^@&*+=\-\[\]\\';,\/{}|\\":<>\?]/g.test($('#add_blocked_user_name').val());
+        return (/^[a-zA-Z0-9_]{1,15}$/g).test($('#add_blocked_user_name').val());
     },
 
     submit_new_blocked_user = function () {
