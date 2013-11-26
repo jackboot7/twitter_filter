@@ -98,6 +98,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
@@ -157,6 +158,7 @@ INSTALLED_APPS = (
     'registration',
     'djcelery',
     'south',
+    'compressor',
 
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
@@ -294,3 +296,4 @@ CACHE_MIDDLEWARE_KEY_PREFIX = ""
 # Crispy form configuration
 CRISPY_TEMPLATE_PACK = 'bootstrap'
 
+COMPRESS_ENABLED = True

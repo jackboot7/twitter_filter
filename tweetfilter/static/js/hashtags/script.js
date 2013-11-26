@@ -253,5 +253,4 @@ $(document).ready(function () {
         hourText: 'Hora',
         minuteText: 'Minutos'
     });
-
 });
