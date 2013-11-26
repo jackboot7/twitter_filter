@@ -74,7 +74,10 @@ class HashtagListView(CsrfExemptMixin, JSONResponseMixin,
         json_list = []
 
         for hashtag in objs:
-            json_list.append(model_to_dict(hashtag))
+            dict = model_to_dict(hashtag)
+            dict['start'] = hashtag.start.strftime("%H:%M")
+            dict['end'] = hashtag.end.strftime("%H:%M")
+            json_list.append(dict)
 
         return self.render_json_response(json_list)
 
@@ -144,6 +147,22 @@ class HashtagUpdateView(CsrfExemptMixin, JSONResponseMixin,
             response_data = {'result': "ok"}
         except Exception, e:
             response_data = {'result': e.args[0]}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+class HashtagResetView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = HashtagAdvertisement
+
+    def post_ajax(self, request, *args, **kwargs):
+        try:
+            obj = self.get_object()
+            obj.count = 0
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception, e:
+            response_data = {'result': "fail", 'exception': e.args[0]}
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")

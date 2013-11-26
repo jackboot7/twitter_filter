@@ -51,13 +51,16 @@ var
                 $('#hashtag_list_table').show();
 
                 $.each(data, function (idx, elem) {
-
+                    var text = (elem.text.length > 16)? elem.text.substr(0,16) + "..." : elem.text;
                     $('#hashtag_list_tbody').append(
                         "<tr>" +
-                            "<td><a id='edit_hashtag_" + elem.id + "' href='#add_hashtag_modal' data-toggle='modal'>#" + elem.text + "</a></td>" +
+                            "<td><a id='edit_hashtag_" + elem.id + "' href='#add_hashtag_modal' data-toggle='modal'>#" + text + "</a></td>" +
                             "<td>" + elem.quantity + "</td>" +
-                            //"<td>"+ "</td>" +   // horario
-                            "<td><a id='delete_hashtag_" + elem.id +"' class='delete_hashtag' " +
+                            "<td><span id='hashtag_count_span_" + elem.id + "'>"+ elem.count + "</span></td>" +
+                            "<td><a id='reset_hashtag_" + elem.id + "' class='reset_hashtag' " +
+                            "title='Haga click para reiniciar el contador' href='#reset_hashtag_confirm_modal' data-toggle='modal'>"+
+                            "<img src='{{ STATIC_URL }}img/refresh_20.png'></a></td>" +
+                            "<td><a id='delete_hashtag_" + elem.id + "' class='delete_hashtag' " +
                             "title='Haga click para eliminar el hashtag' href='#delete_hashtag_confirm_modal' data-toggle='modal'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td>" +
                             "</tr>"
@@ -69,6 +72,10 @@ var
 
                     $('#delete_hashtag_' + elem.id).click(function () {
                         $('#deleting_hashtag_id').val(elem.id);
+                    });
+
+                    $('#reset_hashtag_' + elem.id).click(function () {
+                        $('#resetting_hashtag_id').val(elem.id);
                     });
                 });
                 $('#hashtag_list_table').show();
@@ -148,7 +155,7 @@ var
             return false;
         }
 
-        if((/^[a-zA-Z_][a-zA-Z0-9_]{1,138}$/g).test($.trim($('#add_hashtag_text').val()))){
+        if(!(/^[a-zA-Z_][a-zA-Z0-9_]{1,138}$/g).test($.trim($('#add_hashtag_text').val()))){
             alert("El texto no debe contener '#' ni otros caracteres especiales");
             return false;
         }
@@ -213,6 +220,15 @@ $(document).ready(function () {
                 load_hashtag_table();
             }
         });
+    });
+
+    $('#reset_hashtag_confirmed').click(function () {
+        $.post("/hashtags/reset/" + $('#resetting_hashtag_id').val(),
+            function (data) {
+                if(data.result === "ok") {
+                    $('#hashtag_count_span_' + $('#resetting_hashtag_id').val()).text('0');
+                }
+            });
     });
 
     $('#save_hashtag_btn').click(function () {

@@ -61,13 +61,13 @@
             <div class="rounded_box fill_gray">
                 <h4>Hashtags Publicitarios</h4>
 
-                <div id="scheduled_post_list">
+                <div id="hashtag_list">
                     <span><!-- Descripcion --></span>
 
                     <table class="table" id="hashtag_list_table">
                         <thead>
                         <tr>
-                            <th>Texto</th><th>Cantidad</th><!--<th>Horario</th>-->
+                            <th>Texto</th><th>Cantidad</th><th>Contador</th><!--<th>Horario</th>-->
                         </tr>
                         </thead>
                         <tbody id="hashtag_list_tbody">
@@ -156,6 +156,25 @@
                         <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_hashtag_confirmed">Sí, eliminar</button>
                     </div>
                 </div> <!-- delete hashtag modal -->
+
+                <div id="reset_hashtag_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h3>
+                            Reiniciar hashtag
+                        </h3>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="resetting_hashtag_id" value="">
+                        <p>
+                            Está seguro de que desea reiniciar el contador del hashtag seleccionado?
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+                        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="reset_hashtag_confirmed">Sí, reiniciar</button>
+                    </div>
+                </div> <!-- reset hashtag modal -->
             </div>
         </div>
 
