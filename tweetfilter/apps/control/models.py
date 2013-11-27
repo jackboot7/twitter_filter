@@ -3,6 +3,7 @@ from time import strptime
 import datetime
 from django.db import models
 from django.core.cache import cache
+import pytz
 from apps.notifications.models import Notification
 from apps.twitter.models import Tweet
 
@@ -213,11 +214,14 @@ class UpdateLimit(models.Model):
         notify = Notification.create(channel.user, channel,
             u"@%s alcanzó la condición de 'update limit'. El canal quedará en espera por %s minutos" % (channel.screen_name, minutes))
         notify.save()
+
         return limit
 
     def calculate_tweets(self):
         today_min = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
+        today_min = today_min.replace(tzinfo=pytz.utc)
         today_max = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
+        today_max = today_max.replace(tzinfo=pytz.utc)
         sent_tweets = Tweet.objects.filter(
             mention_to=self.channel.screen_name).filter(
             status=Tweet.STATUS_SENT)
@@ -226,7 +230,10 @@ class UpdateLimit(models.Model):
         #self.total_tweets_sent = len(day_tweets)
         self.total_tweets_sent = day_tweets.count()
 
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
+        now = now.replace(tzinfo=pytz.utc)
+
+        #now = datetime.datetime.now()
         one_hour_ago = now - datetime.timedelta(hours=1)
         hour_tweets = sent_tweets.filter(date_time__range=(one_hour_ago, now))
         #self.tweets_sent_last_hour = len(hour_tweets)

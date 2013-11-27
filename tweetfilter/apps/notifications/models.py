@@ -1,3 +1,4 @@
+import datetime
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -18,4 +19,5 @@ class Notification(models.Model):
         notify = cls(recipient=user)
         notify.channel = channel
         notify.description = desc
+        notify.time = datetime.datetime.now()
         return notify

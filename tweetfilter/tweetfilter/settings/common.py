@@ -297,3 +297,7 @@ CACHE_MIDDLEWARE_KEY_PREFIX = ""
 CRISPY_TEMPLATE_PACK = 'bootstrap'
 
 COMPRESS_ENABLED = True
+
+COMPRESS_JS_FILTERS = [
+    'compressor.filters.template.TemplateFilter',
+    ]

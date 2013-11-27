@@ -380,6 +380,7 @@ def retweet(tweet, txt=None):
 
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         channel = Channel.objects.get(screen_name=tweet.mention_to)
+        applying_hashtag = None
 
         if txt is None:
             txt = tweet.strip_channel_mention()
@@ -407,17 +408,16 @@ def retweet(tweet, txt=None):
                 if len(hashtag_list) > 0:
                     applying_hashtag = hashtag_list[randint(0, len(hashtag_list) - 1)]
                     txt = "%s #%s" % (txt, applying_hashtag.text)
-                    applying_hashtag.count += 1
-                    applying_hashtag.save()
+                    #applying_hashtag.count += 1
+                    #applying_hashtag.save()
                     # registrar en el log?
-
-                # seleccionar mejor candidato
 
         # acquire lock
         if cache.add("retweet_lock_%s" % channel.screen_name, "true", LOCK_EXPIRE):
             try:
                 last = cache.get('%s_last_tweet' % channel.screen_name)
                 now = datetime.datetime.now()
+                #print "now = %s" % now     # correct
 
                 if last is not None and (now - last).total_seconds() < DELAY_DELTA:
                     # if it's not first tweet and last tweet is recent, delay.
@@ -425,7 +425,7 @@ def retweet(tweet, txt=None):
                     countdown = (eta - now).total_seconds()
                     if countdown < TASK_EXPIRES:
                         cache.set('%s_last_tweet' % channel.screen_name, eta)
-                        update_status.s().apply_async(args=[channel.screen_name, tweet, txt],
+                        update_status.s().apply_async(args=[channel.screen_name, tweet, txt, applying_hashtag],
                             countdown=countdown)
                         msg = "#%s will be sent in %s seconds" % (tweet.tweet_id, countdown)
                         channel_log_info.delay(msg, channel.screen_name)
@@ -436,7 +436,7 @@ def retweet(tweet, txt=None):
                         channel_log_info.delay(msg, channel.screen_name)
                 else:
                     # send now
-                    update_status.s().apply_async(args=[channel.screen_name, tweet, txt],
+                    update_status.s().apply_async(args=[channel.screen_name, tweet, txt, applying_hashtag],
                         countdown=0)
                     cache.set('%s_last_tweet' % channel.screen_name, now)   # update locked eta
             finally:
@@ -448,12 +448,14 @@ def retweet(tweet, txt=None):
 
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES, max_retries=3)
-def update_status(channel_id, tweet, txt):
+def update_status(channel_id, tweet, txt, hashtag=None):
     channel = Channel.objects.get(screen_name=channel_id)
     try:
         update_limit = cache.get('%s_limit_waiting' % channel.screen_name)
         if channel.retweets_enabled and update_limit is None:
-            raise TwythonError("update limit por ese culo no joda!")
+            #import random
+            #if random.random() > 0.5:
+            #raise TwythonError("update limit por ese culo no joda!")
             api = ChannelAPI(channel)
             api.tweet(txt)
             tweet.status = Tweet.STATUS_SENT
@@ -466,11 +468,11 @@ def update_status(channel_id, tweet, txt):
             tweet.status = Tweet.STATUS_NOT_SENT
             tweet.retweeted_text = txt
             tweet.save()
-            reason = "channel was disabled" if update_limit is None else "update limit"
+            reason = "channel was disabled" if update_limit is None else "update limit: waiting %s seconds" % update_limit
             msg = "#%s marked as NOT SENT (%s)" % (tweet.tweet_id, reason)
             channel_log_info.delay(msg, channel.screen_name)
 
-    except TwythonError, e:
+    except Exception, e:
         if "update limit" in e.args[0]:
             HOLD_ON_WINDOW = 300   # 5 minutes
 
@@ -479,7 +481,7 @@ def update_status(channel_id, tweet, txt):
                 count = 1
             else:
                 count += 1
-            cache.set('%s_limit_count' % channel.screen_name, count)
+            cache.set('%s_limit_count' % channel.screen_name, count, HOLD_ON_WINDOW * 2)
             cache.set('%s_limit_waiting' % channel.screen_name, HOLD_ON_WINDOW * count, HOLD_ON_WINDOW * count)
 
             limit = UpdateLimit.create(channel)
@@ -490,16 +492,17 @@ def update_status(channel_id, tweet, txt):
             pass
         else:
             # unknown error ocurred, retry later
-            raise update_status.retry(exc=e)
+            if update_status.request.retries <= 3:
+                raise update_status.retry(exc=e)
+            else:
+                pass
 
         tweet.status = Tweet.STATUS_NOT_SENT
         tweet.save()
         msg = "#%s marked as NOT SENT: %s" % (tweet.tweet_id, e)
         channel_log_exception.delay(msg, channel.screen_name)
-
-    except  Task.MaxRetriesExceeded, e:
-        tweet.status = Tweet.STATUS_NOT_SENT
-        tweet.save()
-        msg = "#%s marked as NOT SENT: %s" % (tweet.tweet_id, e)
-        channel_log_exception.delay(msg, channel.screen_name)
-
+    else:
+        # if no exception was raised and hashtag was included, increase count.
+        if hashtag is not None:
+            hashtag.count += 1
+            hashtag.save()
