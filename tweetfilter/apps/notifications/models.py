@@ -1,5 +1,6 @@
 import datetime
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.db import models
 
 # Create your models here.
@@ -21,3 +22,7 @@ class Notification(models.Model):
         notify.description = desc
         notify.time = datetime.datetime.now()
         return notify
+
+    def mail_user(self, subject, extra):
+        send_mail(subject, "%s\n%s" % (self.description, extra), 'from@example.com',
+            ['to@example.com'], fail_silently=False)

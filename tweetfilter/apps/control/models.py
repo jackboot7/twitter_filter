@@ -214,6 +214,7 @@ class UpdateLimit(models.Model):
         notify = Notification.create(channel.user, channel,
             u"@%s alcanzó la condición de 'update limit'. El canal quedará en espera por %s minutos" % (channel.screen_name, minutes))
         notify.save()
+        #notify.mail_user(subject="@%s [Update limit]" % channel.screen_name, extra=limit.get_stats())
 
         return limit
 
@@ -252,3 +253,10 @@ class UpdateLimit(models.Model):
                                       self.total_tweets_sent,
                                       self.tweets_sent_last_hour,
                                       self.tweets_sent_last_15min)
+
+    def get_stats(self):
+        return u"Tweets enviados durante el día: %s\n" \
+               u"Tweets enviados desde hace una hora: %s\n" \
+               u"Tweets enviados los últimos 15 minutos: %s" % (self.total_tweets_sent,
+                                                                self.tweets_sent_last_hour,
+                                                                self.tweets_sent_last_15min)
