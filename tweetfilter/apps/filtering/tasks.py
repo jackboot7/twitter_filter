@@ -75,7 +75,7 @@ def channel_log_exception(message, channel_id):
     logger = logging.LoggerAdapter(logging.getLogger("twitter"), {
         'screen_name': channel_id
     })
-    logger.exception(message)
+    logger.error(message)
     return
 
 @task(queue="logging", ignore_result=True)
@@ -232,7 +232,7 @@ def stream_channel(chan_id):
         stream.user(**{"with": "followings"})
         return True
     except Exception as e:
-        message = "Error starting streaming for %s. Will retry later: %s" % (chan_id, e)
+        message = u"Error starting streaming for %s. Will retry later: %s" % (chan_id, e)
         channel_log_exception.delay(message, chan.screen_name)
         cache.delete("streaming_lock_%s" % chan_id)
         stream_channel.retry(exc=e, chan_id=chan_id)
@@ -453,9 +453,6 @@ def update_status(channel_id, tweet, txt, hashtag=None):
     try:
         update_limit = cache.get('%s_limit_waiting' % channel.screen_name)
         if channel.retweets_enabled and update_limit is None:
-            #import random
-            #if random.random() > 0.5:
-            #raise TwythonError("update limit por ese culo no joda!")
             api = ChannelAPI(channel)
             api.tweet(txt)
             tweet.status = Tweet.STATUS_SENT
@@ -492,7 +489,12 @@ def update_status(channel_id, tweet, txt, hashtag=None):
             pass
         else:
             # unknown error ocurred, retry later
-            if update_status.request.retries <= 3:
+            print "retries so far: %s" % update_status.request.retries
+            if update_status.request.retries < 3:
+                channel_log_exception.delay(
+                    "Couldn't send #%s, retrying later (%s retries so far)" % (tweet.tweet_id,
+                                                                               update_status.request.retries),
+                    channel.screen_name)
                 raise update_status.retry(exc=e)
             else:
                 pass
