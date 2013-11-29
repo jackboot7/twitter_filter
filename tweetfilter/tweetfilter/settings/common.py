@@ -273,7 +273,8 @@ CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 CELERYD_CONCURRENCY = 4
 CELERY_TIMEZONE = 'America/Caracas'
 CELERY_IMPORTS = ('apps.filtering.tasks',
-                  'apps.scheduling.tasks')
+                  'apps.scheduling.tasks',
+                  'apps.notifications.tasks')
 
 CELERY_IGNORE_RESULT = True
 
@@ -296,8 +297,15 @@ CACHE_MIDDLEWARE_KEY_PREFIX = ""
 # Crispy form configuration
 CRISPY_TEMPLATE_PACK = 'bootstrap'
 
+# Django Compressor
 COMPRESS_ENABLED = True
-
 COMPRESS_JS_FILTERS = [
     'compressor.filters.template.TemplateFilter',
     ]
+
+# Email configuration
+EMAIL_BACKEND = 'django_ses.SESBackend'
+AWS_ACCESS_KEY_ID = 'AKIAICLXOO622YO2KKAQ'
+AWS_SECRET_ACCESS_KEY = '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'
+
+EMAIL_FROM = "traffic.testing24@gmail.com"

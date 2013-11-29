@@ -5,12 +5,10 @@ import logging
 from random import randint
 
 from celery._state import current_task
-from celery.app.task import Task
 from django.conf import settings
 from exceptions import Exception
 from celery import task
 from django.core.cache import cache
-from twython.exceptions import TwythonError
 from twython.streaming.api import TwythonStreamer
 from apps.accounts.models import  Channel
 from apps.control.models import UpdateLimit
@@ -394,7 +392,7 @@ def retweet(tweet, txt=None):
 
             txt = "via @%s: %s" % (tweet.screen_name, txt)
             if len(txt) > 140:
-                txt = txt[0:140]
+                txt = txt[0:139]
 
             # Apply hashtags
             if channel.hashtags_enabled:

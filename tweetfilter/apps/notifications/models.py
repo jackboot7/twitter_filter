@@ -6,6 +6,7 @@ from django.db import models
 # Create your models here.
 from apps.accounts.models import Channel
 
+
 class Notification(models.Model):
     recipient = models.ForeignKey(User)
     channel = models.ForeignKey(Channel, blank=True, null=True)
@@ -24,5 +25,6 @@ class Notification(models.Model):
         return notify
 
     def mail_user(self, subject, extra):
-        send_mail(subject, "%s\n%s" % (self.description, extra), 'from@example.com',
-            ['to@example.com'], fail_silently=False)
+        from apps.notifications import tasks
+        tasks.send_mail_notification.delay(self, subject, extra)
+

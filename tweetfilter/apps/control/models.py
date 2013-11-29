@@ -214,7 +214,7 @@ class UpdateLimit(models.Model):
         notify = Notification.create(channel.user, channel,
             u"@%s alcanzó la condición de 'update limit'. El canal quedará en espera por %s minutos" % (channel.screen_name, minutes))
         notify.save()
-        #notify.mail_user(subject="@%s [Update limit]" % channel.screen_name, extra=limit.get_stats())
+        notify.mail_user(subject="@%s [Update limit]" % channel.screen_name, extra=limit.get_stats())
 
         return limit
 
