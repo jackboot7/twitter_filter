@@ -16,3 +16,5 @@ celery==3.0.21
 django-celery==3.0.17
 django-picklefield==0.3.0
 python-memcached
+boto==2.19.0
+django-ses==0.4.1
