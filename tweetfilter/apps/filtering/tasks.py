@@ -276,7 +276,7 @@ def store_tweet(data, channel_id):
             tweet.status = Tweet.STATUS_NOT_SENT
             tweet.save()
             msg = "#%s marked as NOT SENT (waiting for update limit to pass)" % tweet.tweet_id
-            channel_log_info.delay(msg, tweet.screen_name)
+            channel_log_info.delay(msg, tweet.mention_to)
             return None
         else:
             return tweet
