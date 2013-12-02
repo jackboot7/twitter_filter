@@ -12,6 +12,9 @@ class HomeView(LoginRequiredMixin, ListView):
     context_object_name = 'channel_list'
     channel_added = None
 
+    def get_queryset(self):
+        return Channel.objects.filter(user=self.request.user)
+    
     def get_context_data(self, **kwargs):
         context = super(HomeView, self).get_context_data(**kwargs)
         context["channel_added"] = self.channel_added
