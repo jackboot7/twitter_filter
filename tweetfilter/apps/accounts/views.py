@@ -57,6 +57,7 @@ class AuthCallbackView(View):
         chan.screen_name = name
         chan.oauth_token = final_token
         chan.oauth_secret = final_secret
+        chan.user = request.user
         chan.save()
 
         #initializes streaming process
@@ -76,7 +77,7 @@ class ChannelListView(JSONResponseMixin, AjaxResponseMixin, ListView):
     context_object_name = "channel_list"
 
     def get_ajax(self, request, *args, **kwargs):
-        objs = Channel.objects.all()
+        objs = Channel.objects.filter(user_id=request.user.id)
         json_list = []
 
         for channel in objs:
