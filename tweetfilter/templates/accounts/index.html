@@ -37,7 +37,7 @@
                     <td><a href="{% url 'edit_channel' channel.screen_name %}"/>{{ channel.screen_name }}</a></td>
 
                     <td> {% if channel.retweets_enabled %} Sí {% else %} No {% endif %} </td>
-                    <td> {% if channel.retweets_enabled %} Sí {% else %} No {% endif %} </td>
+                    <td> {% if channel.scheduling_enabled %} Sí {% else %} No {% endif %} </td>
                     <td> {% if channel.hashtags_enabled %} Sí {% else %} No {% endif %} </td>
                     <td> <a id='delete_channel_{{ channel.screen_name }}' class='delete_channel' title='Haga click para eliminar canal' href='#delete_confirm_modal' data-toggle='modal'><span class='badge badge-important' contenteditable='false'>x</span></a></td>
                 </tr>
