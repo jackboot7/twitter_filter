@@ -272,8 +272,14 @@ def store_tweet(data, channel_id):
             # should we handle the rest of the tweets?
             # Maybe store them for future use.
             return None
-
-        return tweet
+        if cache.get('%s_limit_waiting' % tweet.screen_name) is None:
+            tweet.status = Tweet.STATUS_NOT_SENT
+            tweet.save()
+            msg = "#%s marked as NOT SENT (waiting for update limit to pass)" % tweet.tweet_id
+            channel_log_info.delay(msg, tweet.screen_name)
+            return None
+        else:
+            return tweet
     except Exception as e:
         channel_log_exception.delay("Unexpected error in store_tweet task\n%s", (channel_id,e))
 
