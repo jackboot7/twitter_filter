@@ -43,7 +43,7 @@ class Channel(models.Model):
     allow_messages = models.SmallIntegerField(choices=ALLOW_CHOICES, default=ALLOW_ALL)
 
     # Filtering config
-    retweets_enabled = models.BooleanField(default=True)
+    retweets_enabled = models.BooleanField(default=False)
     retweet_mentions = models.BooleanField(default=True)
     retweet_dm = models.BooleanField(default=True)  # is module enabled
     triggers_enabled = models.BooleanField(default=True)
@@ -53,10 +53,10 @@ class Channel(models.Model):
     blacklist_enabled = models.BooleanField(default=True)
 
     # Scheduling config
-    scheduling_enabled = models.BooleanField(default=True)
+    scheduling_enabled = models.BooleanField(default=False)
 
     # Hashtags config
-    hashtags_enabled = models.BooleanField(default=True)
+    hashtags_enabled = models.BooleanField(default=False)
 
     def delete(self):
         self.stop_streaming()
