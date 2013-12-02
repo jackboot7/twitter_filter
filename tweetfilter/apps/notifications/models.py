@@ -26,5 +26,5 @@ class Notification(models.Model):
 
     def mail_user(self, subject, extra):
         from apps.notifications import tasks
-        tasks.send_mail_notification.delay(self, subject, extra)
+        tasks.send_mail_notification.delay(self.recipient.email, self, subject, extra)
 

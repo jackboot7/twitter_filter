@@ -1,8 +1,9 @@
 from celery import task
+from django.conf import settings
 from django.core.mail import send_mail
 
 
 @task(queue="notifications", ignore_result=True)
-def send_mail_notification(notif, subject, extra):
-    send_mail(subject, "%s\n%s" % (notif.description, extra), 'traffic.testing24@gmail.com',
-        ['traffic.testing24@gmail.com'], fail_silently=False)
+def send_mail_notification(address, notif, subject, extra):
+    send_mail(subject, "%s\n%s" % (notif.description, extra), settings.EMAIL_FROM,
+        [address], fail_silently=False)
