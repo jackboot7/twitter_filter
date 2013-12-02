@@ -272,7 +272,7 @@ def store_tweet(data, channel_id):
             # should we handle the rest of the tweets?
             # Maybe store them for future use.
             return None
-        if cache.get('%s_limit_waiting' % tweet.screen_name) is None:
+        if cache.get('%s_limit_waiting' % tweet.mention_to) is None:
             tweet.status = Tweet.STATUS_NOT_SENT
             tweet.save()
             msg = "#%s marked as NOT SENT (waiting for update limit to pass)" % tweet.tweet_id
