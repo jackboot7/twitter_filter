@@ -22,6 +22,7 @@ urlpatterns = patterns('',
     url(r'^filtering/', include('apps.filtering.urls')),
     url(r'^scheduling/', include('apps.scheduling.urls')),
     url(r'^hashtags/', include('apps.hashtags.urls')),
+    url(r'^notifications/', include('apps.notifications.urls')),
 
     url(r'^login/',
         'django.contrib.auth.views.login',
