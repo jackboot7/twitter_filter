@@ -44,6 +44,7 @@ var
     load_scheduled_post_table = function () {
         "use strict";
 
+        var static_url = $('#static_url_path').val();
         $.get("/scheduling/list/" + $('#current_channel').val(), function (data) {
             $('#scheduled_post_list_tbody').empty();
 
@@ -57,6 +58,9 @@ var
                         "<tr>" +
                             "<td><a id='edit_scheduled_post_" + elem.id + "' href='#add_scheduled_post_modal' data-toggle='modal'>" + elem.text_excerpt + "</a></td>" +
                             "<td>" + elem.date_time + "</td>" +
+                            "<td><a id='send_now_" + elem.id + "' class='send_tweet_now' " +
+                            "title='Haga click para enviar el mensaje ahora' href='#send_now_confirm_modal' data-toggle='modal'>"+
+                            "<img src='" + static_url + "img/send_now.png'></a></td>" +
                             "<td><a id='delete_scheduled_post_" + elem.id +"' class='delete_scheduled_post' " +
                             "title='Haga click para eliminar el bloque' href='#delete_scheduled_post_confirm_modal' data-toggle='modal'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td>" +
@@ -65,6 +69,11 @@ var
 
                     $('#edit_scheduled_post_' + elem.id).click(function () {
                         edit_scheduled_post(elem);
+                    });
+
+                    $('#send_now_' + elem.id).click(function (){
+                        $('#sending_now_tweet_id').val(elem.id);
+                        $('#sending_now_tweet_text').text(elem.text);
                     });
 
                     $('#delete_scheduled_post_' + elem.id).click(function () {
@@ -214,6 +223,17 @@ $(document).ready(function () {
 
     $('#scheduled_post_text').bind("keyup change input", function () {
         count_characters();
+    });
+
+    $('#send_now_confirmed').click(function () {
+        $.post("/scheduling/send/" + $('#sending_now_tweet_id').val(),
+            function (data) {
+                if(data.result === "ok") {
+                    alert("El tweet fue enviado con éxito");
+                }else{
+                    alert(data.error_msg);
+                }
+            });
     });
 
     $('#delete_scheduled_post_confirmed').click(function () {

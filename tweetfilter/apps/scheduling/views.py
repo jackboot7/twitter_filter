@@ -10,6 +10,7 @@ from django.views.generic.base import View
 from django.views.generic.edit import DeleteView, UpdateView
 from apps.accounts.models import Channel
 from apps.scheduling.models import ScheduledTweet
+from apps.twitter.api import ChannelAPI
 
 logger = logging.getLogger('app')
 
@@ -153,6 +154,26 @@ class ScheduledTweetCreateView(CsrfExemptMixin, JSONResponseMixin,
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
+
+class ScheduledTweetSendView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, View):
+
+    def post_ajax(self, request, *args, **kwargs):
+        tweet_id = args[0]
+        tweet_obj = ScheduledTweet.objects.get(tweet_id)
+        channel = tweet_obj.channel
+        api = ChannelAPI(channel)
+        try:
+            api.tweet(tweet_obj.text)
+            response_data = {'result': "ok"}
+        except Exception, e:
+            response_data = {'result': "fail", 'error_msg': e.args[0]}
+            pass
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
 
 class ScheduledTweetDeleteView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DeleteView):
