@@ -298,11 +298,11 @@ CACHE_MIDDLEWARE_KEY_PREFIX = ""
 CRISPY_TEMPLATE_PACK = 'bootstrap'
 
 # Django Compressor
-COMPRESS_ENABLED = True
-COMPRESS_ROOT = STATIC_URL
-COMPRESS_JS_FILTERS = [
-    'compressor.filters.template.TemplateFilter',
-    ]
+#COMPRESS_ENABLED = True
+#COMPRESS_ROOT = STATIC_URL
+#COMPRESS_JS_FILTERS = [
+#    'compressor.filters.template.TemplateFilter',
+#    ]
 
 # Email configuration
 EMAIL_BACKEND = 'django_ses.SESBackend'

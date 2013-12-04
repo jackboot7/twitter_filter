@@ -42,6 +42,7 @@ var
 
     load_hashtag_table = function () {
         "use strict";
+        var static_url = $('#static_url_path').val();
 
         $.get("/hashtags/list/" + $('#current_channel').val(), function (data) {
             $('#hashtag_list_tbody').empty();
@@ -59,7 +60,7 @@ var
                             "<td><span id='hashtag_count_span_" + elem.id + "'>"+ elem.count + "</span></td>" +
                             "<td><a id='reset_hashtag_" + elem.id + "' class='reset_hashtag' " +
                             "title='Haga click para reiniciar el contador' href='#reset_hashtag_confirm_modal' data-toggle='modal'>"+
-                            "<img src='{{ STATIC_URL }}img/refresh_20.png'></a></td>" +
+                            "<img src='" + static_url + "img/refresh_20.png'></a></td>" +
                             "<td><a id='delete_hashtag_" + elem.id + "' class='delete_hashtag' " +
                             "title='Haga click para eliminar el hashtag' href='#delete_hashtag_confirm_modal' data-toggle='modal'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td>" +
