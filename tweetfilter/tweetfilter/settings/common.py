@@ -299,6 +299,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap'
 
 # Django Compressor
 COMPRESS_ENABLED = True
+COMPRESS_ROOT = STATIC_ROOT
 COMPRESS_JS_FILTERS = [
     'compressor.filters.template.TemplateFilter',
     ]
