@@ -159,14 +159,22 @@ class ScheduledTweetSendView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
 
     def post_ajax(self, request, *args, **kwargs):
-        tweet_id = args[0]
-        tweet_obj = ScheduledTweet.objects.get(tweet_id)
+        tweet_id = kwargs['pk']
+        tweet_obj = ScheduledTweet.objects.filter(id=tweet_id)[0]
         channel = tweet_obj.channel
         api = ChannelAPI(channel)
         try:
             api.tweet(tweet_obj.text)
             response_data = {'result': "ok"}
         except Exception, e:
+            if "duplicate" in e.args[0]:
+                pass
+            elif "update limit" in e.args[0]:
+                pass
+            elif "unauthorized" in e.args[0]:
+                pass
+            else:
+                pass
             response_data = {'result': "fail", 'error_msg': e.args[0]}
             pass
 

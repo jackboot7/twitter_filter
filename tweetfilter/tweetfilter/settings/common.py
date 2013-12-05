@@ -158,7 +158,6 @@ INSTALLED_APPS = (
     'registration',
     'djcelery',
     'south',
-    'compressor',
 
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
