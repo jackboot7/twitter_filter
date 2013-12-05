@@ -229,9 +229,11 @@ $(document).ready(function () {
         $.post("/scheduling/send/" + $('#sending_now_tweet_id').val(),
             function (data) {
                 if(data.result === "ok") {
-                    alert("El tweet fue enviado con éxito");
+                    $('#alert_success_body').text("El tweet fue enviado con éxito");
+                    $('#alert_success').show();
                 }else{
-                    alert(data.error_msg);
+                    $('#alert_warning_body').text(data.error_msg);
+                    $('#alert_warning').show();
                 }
             });
     });

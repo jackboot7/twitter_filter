@@ -168,14 +168,15 @@ class ScheduledTweetSendView(CsrfExemptMixin, JSONResponseMixin,
             response_data = {'result': "ok"}
         except Exception, e:
             if "duplicate" in e.args[0]:
-                pass
+                msg = u"Este mensaje ya se ha enviado recientemente"
             elif "update limit" in e.args[0]:
-                pass
+                msg = u"El canal no puede publicar por razones de 'update limit'"
             elif "unauthorized" in e.args[0]:
-                pass
+                msg = u"La cuenta actual no está autorizada para publicar. " \
+                      u"Se recomienda revocar la aplicación desde twitter y volver a registrar el canal"
             else:
-                pass
-            response_data = {'result': "fail", 'error_msg': e.args[0]}
+                msg = args[0]
+            response_data = {'result': "fail", 'error_msg': msg}
             pass
 
         return HttpResponse(json.dumps(response_data),
