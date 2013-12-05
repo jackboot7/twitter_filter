@@ -207,7 +207,6 @@ class ChannelStreamer(TwythonStreamer):
         msg = "Error in streaming: %s: %s" % (status_code, data)
         channel_log_error.delay(msg, self.channel.screen_name)
         self.disconnect()
-        cache.delete("streaming_lock_%s" % self.channel.screen_name)
         self.channel.retweets_enabled = False
         self.channel.save()
         # should retry??
@@ -232,7 +231,6 @@ def stream_channel(chan_id):
     except Exception as e:
         message = u"Error starting streaming for %s. Will retry later: %s" % (chan_id, e)
         channel_log_exception.delay(message, chan.screen_name)
-        cache.delete("streaming_lock_%s" % chan_id)
         stream_channel.retry(exc=e, chan_id=chan_id)
         return False
 
