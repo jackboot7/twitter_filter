@@ -4,7 +4,6 @@ import datetime
 import logging
 from random import randint
 
-import gevent
 from celery._state import current_task
 from celery import task
 
@@ -184,7 +183,6 @@ class ChannelStreamer(TwythonStreamer):
         self.channel = channel
 
     def on_success(self, data):
-        gevent.sleep(0)
         self.handle_data(data)
 
     def handle_data(self, data):
