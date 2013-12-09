@@ -4,13 +4,17 @@ import datetime
 import logging
 from random import randint
 
+import gevent
 from celery._state import current_task
-from django.conf import settings
-from exceptions import Exception
 from celery import task
+
+from exceptions import Exception
+
+from django.conf import settings
 from django.core.cache import cache
 from twython.streaming.api import TwythonStreamer
-from apps.accounts.models import  Channel
+
+from apps.accounts.models import Channel
 from apps.control.models import UpdateLimit
 from apps.control.tasks import DelayedTask
 from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
@@ -180,6 +184,7 @@ class ChannelStreamer(TwythonStreamer):
         self.channel = channel
 
     def on_success(self, data):
+        gevent.sleep(0)
         self.handle_data(data)
 
     def handle_data(self, data):
