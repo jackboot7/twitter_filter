@@ -234,7 +234,7 @@ def stream_channel(chan_id):
         stream.user(**{"with": "followings"})
         return True
     except Exception as e:
-        message = u"Error starting streaming for %s. Will retry later: %s" % (chan_id, e)
+        message = "Error starting streaming for %s. Will retry later: %s" % (chan_id, e)
         channel_log_exception.delay(message, chan.screen_name)
         stream_channel.retry(exc=e, chan_id=chan_id)
         return False

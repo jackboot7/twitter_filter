@@ -105,8 +105,8 @@ class Channel(models.Model):
             self.streaming_task = task
             self.save()
             return True
-        except Exception:
-            channel_log_exception.delay("Error while trying to initialize streaming", self.screen_name)
+        except Exception, e:
+            channel_log_exception.delay("Error while trying to initialize streaming: %s", (self.screen_name, e))
             return False
 
 
@@ -122,7 +122,7 @@ class Channel(models.Model):
             channel_log_info.delay(message, self.screen_name)
             return True
         except Exception, e:
-            message = "Error while trying to stop streaming for %s" % self.screen_name
+            message = "Error while trying to stop streaming for %s: %s" % (self.screen_name, e)
             channel_log_exception.delay(message, self.screen_name)
             return False
 
@@ -153,48 +153,3 @@ class Channel(models.Model):
         #filters = Filter.objects.filter(channel=self)
         #return filters
         return self.filter_set.all()
-
-"""
-class FilteringConfig(models.Model):
-    channel = models.OneToOneField(Channel, parent_link=True)
-    retweets_enabled = models.BooleanField(default=True)
-    retweet_mentions = models.BooleanField(default=True)
-    retweet_dm = models.BooleanField(default=True)  # is module enabled
-
-    triggers_enabled = models.BooleanField(default=True)
-    replacements_enabled = models.BooleanField(default=True)
-    filters_enabled = models.BooleanField(default=True)
-    scheduleblocks_enabled = models.BooleanField(default=True)
-    blacklist_enabled = models.BooleanField(default=True)
-
-    def __init__(self, *args, **kwargs):
-        channel = kwargs.pop('channel', None)
-        super(FilteringConfig, self).__init__(*args, **kwargs)
-        if channel is not None:
-            self.channel = channel
-            self.save()
-
-
-class SchedulingConfig(models.Model):
-    channel = models.OneToOneField(Channel, parent_link=True)
-    scheduling_enabled = models.BooleanField(default=True)
-
-    def __init__(self, *args, **kwargs):
-        channel = kwargs.pop('channel', None)
-        super(SchedulingConfig, self).__init__(*args, **kwargs)
-        if channel is not None:
-            self.channel = channel
-            self.save()
-
-
-class HashtagsConfig(models.Model):
-    channel = models.OneToOneField(Channel, parent_link=True)
-    hashtags_enabled = models.BooleanField(default=True)
-
-    def __init__(self, *args, **kwargs):
-        channel = kwargs.pop('channel', None)
-        super(HashtagsConfig, self).__init__(*args, **kwargs)
-        if channel is not None:
-            self.channel = channel
-            self.save()
-"""
