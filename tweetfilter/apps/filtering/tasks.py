@@ -223,7 +223,7 @@ class ChannelStreamer(TwythonStreamer):
 
 @task(queue="streaming", ignore_result=True, default_retry_delay=60, max_retries=10)
 def stream_channel(chan_id):
-    chan = Channel.objects.filter(screen_name=chan_id)[0]
+    chan = Channel.objects.get(screen_name=chan_id)
 
     try:
         message = "Starting streaming for %s" % chan_id
