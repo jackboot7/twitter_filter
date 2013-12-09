@@ -4,7 +4,6 @@ import datetime
 import logging
 from random import randint
 
-import gevent
 from celery._state import current_task
 from celery import task
 
@@ -184,7 +183,6 @@ class ChannelStreamer(TwythonStreamer):
         self.channel = channel
 
     def on_success(self, data):
-        gevent.sleep(0)
         self.handle_data(data)
 
     def handle_data(self, data):
@@ -225,7 +223,7 @@ class ChannelStreamer(TwythonStreamer):
 
 @task(queue="streaming", ignore_result=True, default_retry_delay=60, max_retries=10)
 def stream_channel(chan_id):
-    chan = Channel.objects.filter(screen_name=chan_id)[0]
+    chan = Channel.objects.get(screen_name=chan_id)
 
     try:
         message = "Starting streaming for %s" % chan_id
