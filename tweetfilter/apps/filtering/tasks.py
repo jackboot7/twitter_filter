@@ -479,14 +479,17 @@ def update_status(channel_id, tweet, txt, hashtag=None):
             HOLD_ON_WINDOW = 300   # 5 minutes
 
             count = cache.get('%s_limit_count' % channel.screen_name)
+
             if count is None:
                 count = 1
             else:
                 count += 1
-            cache.set('%s_limit_count' % channel.screen_name, count, HOLD_ON_WINDOW * 2)
-            cache.set('%s_limit_waiting' % channel.screen_name, HOLD_ON_WINDOW * count, HOLD_ON_WINDOW * count)
 
-            limit = UpdateLimit.create(channel)
+            seconds_waiting = HOLD_ON_WINDOW * count
+            cache.set('%s_limit_count' % channel.screen_name, count, seconds_waiting * 2)
+            cache.set('%s_limit_waiting' % channel.screen_name, seconds_waiting, seconds_waiting)
+
+            limit = UpdateLimit.create(channel, seconds_waiting)
             channel_log_warning.delay(limit, channel.screen_name)
         elif "duplicate" in e.args[0]:
             pass
