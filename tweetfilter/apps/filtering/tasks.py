@@ -8,6 +8,7 @@ from celery._state import current_task
 from celery import task
 
 from exceptions import Exception
+from celery.signals import task_revoked, task_failure
 
 from django.conf import settings
 from django.core.cache import cache
@@ -516,3 +517,23 @@ def update_status(channel_id, tweet, txt, hashtag=None):
         if hashtag is not None:
             hashtag.count += 1
             hashtag.save()
+
+@task_failure.connect
+def task_failure_handler(sender=None, task_id=None, exception=None, args=None, kwargs=None,
+                         traceback=None, einfo=None, **kwds):
+    print "TASK FAILURE:"
+    print "sender = %" % sender
+    print "task_id = %s" % task_id
+    print "exception = %s" % exception
+    print "traceback = %s" % traceback
+    print "einfo = %s" % einfo
+    print "args = %s" % args.__unicode__()
+    print "kwargs = %s" % kwargs.__unicode__()
+
+@task_revoked.connect
+def task_revoked_handler(sender=None, terminated=None, signum=None, expired=None, **kwds):
+    print "TASK REVOKED:"
+    print "sender = %s" % sender
+    print "terminated = %s" % terminated
+    print "signum = %s" % signum
+    print "expired = %s" % expired
