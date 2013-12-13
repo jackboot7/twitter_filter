@@ -5,12 +5,15 @@ import logging
 from random import randint
 
 from celery._state import current_task
-from django.conf import settings
-from exceptions import Exception
 from celery import task
+
+from exceptions import Exception
+
+from django.conf import settings
 from django.core.cache import cache
 from twython.streaming.api import TwythonStreamer
-from apps.accounts.models import  Channel
+
+from apps.accounts.models import Channel
 from apps.control.models import UpdateLimit
 from apps.control.tasks import DelayedTask
 from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
@@ -207,7 +210,6 @@ class ChannelStreamer(TwythonStreamer):
         msg = "Error in streaming: %s: %s" % (status_code, data)
         channel_log_error.delay(msg, self.channel.screen_name)
         self.disconnect()
-        cache.delete("streaming_lock_%s" % self.channel.screen_name)
         self.channel.retweets_enabled = False
         self.channel.save()
         # should retry??
@@ -221,7 +223,7 @@ class ChannelStreamer(TwythonStreamer):
 
 @task(queue="streaming", ignore_result=True, default_retry_delay=60, max_retries=10)
 def stream_channel(chan_id):
-    chan = Channel.objects.filter(screen_name=chan_id)[0]
+    chan = Channel.objects.get(screen_name=chan_id)
 
     try:
         message = "Starting streaming for %s" % chan_id
@@ -230,9 +232,8 @@ def stream_channel(chan_id):
         stream.user(**{"with": "followings"})
         return True
     except Exception as e:
-        message = u"Error starting streaming for %s. Will retry later: %s" % (chan_id, e)
+        message = "Error starting streaming for %s. Will retry later: %s" % (chan_id, e)
         channel_log_exception.delay(message, chan.screen_name)
-        cache.delete("streaming_lock_%s" % chan_id)
         stream_channel.retry(exc=e, chan_id=chan_id)
         return False
 
@@ -478,14 +479,17 @@ def update_status(channel_id, tweet, txt, hashtag=None):
             HOLD_ON_WINDOW = 300   # 5 minutes
 
             count = cache.get('%s_limit_count' % channel.screen_name)
+
             if count is None:
                 count = 1
             else:
                 count += 1
-            cache.set('%s_limit_count' % channel.screen_name, count, HOLD_ON_WINDOW * 2)
-            cache.set('%s_limit_waiting' % channel.screen_name, HOLD_ON_WINDOW * count, HOLD_ON_WINDOW * count)
 
-            limit = UpdateLimit.create(channel)
+            seconds_waiting = HOLD_ON_WINDOW * count
+            cache.set('%s_limit_count' % channel.screen_name, count, seconds_waiting * 2)
+            cache.set('%s_limit_waiting' % channel.screen_name, seconds_waiting, seconds_waiting)
+
+            limit = UpdateLimit.create(channel, seconds_waiting)
             channel_log_warning.delay(limit, channel.screen_name)
         elif "duplicate" in e.args[0]:
             pass

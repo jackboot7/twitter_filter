@@ -198,19 +198,13 @@ class UpdateLimit(models.Model):
     tweets_sent_last_15min = models.IntegerField(default=0)
 
     @classmethod
-    def create(cls, channel):
+    def create(cls, channel, seconds_to_wait):
         limit = cls()
         limit.channel = channel
         limit.calculate_tweets()
         limit.save()
 
-
-        seconds_to_wait = cache.get('%s_limit_waiting' % channel.screen_name)
-        if seconds_to_wait is not None:
-            minutes = "%s" % (seconds_to_wait / 60)
-        else:
-            minutes = "unos"
-
+        minutes = "%s" % (seconds_to_wait / 60)
         notify = Notification.create(channel.user, channel,
             u"@%s alcanzó la condición de 'update limit'. El canal quedará en espera por %s minutos" % (channel.screen_name, minutes))
         notify.save()
