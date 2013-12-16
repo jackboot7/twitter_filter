@@ -48,8 +48,16 @@ def monitor_streaming_tasks():
 
 """
 
-def get_active_streaming_tasks():
+def get_active_tasks():
     from celery import current_app as app
     i = app.control.inspect()
-    print "active tasks:"
-    print i.active()
+    return i.active()
+
+def channel_is_streaming(screen_name):
+    active_tasks = get_active_tasks()
+    for worker_id in active_tasks:
+        for task in active_tasks[worker_id]:
+            if task.name == "apps.filtering.tasks.stream_channel" and task.args[0] == screen_name:
+                return True
+    else:
+        return False

@@ -557,5 +557,5 @@ def worker_init_handler(sender=None, **kwargs):
         print "Streaming worker initialized"
         # init each channel's streaming task
 
-    from apps.control.tasks import *
+    from apps.control.tasks import get_active_streaming_tasks
     get_active_streaming_tasks()
