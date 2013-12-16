@@ -58,12 +58,14 @@ class Channel(models.Model):
     # Hashtags config
     hashtags_enabled = models.BooleanField(default=False)
 
+
     def delete(self):
         self.stop_streaming()
         schedules = self.scheduledtweet_set.all()
         for schedule in schedules:
             schedule.delete()
         super(Channel, self).delete()
+
 
     def get_last_update(self):
         try:
@@ -72,10 +74,12 @@ class Channel(models.Model):
         except Exception, e:
             return None
 
+
     def activate(self):
         self.status = self.STATUS_ENABLED
         if self.init_streaming():
             self.save()
+
 
     def deactivate(self):
         self.status = self.STATUS_DISABLED
@@ -83,8 +87,10 @@ class Channel(models.Model):
         if self.stop_streaming():
             self.save()
 
+
     def is_active(self):
         return self.status == self.STATUS_ENABLED
+
 
     def switch_status(self):
         try:
@@ -126,17 +132,6 @@ class Channel(models.Model):
             channel_log_exception.delay(message, self.screen_name)
             return False
 
-    """
-    # pendiente por implementar
-    def is_streaming(self):
-        task = self.streaming_task
-        print "is %s streaming? %s" % (self.screen_name, task.state)
-
-        return task.state == "PENDING" or \
-               task.state == "STARTED" or \
-               task.state == "RETRY"
-    """
-
 
     def get_triggers(self):
         """
@@ -145,6 +140,7 @@ class Channel(models.Model):
         #triggers = Trigger.objects.filter(channel=self)
         #return triggers
         return self.trigger_set.all()
+
 
     def get_filters(self):
         """

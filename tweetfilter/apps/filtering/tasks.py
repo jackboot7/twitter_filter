@@ -8,7 +8,7 @@ from celery._state import current_task
 from celery import task
 
 from exceptions import Exception
-from celery.signals import task_revoked, task_failure
+from celery.signals import task_revoked, task_failure, celeryd_after_setup, celeryd_init, worker_init
 
 from django.conf import settings
 from django.core.cache import cache
@@ -527,8 +527,8 @@ def task_failure_handler(sender=None, task_id=None, exception=None, args=None, k
     print "exception = %s" % exception
     print "traceback = %s" % traceback
     print "einfo = %s" % einfo
-    print "args = %s" % args.__unicode__()
-    print "kwargs = %s" % kwargs.__unicode__()
+    print "args = %s" % args
+    print "kwargs = %s" % kwargs
 
 @task_revoked.connect
 def task_revoked_handler(sender=None, terminated=None, signum=None, expired=None, **kwds):
@@ -537,3 +537,25 @@ def task_revoked_handler(sender=None, terminated=None, signum=None, expired=None
     print "terminated = %s" % terminated
     print "signum = %s" % signum
     print "expired = %s" % expired
+
+@celeryd_after_setup.connect
+def celeryd_after_setup_handler(sender, instance, **kwargs):
+    print "Celery daemon started"
+    #print "sender = %s" % sender
+    #print "instance = %s" % instance
+    #print "kwargs = %s" % kwargs
+
+@worker_init.connect
+def worker_init_handler(sender=None, **kwargs):
+    #from celery.worker import WorkController
+    #print "WORKER INITIALIZED:"
+    #print "sender = %s" % sender.__dict__
+    #print "kwargs = %s" % kwargs
+    #print "queues = %s" % sender.app.amqp.queues
+
+    if "streaming" in sender.app.amqp.queues:
+        print "Streaming worker initialized"
+        # init each channel's streaming task
+
+    from apps.control.tasks import *
+    get_active_streaming_tasks()

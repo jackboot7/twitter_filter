@@ -34,6 +34,7 @@ class DelayedTask(Task):
         return eta
 
 # task(periodic,interval,blah)
+"""
 def monitor_streaming_tasks():
 
     inspect = current_app.control.inspect()
@@ -44,3 +45,11 @@ def monitor_streaming_tasks():
         # no?
             #activar streaming
     pass
+
+"""
+
+def get_active_streaming_tasks():
+    from celery import current_app as app
+    i = app.control.inspect()
+    print "active tasks:"
+    print i.active()
