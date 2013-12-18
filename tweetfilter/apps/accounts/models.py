@@ -4,9 +4,9 @@ import os
 import logging
 
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from picklefield.fields import PickledObjectField
+from apps.control.tasks import channel_is_streaming, get_streaming_task_id
 from apps.twitter.models import Tweet
 
 
@@ -93,6 +93,7 @@ class Channel(models.Model):
 
 
     def switch_status(self):
+        from apps.filtering.tasks import channel_log_error
         try:
             if self.is_active():
                 self.deactivate()
@@ -100,30 +101,41 @@ class Channel(models.Model):
                 self.activate()
             return True
         except Exception, e:
-            print e
+            channel_log_error.delay("Uknown error occurred while switching channel status: %s" % e,
+                self.screen_name)
             return False
 
+    def is_streaming(self):
+        return channel_is_streaming(self.screen_name)
 
     def init_streaming(self):
         from apps.filtering.tasks import stream_channel, channel_log_warning, channel_log_exception
         try:
-            task = stream_channel.delay(self.screen_name)
-            self.streaming_task = task
-            self.save()
+            if not self.is_streaming():
+                stream_channel.delay(self.screen_name)
+            else:
+                channel_log_warning.delay("Channel tried to start duplicate streaming process",
+                    self.screen_name)
+
+            #self.streaming_task = task
+            #self.save()
             return True
         except Exception, e:
-            channel_log_exception.delay("Error while trying to initialize streaming: %s", (self.screen_name, e))
+            channel_log_exception.delay("Error while trying to initialize streaming: %s" % e,
+                self.screen_name)
             return False
 
 
     def stop_streaming(self):
         from apps.filtering.tasks import channel_log_info, channel_log_exception
+        from celery import current_app as app
         try:
-            if self.streaming_task is not None:
-                self.streaming_task.revoke(terminate=True)
-                message = "Stopping streaming for %s" % self.screen_name
+            task_id = get_streaming_task_id(self.screen_name)
+            if task_id is not None:
+                app.control.revoke(task_id, terminate=True)
+                message = "Stopped streaming for %s" % self.screen_name
             else:
-                message = "Streaming for %s is already stopped" % self.screen_name
+                message = "Streaming for %s is stopped" % self.screen_name
 
             channel_log_info.delay(message, self.screen_name)
             return True

@@ -16,7 +16,7 @@ from twython.streaming.api import TwythonStreamer
 
 from apps.accounts.models import Channel
 from apps.control.models import UpdateLimit
-from apps.control.tasks import DelayedTask
+from apps.control.tasks import DelayedTask, get_streaming_task_id
 from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
 from apps.hashtags.models import HashtagAdvertisement
 from apps.twitter.api import ChannelAPI, Twitter
@@ -380,13 +380,12 @@ def delay_retweet(tweet):
 
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
-def retweet(tweet, txt=None):
+def retweet(tweet, txt=None, applying_hashtag=None):
     LOCK_EXPIRE = 60 * 5    # Lock expires in 5 minutes
     DELAY_DELTA = 90        # allows updating status each minute per channel
 
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         channel = Channel.objects.get(screen_name=tweet.mention_to)
-        applying_hashtag = None
 
         if txt is None:
             txt = tweet.strip_channel_mention()
@@ -403,7 +402,7 @@ def retweet(tweet, txt=None):
                 txt = txt[0:139]
 
             # Apply hashtags
-            if channel.hashtags_enabled:
+            if channel.hashtags_enabled and applying_hashtag is None:
                 hashtag_list = []
                 hashtags = HashtagAdvertisement.objects.filter(channel=channel.screen_name)
                 for hashtag in hashtags:
@@ -414,9 +413,6 @@ def retweet(tweet, txt=None):
                 if len(hashtag_list) > 0:
                     applying_hashtag = hashtag_list[randint(0, len(hashtag_list) - 1)]
                     txt = "%s #%s" % (txt, applying_hashtag.text)
-                    #applying_hashtag.count += 1
-                    #applying_hashtag.save()
-                    # registrar en el log?
 
         # acquire lock
         if cache.add("retweet_lock_%s" % channel.screen_name, "true", LOCK_EXPIRE):
@@ -448,7 +444,7 @@ def retweet(tweet, txt=None):
             finally:
                 cache.delete("retweet_lock_%s" % channel.screen_name)    # release lock
         else:
-            retweet.apply_async(args=[tweet, txt], countdown=5)
+            retweet.apply_async(args=[tweet, txt, applying_hashtag], countdown=5)
             # channel eta lock is busy, retry 5 seconds later
     return tweet
 
@@ -498,7 +494,6 @@ def update_status(channel_id, tweet, txt, hashtag=None):
             pass
         else:
             # unknown error ocurred, retry later
-            print "retries so far: %s" % update_status.request.retries
             if update_status.request.retries < 3:
                 channel_log_exception.delay(
                     "Couldn't send #%s, retrying later (%s retries so far)" % (tweet.tweet_id,
@@ -518,11 +513,25 @@ def update_status(channel_id, tweet, txt, hashtag=None):
             hashtag.count += 1
             hashtag.save()
 
+
+@worker_init.connect
+def worker_init_handler(sender=None, **kwargs):
+    if "streaming" in sender.app.amqp.queues:
+        print "Streaming worker initialized."
+        channels = Channel.objects.all()
+        for chan in channels:
+            if chan.retweets_enabled:
+                chan.init_streaming()
+            else:
+                chan.stop_streaming()
+
+
+"""
 @task_failure.connect
 def task_failure_handler(sender=None, task_id=None, exception=None, args=None, kwargs=None,
                          traceback=None, einfo=None, **kwds):
     print "TASK FAILURE:"
-    print "sender = %" % sender
+    print "sender = %s" % sender
     print "task_id = %s" % task_id
     print "exception = %s" % exception
     print "traceback = %s" % traceback
@@ -541,21 +550,4 @@ def task_revoked_handler(sender=None, terminated=None, signum=None, expired=None
 @celeryd_after_setup.connect
 def celeryd_after_setup_handler(sender, instance, **kwargs):
     print "Celery daemon started"
-    #print "sender = %s" % sender
-    #print "instance = %s" % instance
-    #print "kwargs = %s" % kwargs
-
-@worker_init.connect
-def worker_init_handler(sender=None, **kwargs):
-    #from celery.worker import WorkController
-    #print "WORKER INITIALIZED:"
-    #print "sender = %s" % sender.__dict__
-    #print "kwargs = %s" % kwargs
-    #print "queues = %s" % sender.app.amqp.queues
-
-    if "streaming" in sender.app.amqp.queues:
-        print "Streaming worker initialized"
-        # init each channel's streaming task
-
-    from apps.control.tasks import get_active_streaming_tasks
-    get_active_streaming_tasks()
+"""

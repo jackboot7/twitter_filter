@@ -1,7 +1,7 @@
-from celery._state import current_task, current_app
-#from celery.task.base import Task
-#from celery import Task
 import datetime
+import re
+from celery._state import current_task
+from celery import current_app as app
 from celery.app.task import Task
 
 class DelayedTask(Task):
@@ -20,7 +20,7 @@ class DelayedTask(Task):
         else:
             # calculates nearest ETA and delay self
             eta = self.calculate_eta()
-            current_task.apply_async(eta)   # retry?
+            current_task.apply_async(eta)
             pass
 
     def after_return(self, status, retval, task_id, args, kwargs, einfo):
@@ -33,31 +33,35 @@ class DelayedTask(Task):
         eta = datetime.datetime.now()
         return eta
 
-# task(periodic,interval,blah)
-"""
-def monitor_streaming_tasks():
-
-    inspect = current_app.control.inspect()
-    active_tasks = inspect.active()
-    # para cada tarea de streaming de cada canal activo
-        # tarea existe en active_tasks?
-            #todobien
-        # no?
-            #activar streaming
-    pass
-
-"""
 
 def get_active_tasks():
-    from celery import current_app as app
     i = app.control.inspect()
     return i.active()
 
+
 def channel_is_streaming(screen_name):
     active_tasks = get_active_tasks()
+    regex = re.compile("(u'(?P<name>\w+)',)")
     for worker_id in active_tasks:
         for task in active_tasks[worker_id]:
-            if task.name == "apps.filtering.tasks.stream_channel" and task.args[0] == screen_name:
-                return True
+            if task['name'] == "apps.filtering.tasks.stream_channel":
+                r = regex.search(task['args'])
+                if r is not None and r.group('name') == screen_name:
+                    return True
     else:
         return False
+
+
+def get_streaming_task_id(screen_name):
+    active_tasks = get_active_tasks()
+    regex = re.compile("(u'(?P<name>\w+)',)")
+    if active_tasks is not None:
+        for worker_id in active_tasks:
+            if active_tasks[worker_id] is not None:
+                for task in active_tasks[worker_id]:
+                    if task['name'] == "apps.filtering.tasks.stream_channel":
+                        r = regex.search(task['args'])
+                        if r is not None and r.group('name') == screen_name:
+                            return task['id']
+
+    return None
