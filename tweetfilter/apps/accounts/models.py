@@ -105,8 +105,8 @@ class Channel(models.Model):
                 self.screen_name)
             return False
 
-    def is_streaming(self):
-        return channel_is_streaming(self.screen_name)
+    def is_streaming(self, exclude_task_id=None):
+        return channel_is_streaming(self.screen_name, exclude_task_id)
 
     def init_streaming(self):
         from apps.filtering.tasks import stream_channel, channel_log_warning, channel_log_exception

@@ -8,7 +8,7 @@ from celery._state import current_task
 from celery import task
 
 from exceptions import Exception
-from celery.signals import task_revoked, task_failure, celeryd_after_setup, celeryd_init, worker_init
+from celery.signals import task_revoked, task_failure, celeryd_after_setup, celeryd_init, worker_init, worker_shutdown
 
 from django.conf import settings
 from django.core.cache import cache
@@ -225,19 +225,20 @@ class ChannelStreamer(TwythonStreamer):
 @task(queue="streaming", ignore_result=True, default_retry_delay=60, max_retries=10)
 def stream_channel(chan_id):
     chan = Channel.objects.get(screen_name=chan_id)
-
-    try:
-        message = "Starting streaming for %s" % chan_id
-        channel_log_info.delay(message, chan.screen_name)
-        stream = ChannelStreamer(chan, current_task)
-        stream.user(**{"with": "followings"})
-        return True
-    except Exception as e:
-        message = "Error starting streaming for %s. Will retry later: %s" % (chan_id, e)
-        channel_log_exception.delay(message, chan.screen_name)
-        stream_channel.retry(exc=e, chan_id=chan_id)
-        return False
-
+    if not chan.is_streaming(stream_channel.request.id):
+        try:
+            message = "Starting streaming for %s" % chan_id
+            channel_log_info.delay(message, chan.screen_name)
+            stream = ChannelStreamer(chan, current_task)
+            stream.user(**{"with": "followings"})
+            return True
+        except Exception as e:
+            message = "Error starting streaming for %s. Will retry later: %s" % (chan_id, e)
+            channel_log_exception.delay(message, chan.screen_name)
+            stream_channel.retry(exc=e, chan_id=chan_id)
+            return False
+    else:
+        print "tried to fuck up everything again"
 
 @task(queue="tweets", ignore_result=True)
 def store_tweet(data, channel_id):
@@ -519,6 +520,7 @@ def worker_init_handler(sender=None, **kwargs):
     if "streaming" in sender.app.amqp.queues:
         print "Streaming worker initialized."
         channels = Channel.objects.all()
+        channels = []   ####
         for chan in channels:
             if chan.retweets_enabled:
                 chan.init_streaming()
@@ -551,3 +553,8 @@ def task_revoked_handler(sender=None, terminated=None, signum=None, expired=None
 def celeryd_after_setup_handler(sender, instance, **kwargs):
     print "Celery daemon started"
 """
+
+@worker_shutdown.connect
+def worker_shutdown_handler(sender=None, **kwargs):
+    if "streaming" in sender.app.amqp.queues:
+        print "Streaming worker shutting down..."
