@@ -40,11 +40,9 @@ def get_active_tasks():
 
 
 def channel_is_streaming(screen_name, exclude_id=None):
-    print "checking streaming for %s excluding id %s:" % (screen_name, exclude_id)
     active_tasks = get_active_tasks()
     regex = re.compile("(u'(?P<name>\w+)',)")
     if active_tasks is not None:
-        print "active tasks:"
         for worker_id in active_tasks:
             if active_tasks[worker_id] is not None:
                 for task in active_tasks[worker_id]:
@@ -52,28 +50,19 @@ def channel_is_streaming(screen_name, exclude_id=None):
                         print task['id']
                         r = regex.search(task['args'])
                         if r is not None and r.group('name') == screen_name and task['id'] != exclude_id:
-                            print "%s IS already streaming" % screen_name
                             return True
-
-    print "%s is NOT streaming" % screen_name
     return False
 
 
 def get_streaming_task_id(screen_name, exclude_id=None):
-    print "getting task id for %s, excluding id %s" % (screen_name, exclude_id)
     active_tasks = get_active_tasks()
     regex = re.compile("(u'(?P<name>\w+)',)")
     if active_tasks is not None:
-        print "active tasks:"
         for worker_id in active_tasks:
             if active_tasks[worker_id] is not None:
                 for task in active_tasks[worker_id]:
                     if task['name'] == "apps.filtering.tasks.stream_channel":
-                        print task['id']
                         r = regex.search(task['args'])
                         if r is not None and r.group('name') == screen_name and task['id'] != exclude_id:
-                            print "found id for %s: %s" % (screen_name, task['id'])
                             return task['id']
-
-    print "task id NOT found for %s" % screen_name
     return None

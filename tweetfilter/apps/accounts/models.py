@@ -111,14 +111,7 @@ class Channel(models.Model):
     def init_streaming(self):
         from apps.filtering.tasks import stream_channel, channel_log_warning, channel_log_exception
         try:
-            if not self.is_streaming():
-                stream_channel.delay(self.screen_name)
-            else:
-                channel_log_warning.delay("Channel tried to start duplicate streaming process",
-                    self.screen_name)
-
-            #self.streaming_task = task
-            #self.save()
+            stream_channel.delay(self.screen_name)
             return True
         except Exception, e:
             channel_log_exception.delay("Error while trying to initialize streaming: %s" % e,
@@ -137,6 +130,7 @@ class Channel(models.Model):
             else:
                 message = "Streaming for %s is stopped" % self.screen_name
 
+            cache.delete("streaming_lock_%s" % self.screen_name)    # release lock
             channel_log_info.delay(message, self.screen_name)
             return True
         except Exception, e:

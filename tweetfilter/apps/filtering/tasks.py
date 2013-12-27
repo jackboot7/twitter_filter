@@ -225,7 +225,7 @@ class ChannelStreamer(TwythonStreamer):
 @task(queue="streaming", ignore_result=True, default_retry_delay=60, max_retries=10)
 def stream_channel(chan_id):
     chan = Channel.objects.get(screen_name=chan_id)
-    if not chan.is_streaming(stream_channel.request.id):
+    if cache.add("streaming_lock_%s" % chan.screen_name, "true", None): # Acquire lock
         try:
             message = "Starting streaming for %s" % chan_id
             channel_log_info.delay(message, chan.screen_name)
@@ -238,7 +238,8 @@ def stream_channel(chan_id):
             stream_channel.retry(exc=e, chan_id=chan_id)
             return False
     else:
-        print "tried to fuck up everything again"
+        channel_log_warning.delay("Channel tried to start duplicate streaming process",
+            chan.screen_name)
 
 @task(queue="tweets", ignore_result=True)
 def store_tweet(data, channel_id):
@@ -520,7 +521,7 @@ def worker_init_handler(sender=None, **kwargs):
     if "streaming" in sender.app.amqp.queues:
         print "Streaming worker initialized."
         channels = Channel.objects.all()
-        channels = []   ####
+        #channels = []   ####
         for chan in channels:
             if chan.retweets_enabled:
                 chan.init_streaming()
@@ -542,12 +543,13 @@ def task_failure_handler(sender=None, task_id=None, exception=None, args=None, k
     print "kwargs = %s" % kwargs
 
 @task_revoked.connect
-def task_revoked_handler(sender=None, terminated=None, signum=None, expired=None, **kwds):
+def task_revoked_handler(sender=None, terminated=None, signum=None, expired=None, **kwargs):
     print "TASK REVOKED:"
     print "sender = %s" % sender
     print "terminated = %s" % terminated
     print "signum = %s" % signum
     print "expired = %s" % expired
+    print "kwargs = %s" % kwargs
 
 @celeryd_after_setup.connect
 def celeryd_after_setup_handler(sender, instance, **kwargs):
@@ -558,3 +560,6 @@ def celeryd_after_setup_handler(sender, instance, **kwargs):
 def worker_shutdown_handler(sender=None, **kwargs):
     if "streaming" in sender.app.amqp.queues:
         print "Streaming worker shutting down..."
+        channels = Channel.objects.all()
+        for chan in channels:
+            cache.delete("streaming_lock_%s" % chan.screen_name)    # release lock
