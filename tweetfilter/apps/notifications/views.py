@@ -10,7 +10,7 @@ class NotificationListView(LoginRequiredMixin, ListView):
     channel_added = None
 
     def get_queryset(self):
-        qs = Notification.objects.filter(recipient=self.request.user).order_by("-time")
+        qs = Notification.objects.filter(recipient=self.request.user).order_by("-time")[:420]
         paginator = Paginator(qs, 20)
         page = self.request.GET.get('page')
         try:
