@@ -16,7 +16,7 @@ from twython.streaming.api import TwythonStreamer
 
 from apps.accounts.models import Channel
 from apps.control.models import UpdateLimit
-from apps.control.tasks import DelayedTask, get_celery_status
+from apps.control.tasks import DelayedTask
 from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
 from apps.hashtags.models import HashtagAdvertisement
 from apps.twitter.api import ChannelAPI, Twitter
