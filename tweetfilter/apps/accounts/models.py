@@ -1,12 +1,9 @@
 # -*- encoding: utf-8 -*-
 from django.core.cache import cache
-import os
-import logging
-
 from django.contrib.auth.models import User
 from django.db import models
 from picklefield.fields import PickledObjectField
-from apps.control.tasks import channel_is_streaming, get_streaming_task_id
+from apps.control.tasks import channel_is_streaming, queue_is_active, get_streaming_task_ids
 from apps.twitter.models import Tweet
 
 
@@ -108,10 +105,13 @@ class Channel(models.Model):
     def is_streaming(self, exclude_task_id=None):
         return channel_is_streaming(self.screen_name, exclude_task_id)
 
-    def init_streaming(self):
-        from apps.filtering.tasks import stream_channel, channel_log_warning, channel_log_exception
+    def init_streaming(self, force=False):
+        STREAMING_QUEUE_NAME = "streaming"
+
+        from apps.filtering.tasks import stream_channel, channel_log_exception
         try:
-            stream_channel.delay(self.screen_name)
+            if force or queue_is_active(STREAMING_QUEUE_NAME):
+                stream_channel.delay(self.screen_name)
             return True
         except Exception, e:
             channel_log_exception.delay("Error while trying to initialize streaming: %s" % e,
@@ -123,15 +123,14 @@ class Channel(models.Model):
         from apps.filtering.tasks import channel_log_info, channel_log_exception
         from celery import current_app as app
         try:
-            task_id = get_streaming_task_id(self.screen_name)
-            if task_id is not None:
-                app.control.revoke(task_id, terminate=True)
+            task_ids = get_streaming_task_ids(self.screen_name)
+            if task_ids:
+                for id in task_ids:
+                    app.control.revoke(id, terminate=True)
                 message = "Stopped streaming for %s" % self.screen_name
-            else:
-                message = "Streaming for %s is stopped" % self.screen_name
+                channel_log_info.delay(message, self.screen_name)
 
             cache.delete("streaming_lock_%s" % self.screen_name)    # release lock
-            channel_log_info.delay(message, self.screen_name)
             return True
         except Exception, e:
             message = "Error while trying to stop streaming for %s: %s" % (self.screen_name, e)

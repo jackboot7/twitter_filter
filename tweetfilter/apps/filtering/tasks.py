@@ -16,7 +16,7 @@ from twython.streaming.api import TwythonStreamer
 
 from apps.accounts.models import Channel
 from apps.control.models import UpdateLimit
-from apps.control.tasks import DelayedTask, get_streaming_task_id
+from apps.control.tasks import DelayedTask, get_celery_status
 from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
 from apps.hashtags.models import HashtagAdvertisement
 from apps.twitter.api import ChannelAPI, Twitter
@@ -521,27 +521,14 @@ def worker_init_handler(sender=None, **kwargs):
     if "streaming" in sender.app.amqp.queues:
         print "Streaming worker initialized."
         channels = Channel.objects.all()
-        #channels = []   ####
         for chan in channels:
             if chan.retweets_enabled:
-                chan.init_streaming()
+                chan.init_streaming(force=True)
             else:
                 chan.stop_streaming()
 
 
 """
-@task_failure.connect
-def task_failure_handler(sender=None, task_id=None, exception=None, args=None, kwargs=None,
-                         traceback=None, einfo=None, **kwds):
-    print "TASK FAILURE:"
-    print "sender = %s" % sender
-    print "task_id = %s" % task_id
-    print "exception = %s" % exception
-    print "traceback = %s" % traceback
-    print "einfo = %s" % einfo
-    print "args = %s" % args
-    print "kwargs = %s" % kwargs
-
 @task_revoked.connect
 def task_revoked_handler(sender=None, terminated=None, signum=None, expired=None, **kwargs):
     print "TASK REVOKED:"
@@ -550,14 +537,13 @@ def task_revoked_handler(sender=None, terminated=None, signum=None, expired=None
     print "signum = %s" % signum
     print "expired = %s" % expired
     print "kwargs = %s" % kwargs
-
-@celeryd_after_setup.connect
-def celeryd_after_setup_handler(sender, instance, **kwargs):
-    print "Celery daemon started"
 """
 
 @worker_shutdown.connect
 def worker_shutdown_handler(sender=None, **kwargs):
+    """
+    Releases all streaming locks before shutting down
+    """
     if "streaming" in sender.app.amqp.queues:
         print "Streaming worker shutting down..."
         channels = Channel.objects.all()
