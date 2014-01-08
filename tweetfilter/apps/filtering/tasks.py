@@ -400,8 +400,6 @@ def retweet(tweet, txt=None, applying_hashtag=None):
                     txt = rep.replace_in(txt)
 
             txt = "via @%s: %s" % (tweet.screen_name, txt)
-            if len(txt) > 140:
-                txt = txt[0:139]
 
             # Apply hashtags
             if channel.hashtags_enabled and applying_hashtag is None:
@@ -458,10 +456,14 @@ def update_status(channel_id, tweet, txt, hashtag=None):
         update_limit = cache.get('%s_limit_waiting' % channel.screen_name)
         if channel.retweets_enabled and update_limit is None:
             api = ChannelAPI(channel)
+            if len(txt) > 140:
+                txt = txt[0:139]
             api.tweet(txt)
+
             tweet.status = Tweet.STATUS_SENT
             tweet.retweeted_text = txt
             tweet.save()
+
             cache.delete('%s_limit_count' % channel.screen_name)
             msg = "Retweeted #%s succesfully and marked it as SENT" % tweet.tweet_id
             channel_log_info.delay(msg, channel.screen_name)
@@ -469,6 +471,7 @@ def update_status(channel_id, tweet, txt, hashtag=None):
             tweet.status = Tweet.STATUS_NOT_SENT
             tweet.retweeted_text = txt
             tweet.save()
+
             reason = "channel was disabled" if update_limit is None else "update limit: waiting %s seconds" % update_limit
             msg = "#%s marked as NOT SENT (%s)" % (tweet.tweet_id, reason)
             channel_log_info.delay(msg, channel.screen_name)
@@ -478,7 +481,6 @@ def update_status(channel_id, tweet, txt, hashtag=None):
             HOLD_ON_WINDOW = 300   # 5 minutes
 
             count = cache.get('%s_limit_count' % channel.screen_name)
-
             if count is None:
                 count = 1
             else:
