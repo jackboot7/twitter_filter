@@ -8,6 +8,7 @@ from celery._state import current_task
 from celery import task
 
 from exceptions import Exception
+from celery.signals import task_revoked, task_failure, celeryd_after_setup, celeryd_init, worker_init, worker_shutdown
 
 from django.conf import settings
 from django.core.cache import cache
@@ -224,19 +225,21 @@ class ChannelStreamer(TwythonStreamer):
 @task(queue="streaming", ignore_result=True, default_retry_delay=60, max_retries=10)
 def stream_channel(chan_id):
     chan = Channel.objects.get(screen_name=chan_id)
-
-    try:
-        message = "Starting streaming for %s" % chan_id
-        channel_log_info.delay(message, chan.screen_name)
-        stream = ChannelStreamer(chan, current_task)
-        stream.user(**{"with": "followings"})
-        return True
-    except Exception as e:
-        message = "Error starting streaming for %s. Will retry later: %s" % (chan_id, e)
-        channel_log_exception.delay(message, chan.screen_name)
-        stream_channel.retry(exc=e, chan_id=chan_id)
-        return False
-
+    if cache.add("streaming_lock_%s" % chan.screen_name, "true", None): # Acquire lock
+        try:
+            message = "Starting streaming for %s" % chan_id
+            channel_log_info.delay(message, chan.screen_name)
+            stream = ChannelStreamer(chan, current_task)
+            stream.user(**{"with": "followings"})
+            return True
+        except Exception as e:
+            message = "Error starting streaming for %s. Will retry later: %s" % (chan_id, e)
+            channel_log_exception.delay(message, chan.screen_name)
+            stream_channel.retry(exc=e, chan_id=chan_id)
+            return False
+    else:
+        channel_log_warning.delay("Channel tried to start duplicate streaming process",
+            chan.screen_name)
 
 @task(queue="tweets", ignore_result=True)
 def store_tweet(data, channel_id):
@@ -379,13 +382,12 @@ def delay_retweet(tweet):
 
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
-def retweet(tweet, txt=None):
+def retweet(tweet, txt=None, applying_hashtag=None):
     LOCK_EXPIRE = 60 * 5    # Lock expires in 5 minutes
     DELAY_DELTA = 90        # allows updating status each minute per channel
 
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         channel = Channel.objects.get(screen_name=tweet.mention_to)
-        applying_hashtag = None
 
         if txt is None:
             txt = tweet.strip_channel_mention()
@@ -398,11 +400,9 @@ def retweet(tweet, txt=None):
                     txt = rep.replace_in(txt)
 
             txt = "via @%s: %s" % (tweet.screen_name, txt)
-            if len(txt) > 140:
-                txt = txt[0:139]
 
             # Apply hashtags
-            if channel.hashtags_enabled:
+            if channel.hashtags_enabled and applying_hashtag is None:
                 hashtag_list = []
                 hashtags = HashtagAdvertisement.objects.filter(channel=channel.screen_name)
                 for hashtag in hashtags:
@@ -413,9 +413,6 @@ def retweet(tweet, txt=None):
                 if len(hashtag_list) > 0:
                     applying_hashtag = hashtag_list[randint(0, len(hashtag_list) - 1)]
                     txt = "%s #%s" % (txt, applying_hashtag.text)
-                    #applying_hashtag.count += 1
-                    #applying_hashtag.save()
-                    # registrar en el log?
 
         # acquire lock
         if cache.add("retweet_lock_%s" % channel.screen_name, "true", LOCK_EXPIRE):
@@ -447,7 +444,7 @@ def retweet(tweet, txt=None):
             finally:
                 cache.delete("retweet_lock_%s" % channel.screen_name)    # release lock
         else:
-            retweet.apply_async(args=[tweet, txt], countdown=5)
+            retweet.apply_async(args=[tweet, txt, applying_hashtag], countdown=5)
             # channel eta lock is busy, retry 5 seconds later
     return tweet
 
@@ -459,10 +456,14 @@ def update_status(channel_id, tweet, txt, hashtag=None):
         update_limit = cache.get('%s_limit_waiting' % channel.screen_name)
         if channel.retweets_enabled and update_limit is None:
             api = ChannelAPI(channel)
+            if len(txt) > 140:
+                txt = txt[0:139]
             api.tweet(txt)
+
             tweet.status = Tweet.STATUS_SENT
             tweet.retweeted_text = txt
             tweet.save()
+
             cache.delete('%s_limit_count' % channel.screen_name)
             msg = "Retweeted #%s succesfully and marked it as SENT" % tweet.tweet_id
             channel_log_info.delay(msg, channel.screen_name)
@@ -470,6 +471,7 @@ def update_status(channel_id, tweet, txt, hashtag=None):
             tweet.status = Tweet.STATUS_NOT_SENT
             tweet.retweeted_text = txt
             tweet.save()
+
             reason = "channel was disabled" if update_limit is None else "update limit: waiting %s seconds" % update_limit
             msg = "#%s marked as NOT SENT (%s)" % (tweet.tweet_id, reason)
             channel_log_info.delay(msg, channel.screen_name)
@@ -479,7 +481,6 @@ def update_status(channel_id, tweet, txt, hashtag=None):
             HOLD_ON_WINDOW = 300   # 5 minutes
 
             count = cache.get('%s_limit_count' % channel.screen_name)
-
             if count is None:
                 count = 1
             else:
@@ -497,7 +498,6 @@ def update_status(channel_id, tweet, txt, hashtag=None):
             pass
         else:
             # unknown error ocurred, retry later
-            print "retries so far: %s" % update_status.request.retries
             if update_status.request.retries < 3:
                 channel_log_exception.delay(
                     "Couldn't send #%s, retrying later (%s retries so far)" % (tweet.tweet_id,
@@ -516,3 +516,38 @@ def update_status(channel_id, tweet, txt, hashtag=None):
         if hashtag is not None:
             hashtag.count += 1
             hashtag.save()
+
+
+@worker_init.connect
+def worker_init_handler(sender=None, **kwargs):
+    if "streaming" in sender.app.amqp.queues:
+        print "Streaming worker initialized."
+        channels = Channel.objects.all()
+        for chan in channels:
+            if chan.retweets_enabled:
+                chan.init_streaming(force=True)
+            else:
+                chan.stop_streaming()
+
+
+"""
+@task_revoked.connect
+def task_revoked_handler(sender=None, terminated=None, signum=None, expired=None, **kwargs):
+    print "TASK REVOKED:"
+    print "sender = %s" % sender
+    print "terminated = %s" % terminated
+    print "signum = %s" % signum
+    print "expired = %s" % expired
+    print "kwargs = %s" % kwargs
+"""
+
+@worker_shutdown.connect
+def worker_shutdown_handler(sender=None, **kwargs):
+    """
+    Releases all streaming locks before shutting down
+    """
+    if "streaming" in sender.app.amqp.queues:
+        print "Streaming worker shutting down..."
+        channels = Channel.objects.all()
+        for chan in channels:
+            cache.delete("streaming_lock_%s" % chan.screen_name)    # release lock

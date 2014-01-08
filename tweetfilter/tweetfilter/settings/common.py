@@ -98,7 +98,6 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'compressor.finders.CompressorFinder',
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
@@ -295,13 +294,6 @@ CACHE_MIDDLEWARE_KEY_PREFIX = ""
 
 # Crispy form configuration
 CRISPY_TEMPLATE_PACK = 'bootstrap'
-
-# Django Compressor
-#COMPRESS_ENABLED = True
-#COMPRESS_ROOT = STATIC_URL
-#COMPRESS_JS_FILTERS = [
-#    'compressor.filters.template.TemplateFilter',
-#    ]
 
 # Email configuration
 EMAIL_BACKEND = 'django_ses.SESBackend'

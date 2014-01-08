@@ -1,12 +1,9 @@
 # -*- encoding: utf-8 -*-
 from django.core.cache import cache
-import os
-import logging
-
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from picklefield.fields import PickledObjectField
+from apps.control.tasks import channel_is_streaming, queue_is_active, get_streaming_task_ids
 from apps.twitter.models import Tweet
 
 
@@ -58,12 +55,14 @@ class Channel(models.Model):
     # Hashtags config
     hashtags_enabled = models.BooleanField(default=False)
 
+
     def delete(self):
         self.stop_streaming()
         schedules = self.scheduledtweet_set.all()
         for schedule in schedules:
             schedule.delete()
         super(Channel, self).delete()
+
 
     def get_last_update(self):
         try:
@@ -72,10 +71,12 @@ class Channel(models.Model):
         except Exception, e:
             return None
 
+
     def activate(self):
         self.status = self.STATUS_ENABLED
         if self.init_streaming():
             self.save()
+
 
     def deactivate(self):
         self.status = self.STATUS_DISABLED
@@ -83,10 +84,13 @@ class Channel(models.Model):
         if self.stop_streaming():
             self.save()
 
+
     def is_active(self):
         return self.status == self.STATUS_ENABLED
 
+
     def switch_status(self):
+        from apps.filtering.tasks import channel_log_error
         try:
             if self.is_active():
                 self.deactivate()
@@ -94,48 +98,44 @@ class Channel(models.Model):
                 self.activate()
             return True
         except Exception, e:
-            print e
+            channel_log_error.delay("Uknown error occurred while switching channel status: %s" % e,
+                self.screen_name)
             return False
 
+    def is_streaming(self, exclude_task_id=None):
+        return channel_is_streaming(self.screen_name, exclude_task_id)
 
-    def init_streaming(self):
-        from apps.filtering.tasks import stream_channel, channel_log_warning, channel_log_exception
+    def init_streaming(self, force=False):
+        STREAMING_QUEUE_NAME = "streaming"
+
+        from apps.filtering.tasks import stream_channel, channel_log_exception
         try:
-            task = stream_channel.delay(self.screen_name)
-            self.streaming_task = task
-            self.save()
+            if force or queue_is_active(STREAMING_QUEUE_NAME):
+                stream_channel.delay(self.screen_name)
             return True
         except Exception, e:
-            channel_log_exception.delay("Error while trying to initialize streaming: %s", (self.screen_name, e))
+            channel_log_exception.delay("Error while trying to initialize streaming: %s" % e,
+                self.screen_name)
             return False
 
 
     def stop_streaming(self):
         from apps.filtering.tasks import channel_log_info, channel_log_exception
+        from celery import current_app as app
         try:
-            if self.streaming_task is not None:
-                self.streaming_task.revoke(terminate=True)
-                message = "Stopping streaming for %s" % self.screen_name
-            else:
-                message = "Streaming for %s is already stopped" % self.screen_name
+            task_ids = get_streaming_task_ids(self.screen_name)
+            if task_ids:
+                for id in task_ids:
+                    app.control.revoke(id, terminate=True)
+                message = "Stopped streaming for %s" % self.screen_name
+                channel_log_info.delay(message, self.screen_name)
 
-            channel_log_info.delay(message, self.screen_name)
+            cache.delete("streaming_lock_%s" % self.screen_name)    # release lock
             return True
         except Exception, e:
             message = "Error while trying to stop streaming for %s: %s" % (self.screen_name, e)
             channel_log_exception.delay(message, self.screen_name)
             return False
-
-    """
-    # pendiente por implementar
-    def is_streaming(self):
-        task = self.streaming_task
-        print "is %s streaming? %s" % (self.screen_name, task.state)
-
-        return task.state == "PENDING" or \
-               task.state == "STARTED" or \
-               task.state == "RETRY"
-    """
 
 
     def get_triggers(self):
@@ -145,6 +145,7 @@ class Channel(models.Model):
         #triggers = Trigger.objects.filter(channel=self)
         #return triggers
         return self.trigger_set.all()
+
 
     def get_filters(self):
         """
