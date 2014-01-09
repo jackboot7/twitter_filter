@@ -550,4 +550,5 @@ def worker_shutdown_handler(sender=None, **kwargs):
         print "Streaming worker shutting down..."
         channels = Channel.objects.all()
         for chan in channels:
+            chan.stop_streaming()
             cache.delete("streaming_lock_%s" % chan.screen_name)    # release lock
