@@ -53,14 +53,19 @@ class AuthCallbackView(View):
         name = final_step['screen_name']
 
         # Create new channel object
-        chan = Channel()
-        chan.screen_name = name
-        chan.oauth_token = final_token
-        chan.oauth_secret = final_secret
-        chan.user = request.user
-        chan.save()
+        if not Channel.objects.filter(screen_name=name):
+            chan = Channel()
+            chan.screen_name = name
+            chan.oauth_token = final_token
+            chan.oauth_secret = final_secret
+            chan.user = request.user
+            chan.save()
+            url_name = "channel_added"
+        else:
+            url_name = "channel_not_added"
+            print "Channel %s already exists" % name
 
-        return HttpResponseRedirect(reverse("channel_added"))
+        return HttpResponseRedirect(reverse(url_name))
 
 
 class ChannelListView(JSONResponseMixin, AjaxResponseMixin, ListView):

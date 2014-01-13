@@ -45,6 +45,13 @@ var
         $('#alert_success').show();
     },
 
+    channel_add_error = function () {
+        "use strict";
+
+        $('#alert_warning_body').text("El canal ingresado ya está suscrito en el sistema por otro usuario");
+        $('#alert_warning').show();
+    },
+
     channel_delete_success = function () {
         "use strict";
 
@@ -61,6 +68,10 @@ $(document).ready(function () {
 
     if($('#channel_added').val() === "true") {
         channel_add_success();
+    }
+
+    if($('#channel_added').val() === "error") {
+        channel_add_error();
     }
 
     //load_channel_table();
