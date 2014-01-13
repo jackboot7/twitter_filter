@@ -63,7 +63,6 @@ class AuthCallbackView(View):
             url_name = "channel_added"
         else:
             url_name = "channel_not_added"
-            print "Channel %s already exists" % name
 
         return HttpResponseRedirect(reverse(url_name))
 
