@@ -220,8 +220,9 @@ del módulo ``djcelery`` (*django-celery*).
 		task="send_tweet",
 		crontab=cron,
 		queue="tweets",
-		kwargs=json.dumps({'channel_id': 'TrafficTesting4',
-						   'text': "ola ke ase?"}))
+		kwargs=json.dumps({
+			'channel_id': 'TrafficTesting4',
+			'text': "ola ke ase?"}))
 	ptask.save()
 
 Puede leerse más detalle sobre las tareas periódicas en la `documentación oficial`_.
