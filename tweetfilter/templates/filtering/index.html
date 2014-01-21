@@ -1,0 +1,416 @@
+{% extends 'base.html' %}
+
+{% block section_title %}
+    Opciones de canal: @{{ channel.screen_name }}
+{% endblock %}
+
+{% block section_body %}
+<input type="hidden" id="current_channel" value="{{ channel.screen_name }}" xmlns="http://www.w3.org/1999/html">
+
+<ul class="nav nav-tabs" id="channel_nav">
+    {% block nav_bar %}
+        <!--
+        <li>
+            <a>Monitor</a>
+        </li>-->
+        <!--
+        <li>
+            <a href="#">Seguidores</a>
+        </li>-->
+        <li id="nav_tab_home" class="active">
+            <a href="#">Retweets automáticos</a>
+        </li>
+        <li>
+            <a href="/scheduling/edit/{{ channel.screen_name }}">Tweets programados</a>
+        </li>
+        <li>
+            <a href="/hashtags/edit/{{ channel.screen_name }}">Hashtags</a>
+        </li>
+
+        <!--
+        <li>
+            <a>
+                Colaboradores
+            </a>
+        </li>-->
+
+        <li class="disabled" id="nav_tab_config">
+            <!--<a href="#">Configuración</a>-->
+        </li><!--
+<li class="disabled">
+    <a href="#">Messages</a>
+</li>
+-->
+    {% endblock %} <!-- endblock nav_bar -->
+</ul>
+
+<div class="row-fluid">
+    <div class="span5 rounded_box fill_white">
+        <fieldset>
+            <legend>Configuración</legend>
+            El módulo de retweets automáticos está:
+            <a class="no_decoration" id="switch_retweets_btn" title='' >
+                &nbsp;<span id="switch_retweets_label" class='label' ></span>
+            </a>
+        </fieldset>
+    </div>
+</div>
+
+<div class="row-fluid">
+    <div class="span4 rounded_box fill_white">
+        <fieldset>
+            <label class="checkbox">
+                <input type="checkbox" id="activate_timeblocks_check"> Activar horarios de publicación
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" id="activate_blacklist_check"> Activar bloqueo de usuarios en lista negra
+            </label>
+        </fieldset>
+    </div>
+    <div class="span4 rounded_box fill_white">
+        <fieldset>
+            <label class="checkbox">
+                <input type="checkbox" id="activate_triggers_check"> Activar disparadores
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" id="activate_replacements_check"> Activar supresores
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" id="activate_filters_check"> Activar filtrado por retenedores
+            </label>
+        </fieldset>
+    </div>
+</div>
+
+<div class="row-fluid">
+
+    <div class="span6" id="left_column"> <!-- left column -->
+
+        <div class="rounded_box fill_blue" id="timeblocks_box" style="display:none">
+
+
+
+            <h4>Horarios de publicación</h4>
+
+            <div id="timeblock_list">
+                <span>El canal publicará automáticamente en los siguientes horarios:</span>
+
+                <div id="timeblock_list_div" class="scrollable">
+                    <table class="table" id="timeblock_list_table">
+                        <thead>
+                            <tr>
+                                <th>Horario</th><th>Días</th><th>DM/Mentions</th><th>Eliminar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timeblock_list_tbody">
+
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+
+            <span id="no_timeblocks_message">
+                Actualmente se publican los tweets sin restricción de horario
+            </span>
+            <br><br>
+            <a id="add_timeblock_btn" href="#add_timeblock_modal" class="btn btn-primary btn-small" data-toggle='modal'>Agregar horario</a>
+
+            <div id="add_timeblock_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <input type="hidden" id="editing_timeblock_id">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="timeblock_modal_title">
+                        Añadir horario
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <div class="span6">
+
+                        <table>
+                            <tr>
+                                <td><label>Hora de inicio: </label></td>
+                                <td>
+                                    <input type="text" class="input-mini" id="start_timepicker">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><label>Hora de fin: </label></td>
+                                <td>
+                                    <input type="text" class="input-mini" id="end_timepicker">
+                                </td>
+                            </tr>
+                        </table>
+                        <br>
+                        <h5>Permitir:</h5>
+                        <div class="checkbox">
+                            <label><input type="checkbox" id="allow_mentions_check"> Retweet de mentions</label>
+                            <label><input type="checkbox" id="allow_dm_check"> Retweet de DMs (mensajes directos)</label>
+                        </div>
+
+                    </div>
+                    <div class="span1"></div>
+                    <div class="span5" id="weekdays_select_div">
+                        <h5>Días de la semana</h5>
+                        <label class="checkbox"><input type="checkbox" id="monday_check"> Lunes</label>
+                        <label class="checkbox"><input type="checkbox" id="tuesday_check"> Martes</label>
+                        <label class="checkbox"><input type="checkbox" id="wednesday_check"> Miércoles</label>
+                        <label class="checkbox"><input type="checkbox" id="thursday_check"> Jueves</label>
+                        <label class="checkbox"><input type="checkbox" id="friday_check"> Viernes</label>
+                        <label class="checkbox"><input type="checkbox" id="saturday_check"> Sábado</label>
+                        <label class="checkbox"><input type="checkbox" id="sunday_check"> Domingo</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_timeblock_btn">Guardar</button>
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+                </div>
+            </div>
+
+            <div id="delete_timeblock_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3>
+                        Eliminar Horario
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="deleting_timeblock_id" value="">
+                    <p>
+                        Está seguro de que desea eliminar el horario seleccionado ?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+                    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_timeblock_confirmed">Sí, eliminar</button>
+                </div>
+            </div>
+        </div>
+        <!-- Fin horarios de publicación -->
+
+        <div class="rounded_box fill_gray" id="blacklist_box"  style="display:none">
+            <h4>Usuarios bloqueados</h4>
+            <div class="scrollable" id="blocked_user_list_div">
+                <table class="table" id="blocked_user_list_table">
+                    <thead>
+                    <tr>
+                        <th>Nombre de usuario</th>
+                        <!--<th>Acción</th>-->
+                        <th>Eliminar</th>
+                    </tr>
+                    </thead>
+                    <tbody id="blocked_user_list_tbody">
+                    </tbody>
+                </table>
+            </div>
+
+            <span id="no_blocked_users_message">No hay usuarios bloqueados en el canal</span> <br><br>
+
+            <table><tr>
+                <span class="help-block">Introduzca el nombre de un usuario que desee bloquear (sin la @)</span>
+                <td><input type="text" id="add_blocked_user_name" maxlength="15"></td>
+                <td class="button_td"> &nbsp;<a id="add_blocked_user_btn" class="btn btn-danger btn-small">Bloquear usuario</a></td>
+            </tr></table>
+
+            <div id="delete_blocked_user_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="my_blocked_userModalLabel">
+                        Desbloquear usuario
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="deleting_blocked_user_id" value="">
+                    <p>
+                        Está seguro de que desea eliminar el usuario &quot;<span id="deleting_blocked_user_name"></span>&quot;?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+                    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_blocked_user_confirmed">Sí, eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="span6" id="right_column">
+        <div class="rounded_box fill_green" id="triggers_box" style="display:none">
+            <h4>Disparadores</h4>
+
+            <div class="scrollable" id="trigger_list_div">
+                <table class="table" id="trigger_list_table">
+                    <thead>
+                        <tr>
+                            <th>Texto</th>
+                            <!--<th>Mention</th>
+                            <th>DM</th>-->
+                            <th>Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trigger_list_tbody">
+                    </tbody>
+                </table>
+            </div>
+            <span id="no_triggers_message">No hay disparadores asociados al canal</span> <br><br>
+
+            <table><tr>
+                <td><input type="text" id="add_trigger_text"></td>
+                <td class="button_td"> &nbsp;<a id="add_trigger_btn" class="btn btn-primary btn-small">Agregar disparador</a></td>
+            </tr></table>
+
+            <div id="delete_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="myModalLabel">
+                        Eliminar Disparador
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="deleting_trigger_id" value="">
+                    <p>
+                        Está seguro de que desea eliminar el disparador &quot;<span id="deleting_trigger_text"></span>&quot; ?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+                    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_trigger_confirmed">Sí, eliminar</button>
+                </div>
+            </div>
+        </div> <!-- end rounded box -->
+
+
+        <div class="rounded_box fill_yellow" id="replacements_box" style="display:none">
+            <h4>Supresores</h4>
+
+            <div class="scrollable" id="replacement_list_div">
+                <table class="table" id="replacement_list_table">
+                    <thead>
+                    <tr>
+                        <th>Texto</th>
+                        <th>Reemplazar por</th>
+                        <!--<th>Mention</th>
+                        <th>DM</th>-->
+                        <th>Eliminar</th>
+                    </tr>
+                    </thead>
+                    <tbody id="replacement_list_tbody">
+                    </tbody>
+                </table>
+            </div>
+            <span id="no_replacements_message">No hay supresores asociados al canal</span> <br><br>
+
+            <table>
+                <tr>
+                    <td><input placeholder="sustituir" class="input-small" type="text" id="add_replacement_text">&nbsp;</td>
+                    <td><input placeholder="por" class="input-small" type="text" id="add_replacement_replace_with"></td>
+                    <td class="button_td" rowspan="2"> &nbsp;<a id="add_replacement_btn" class="btn btn-primary btn-small">Agregar supresor</a></td>
+                </tr>
+            </table>
+
+            <div id="delete_replacement_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="myreplacementModalLabel">
+                        Eliminar Supresor
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="deleting_replacement_id" value="">
+                    <p>
+                        Está seguro de que desea eliminar el supresor para la frase &quot;<span id="deleting_replacement_text"></span>&quot; ?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+                    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_replacement_confirmed">Sí, eliminar</button>
+                </div>
+            </div>
+        </div> <!-- end rounded box -->
+
+
+        <div class="rounded_box fill_red" id="filters_box" style="display:none">
+            <h4>Retenedores</h4>
+
+            <div class="scrollable" id="filter_list_div">
+                <table class="table" id="filter_list_table">
+                    <thead>
+                    <tr>
+                        <th>Texto</th>
+                        <!--<th>Mention</th>
+                        <th>DM</th>-->
+                        <th>Eliminar</th>
+                    </tr>
+                    </thead>
+                    <tbody id="filter_list_tbody">
+                    </tbody>
+                </table>
+            </div>
+
+            <span id="no_filters_message">No hay retenedores asociados al canal</span> <br><br>
+
+            <table><tr>
+                <td><input type="text" id="add_filter_text"></td>
+                <td class="button_td">&nbsp;<a id="add_filter_btn" class="btn btn-primary btn-small">Agregar filtro</a></td>
+            </tr></table>
+
+            <div id="delete_filter_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="FilterModalLabel">
+                        Eliminar Filtro
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="deleting_filter_id" value="">
+                    <p>
+                        Está seguro de que desea eliminar el filtro &quot;<span id="deleting_filter_text"></span>&quot; ?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+                    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_filter_confirmed">Sí, eliminar</button>
+                </div>
+            </div>
+        </div> <!-- end column (span6) -->
+    </div> <!-- end column -->
+
+</div> <!-- end row-fluid -->
+
+<div class="row-fluid">
+    <div class="span12"></div>
+</div>
+
+<div class="row-fluid">
+    <!-- Filters -->
+    <div class="span6">
+    </div>
+
+
+
+</div> <!-- end row-fluid -->
+<br>
+    <br>
+<a href="/">Volver al inicio</a>
+    <br>
+    <br>
+    <br>
+{% endblock %} <!-- endblock section_body -->
+
+{% block page_scripts %}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/script.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/triggers.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/replacements.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/filters.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/timeblocks.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/blocked_users.js"></script>
+{% endblock %}
+
+{% block modal_header %}
+    <!-- hola -->
+{% endblock %}
+
+{% block modal_body %}
+{% endblock %}
+
+{% block right_column %}
+{% endblock %}

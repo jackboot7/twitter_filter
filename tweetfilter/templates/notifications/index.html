@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block section_title %}
+Notificaciones
+{% endblock %}
+
+{% block section_body %}
+<ul>
+{% for notification in notifications %}
+    <li>
+        [{{ notification.time}}] {{ notification.description }}
+    </li>
+{% endfor %}
+</ul>
+
+{% if notifications.paginator.num_pages > 1 %}
+<div class="pagination">
+    <ul>
+        {% if notifications.has_previous %}
+        <li>
+            <a href="/notifications/history?page={{ notifications.previous_page_number }}">Anterior</a>
+        </li>
+        {% endif %}
+
+        {% for n in notifications.paginator.page_range %}
+
+            {% if n == notifications.number %}
+            <li class="active">
+            {% else %}
+            <li>
+            {% endif %}
+                <a href="/notifications/history?page={{ n }}">{{ n }}</a>
+            </li>
+
+        {% endfor %}
+
+        {% if notifications.has_next %}
+        <li>
+            <a href="/notifications/history?page={{ notifications.next_page_number }}">Siguiente</a>
+        </li>
+        {% endif %}
+
+    </ul>
+</div>
+{% endif %}
+
+{% if notifications.paginator.count == 0 %}
+No hay notificaciones en el sistema
+{% endif %}
+<br>
+<a href="/">Volver al inicio</a>
+{% endblock %} <!-- endblock section_body -->

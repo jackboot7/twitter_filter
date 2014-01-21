@@ -1,7 +1,6 @@
 # Django settings for tweetfilter project.
 import os
 
-ALLOWED_HOSTS = ['192.168.0.103']
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -20,21 +19,25 @@ VAR_ROOT = os.path.join(os.path.split(PROJECT_DIR)[0], 'var')
 if not os.path.exists(VAR_ROOT):
     os.mkdir(VAR_ROOT)
 
+LOGGING_ROOT = os.path.join(os.path.split(PROJECT_DIR)[0], 'server_logs', 'dev')
+if not os.path.exists(LOGGING_ROOT):
+    os.mkdir(LOGGING_ROOT)
+
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': os.path.join(VAR_ROOT, 'twitter.db'),                    # Or path to database file if using sqlite3.
-        # The following settings are not used with sqlite3:
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(VAR_ROOT, 'twitter.db'),
         'USER': '',
         'PASSWORD': '',
-        'HOST': '',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
-        'PORT': '',                      # Set to empty string for default.
-    }
+        'HOST': '',
+        'PORT': '',
+        }
 }
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.0.103']
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -59,6 +62,13 @@ USE_L10N = True
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
 
+#=====================================================================
+# Project URL and media settings
+#=====================================================================
+LOGIN_URL = '/login/'
+LOGOUT_URL = '/logout/'
+LOGIN_REDIRECT_URL = '/'
+
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
 MEDIA_ROOT = ''
@@ -73,9 +83,6 @@ MEDIA_URL = ''
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/var/www/example.com/static/"
 STATIC_ROOT = os.path.join(VAR_ROOT, 'static')
-#print STATIC_ROOT
-# URL prefix for static files.
-# Example: "http://example.com/static/", "http://static.example.com/"
 STATIC_URL = '/static/'
 
 # Additional locations of static files
@@ -105,6 +112,7 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    #'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -112,6 +120,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    #'django.middleware.cache.FetchFromCacheMiddleware',
 )
 
 ROOT_URLCONF = 'tweetfilter.urls'
@@ -135,17 +144,19 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     # Project modules
-    'apps.auth',
-    'apps.advertising',
     'apps.filtering',
-    'apps.notifications',
-    'apps.statistics',
     'apps.twitter',
-    'apps.channels',
+    'apps.accounts',
     'apps.control',
+    'apps.scheduling',
+    'apps.hashtags',
+    'apps.notifications',
 
     # Third party modules
+    'crispy_forms',
+    'registration',
     'djcelery',
+    'south',
 
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
@@ -158,19 +169,61 @@ INSTALLED_APPS = (
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s]: %(message)s'
+        },
+        'channel': {
+            'format': '%(asctime)s [%(screen_name)s] [%(levelname)s]: %(message)s'
+        }
+    },
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue'
         }
     },
     'handlers': {
+        'default': {
+            'level': 'DEBUG',
+            'class': 'cloghandler.ConcurrentRotatingFileHandler',
+            'filename': os.path.join(LOGGING_ROOT, 'app.log'),
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'standard',
+        },
+        'channels': {
+            'level': 'DEBUG',
+            'class': 'cloghandler.ConcurrentRotatingFileHandler',
+            'filename': os.path.join(LOGGING_ROOT, 'twitter-all.log'),
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'channel',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+            'filters': ['require_debug_true'],
+        },
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'streaming': {
+            'level': 'DEBUG',
+            'class': 'cloghandler.ConcurrentRotatingFileHandler',
+            'filename': os.path.join(LOGGING_ROOT, 'streaming.log'),
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'standard'
         }
     },
     'loggers': {
@@ -179,6 +232,21 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        'twitter': {
+            'handlers': ['channels', 'console'],
+            'level': 'DEBUG',
+            'propagate': False
+        },
+        'app': {
+            'handlers': ['default', 'console'],
+            'level': 'DEBUG',
+            'propagate': False
+        },
+        'streaming': {
+            'handlers': ['streaming'],
+            'level': 'INFO',
+            'propagate': False
+        }
     }
 }
 
@@ -199,4 +267,37 @@ djcelery.setup_loader()
 
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
 CELERY_RESULT_BACKEND = "amqp"
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 CELERYD_CONCURRENCY = 4
+CELERY_TIMEZONE = 'America/Caracas'
+CELERY_IMPORTS = ('apps.filtering.tasks',
+                  'apps.scheduling.tasks',
+                  'apps.notifications.tasks')
+
+CELERY_IGNORE_RESULT = True
+
+
+#==============================================================================
+# Cache
+#==============================================================================
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}
+
+CACHE_MIDDLEWARE_ALIAS = 'default'
+CACHE_MIDDLEWARE_SECONDS = 600
+CACHE_MIDDLEWARE_KEY_PREFIX = ""
+
+# Crispy form configuration
+CRISPY_TEMPLATE_PACK = 'bootstrap'
+
+# Email configuration
+EMAIL_BACKEND = 'django_ses.SESBackend'
+AWS_ACCESS_KEY_ID = 'AKIAI5JS2F2RLK4S5G7Q'
+AWS_SECRET_ACCESS_KEY = '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'
+
+EMAIL_FROM = "traffic.testing24@gmail.com"

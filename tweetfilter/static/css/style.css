@@ -1,3 +1,11 @@
+.no_decoration:hover, .no_decoration:visited, .no_decoration:active,
+.no_decoration:focus, .no_decoration:link{
+    color: #FFFFFF;
+    text-decoration: none;
+    outline: 0;
+    cursor: pointer;
+}
+
 .button_td {
     padding-bottom: 11px;
     padding-left: 7px
@@ -5,11 +13,58 @@
 
 .rounded_box {
     border-radius: 12px;
-    background-color: #F1F1F1;
     padding-left: 13px;
     padding-right: 13px;
+    padding-top: 5px;
+    padding-bottom: 7px;
+    margin-bottom: 20px;
+}
+
+.fill_gray {
+    background-color: #F1F1F1;
+}
+
+.fill_white {
+    background-color: #ffffff;
+}
+
+.fill_blue {
+    background-color: #E6F2FC;
+}
+
+.fill_green {
+    background-color: #E6F2E1;
+}
+
+.fill_yellow {
+    background-color: #F5F4DF;
+}
+
+.fill_red {
+    /*background-color: #F5E9E9;*/
+    /*background-color: #FFE0E0;*/
+    background-color: #F5DFDF;
+}
+
+.float_right {
+    float: right;
 }
 
 .center-search{
     margin-top: 5px;
+}
+
+.td_right_padding{
+    padding-right: 8px;
+}
+
+.scrollable {
+    max-height: 250px;
+}
+
+#left_column {
+    margin-right: 16px;
+}
+#right_column {
+    margin-left: 0px;
 }

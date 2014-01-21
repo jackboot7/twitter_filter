@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block section_title %}
+    Opciones de canal: @{{ channel.screen_name }}
+{% endblock %}
+
+{% block section_body %}
+    <input type="hidden" id="current_channel" value="{{ channel.screen_name }}" xmlns="http://www.w3.org/1999/html">
+    <ul class="nav nav-tabs" id="channel_nav">
+        {% block nav_bar %}
+            <!--
+            <li>
+                <a>Monitor</a>
+            </li>-->
+            <!--
+            <li>
+                <a href="#">Seguidores</a>
+            </li>-->
+            <li id="nav_tab_home">
+                <a href="/filtering/edit/{{ channel.screen_name }}">Retweets automáticos</a>
+            </li>
+
+            <li>
+                <a href="/scheduling/edit/{{ channel.screen_name }}">Tweets programados</a>
+            </li>
+
+            <li class="active">
+                <a href="#">Hashtags</a>
+            </li>
+
+            <!--
+            <li>
+                <a>
+                    Colaboradores
+                </a>
+            </li>-->
+
+            <li class="disabled" id="nav_tab_config">
+                <!--<a href="#">Configuración</a>-->
+            </li><!--
+<li class="disabled">
+    <a href="#">Messages</a>
+</li>
+-->
+        {% endblock %} <!-- endblock nav_bar -->
+    </ul>
+
+    <div class="row-fluid">
+        <div class="span5 rounded_box fill_white">
+            El módulo de hashtags está:
+            <a class="no_decoration" id="switch_hashtags_btn" title=''>
+                &nbsp;<span id="switch_hashtags_label" class='label' ></span>
+            </a>
+        </div>
+    </div>
+
+    <div class="row-fluid">
+
+        <div class="span6"> <!-- left column -->
+            <div class="rounded_box fill_gray">
+                <h4>Hashtags Publicitarios</h4>
+
+                <div id="hashtag_list">
+                    <span><!-- Descripcion --></span>
+
+                    <table class="table" id="hashtag_list_table">
+                        <thead>
+                        <tr>
+                            <th>Texto</th><th>Cantidad</th><th>Contador</th><!--<th>Horario</th>-->
+                        </tr>
+                        </thead>
+                        <tbody id="hashtag_list_tbody">
+
+                        </tbody>
+
+                    </table>
+                </div>
+
+            <span id="no_hashtags_message">
+                Actualmente no hay hashtags definidos.
+            </span>
+                <br><br>
+                <a id="add_hashtag_btn" href="#add_hashtag_modal" class="btn btn-primary btn-small" data-toggle='modal'>Agregar hashtag</a>
+
+                <div id="add_hashtag_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <input type="hidden" id="editing_hashtag_id" value="">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h3 id="hashtag_modal_title">
+                            Añadir hashtag publicitario
+                        </h3>
+                    </div>
+                    <div class="modal-body">
+                        <div class="span7">
+                            <h5>Hashtag</h5>
+                            <table>
+                                <tr>
+                                    <td><label>Texto:&nbsp;</label></td>
+                                    <td><input id="add_hashtag_text" type="text" class="span10" maxlength="140"></td>
+                                </tr>
+                                <tr>
+                                    <td><label>Cantidad:&nbsp;</label></td>
+                                    <td><input id="add_hashtag_qty" type="text" class="span4" value="0"></td>
+                                </tr>
+                                <tr>
+                                    <td><h5>Horario</h5></td><td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td><label>Hora de inicio: </label></td>
+                                    <td>
+                                        <input type="text" class="input-mini" id="add_hashtag_start_timepicker">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>Hora de fin: </label></td>
+                                    <td>
+                                        <input type="text" class="input-mini" id="add_hashtag_end_timepicker">
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="span5">
+
+                            <h5>Días de la semana</h5>
+                            <label class="checkbox"><input type="checkbox" id="add_hashtag_monday_check"> Lunes</label>
+                            <label class="checkbox"><input type="checkbox" id="add_hashtag_tuesday_check"> Martes</label>
+                            <label class="checkbox"><input type="checkbox" id="add_hashtag_wednesday_check"> Miércoles</label>
+                            <label class="checkbox"><input type="checkbox" id="add_hashtag_thursday_check"> Jueves</label>
+                            <label class="checkbox"><input type="checkbox" id="add_hashtag_friday_check"> Viernes</label>
+                            <label class="checkbox"><input type="checkbox" id="add_hashtag_saturday_check"> Sábado</label>
+                            <label class="checkbox"><input type="checkbox" id="add_hashtag_sunday_check"> Domingo</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_hashtag_btn">Guardar</button>
+                        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+                    </div>
+                </div> <!-- Add hashtag modal -->
+
+                <div id="delete_hashtag_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h3>
+                            Eliminar hashtag
+                        </h3>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="deleting_hashtag_id" value="">
+                        <p>
+                            Está seguro de que desea eliminar el hashtag seleccionado?
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+                        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_hashtag_confirmed">Sí, eliminar</button>
+                    </div>
+                </div> <!-- delete hashtag modal -->
+
+                <div id="reset_hashtag_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h3>
+                            Reiniciar hashtag
+                        </h3>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="resetting_hashtag_id" value="">
+                        <p>
+                            Está seguro de que desea reiniciar el contador del hashtag seleccionado?
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+                        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="reset_hashtag_confirmed">Sí, reiniciar</button>
+                    </div>
+                </div> <!-- reset hashtag modal -->
+            </div>
+        </div>
+
+        <div class="span6">
+
+        </div> <!-- end column -->
+
+    </div> <!-- end row-fluid -->
+
+    <div class="row-fluid">
+        <div class="span12"></div>
+    </div>
+    <br>
+    <br>
+    <a href="/">Volver al inicio</a>
+    <br>
+    <br>
+    <br>
+{% endblock %} <!-- endblock section_body -->
+
+{% block page_scripts %}
+
+<script type="text/javascript" src="{{ STATIC_URL }}js/hashtags/script.js"></script>
+
+{% endblock %}
+
+{% block modal_header %}
+    <!-- hola -->
+{% endblock %}
+
+{% block modal_body %}
+{% endblock %}
+
+{% block right_column %}
+{% endblock %}
