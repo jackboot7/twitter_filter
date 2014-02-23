@@ -266,6 +266,7 @@ import djcelery
 djcelery.setup_loader()
 
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+BROKER_POOL_LIMIT = 500
 CELERY_RESULT_BACKEND = "amqp"
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 CELERYD_CONCURRENCY = 4
