@@ -67,7 +67,7 @@
                     <table class="table" id="scheduled_post_list_table">
                         <thead>
                         <tr>
-                            <th>Mensaje</th><th>Hora y fecha</th><th>Eliminar</th>
+                            <th>Mensaje</th><th>Hora y fecha</th>
                         </tr>
                         </thead>
                         <tbody id="scheduled_post_list_tbody">
@@ -144,6 +144,26 @@
                         <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_scheduled_post_confirmed">Sí, eliminar</button>
                     </div>
                 </div> <!-- delete scheduled_post modal -->
+
+                <div id="send_now_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h3>
+                            Enviar ahora
+                        </h3>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="sending_now_tweet_id" value="">
+                        <p>
+                            El siguiente mensaje se publicará de manera inmediata:
+                        </p>
+                        <p><blockquote><span class="" id="sending_now_tweet_text"></span></blockquote></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+                        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="send_now_confirmed">Enviar</button>
+                    </div>
+                </div> <!-- send_now_post modal -->
             </div>
         </div>
 

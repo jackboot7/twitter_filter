@@ -60,12 +60,6 @@ class AuthCallbackView(View):
         chan.user = request.user
         chan.save()
 
-        #initializes streaming process
-        #task = tasks.stream_channel.delay(chan.screen_name)
-        #chan.streaming_task = task
-        chan.init_streaming()
-        chan.save()
-
         return HttpResponseRedirect(reverse("channel_added"))
 
 

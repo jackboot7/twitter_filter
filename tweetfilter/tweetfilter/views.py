@@ -19,4 +19,5 @@ class HomeView(LoginRequiredMixin, ListView):
         context = super(HomeView, self).get_context_data(**kwargs)
         context["channel_added"] = self.channel_added
         context["notification_list"] = Notification.objects.filter(recipient=self.request.user).order_by("-time")[0:7]
+        self.request.session.set_expiry(0)   # Session expires after browser is closed
         return context

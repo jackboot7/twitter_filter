@@ -10,6 +10,7 @@ from django.views.generic.base import View
 from django.views.generic.edit import DeleteView, UpdateView
 from apps.accounts.models import Channel
 from apps.scheduling.models import ScheduledTweet
+from apps.twitter.api import ChannelAPI
 
 logger = logging.getLogger('app')
 
@@ -153,6 +154,35 @@ class ScheduledTweetCreateView(CsrfExemptMixin, JSONResponseMixin,
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
+
+class ScheduledTweetSendView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, View):
+
+    def post_ajax(self, request, *args, **kwargs):
+        tweet_id = kwargs['pk']
+        tweet_obj = ScheduledTweet.objects.filter(id=tweet_id)[0]
+        channel = tweet_obj.channel
+        api = ChannelAPI(channel)
+        try:
+            api.tweet(tweet_obj.text)
+            response_data = {'result': "ok"}
+        except Exception, e:
+            if "duplicate" in e.args[0]:
+                msg = u"Este mensaje ya se ha enviado recientemente"
+            elif "update limit" in e.args[0]:
+                msg = u"El canal no puede publicar por razones de 'update limit'"
+            elif "unauthorized" in e.args[0]:
+                msg = u"La cuenta actual no está autorizada para publicar. " \
+                      u"Se recomienda revocar la aplicación desde twitter y volver a registrar el canal"
+            else:
+                msg = args[0]
+            response_data = {'result': "fail", 'error_msg': msg}
+            pass
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
 
 class ScheduledTweetDeleteView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DeleteView):
