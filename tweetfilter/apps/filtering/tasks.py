@@ -222,10 +222,10 @@ class ChannelStreamer(TwythonStreamer):
         self.connected = False
 
 
-@task(queue="streaming", ignore_result=True, default_retry_delay=60, max_retries=10)
+@task(queue="streaming", ignore_result=True, default_retry_delay=60, max_retries=15)
 def stream_channel(chan_id):
     chan = Channel.objects.get(screen_name=chan_id)
-    if cache.add("streaming_lock_%s" % chan.screen_name, "true", None): # Acquire lock
+    if cache.add("streaming_lock_%s" % chan.screen_name, "true", None):  # Acquire lock
         try:
             message = "Starting streaming for %s" % chan_id
             channel_log_info.delay(message, chan.screen_name)
@@ -233,13 +233,13 @@ def stream_channel(chan_id):
             stream.user(**{"with": "followings"})
             return True
         except Exception as e:
+            cache.delete("streaming_lock_%s" % chan.screen_name)   # release lock
             message = "Error starting streaming for %s. Will retry later: %s" % (chan_id, e)
             channel_log_exception.delay(message, chan.screen_name)
             stream_channel.retry(exc=e, chan_id=chan_id)
             return False
     else:
-        channel_log_warning.delay("Channel tried to start duplicate streaming process",
-            chan.screen_name)
+        channel_log_warning.delay("Channel tried to start duplicate streaming process", chan.screen_name)
 
 @task(queue="tweets", ignore_result=True)
 def store_tweet(data, channel_id):
