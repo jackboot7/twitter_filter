@@ -48,13 +48,13 @@ class Channel(models.Model):
     filters_enabled = models.BooleanField(default=True)
     scheduleblocks_enabled = models.BooleanField(default=True)
     blacklist_enabled = models.BooleanField(default=True)
+    prevent_update_limit = models.BooleanField(default=True)
 
     # Scheduling config
     scheduling_enabled = models.BooleanField(default=False)
 
     # Hashtags config
     hashtags_enabled = models.BooleanField(default=False)
-
 
     def delete(self):
         self.stop_streaming()
@@ -63,7 +63,6 @@ class Channel(models.Model):
             schedule.delete()
         super(Channel, self).delete()
 
-
     def get_last_update(self):
         try:
             update = Tweet.objects.filter(status=Tweet.STATUS_SENT, mention_to=self.screen_name).order_by('-id')[0]
@@ -71,12 +70,10 @@ class Channel(models.Model):
         except Exception, e:
             return None
 
-
     def activate(self):
         self.status = self.STATUS_ENABLED
         if self.init_streaming():
             self.save()
-
 
     def deactivate(self):
         self.status = self.STATUS_DISABLED
@@ -84,10 +81,8 @@ class Channel(models.Model):
         if self.stop_streaming():
             self.save()
 
-
     def is_active(self):
         return self.status == self.STATUS_ENABLED
-
 
     def switch_status(self):
         from apps.filtering.tasks import channel_log_error
@@ -118,7 +113,6 @@ class Channel(models.Model):
                 self.screen_name)
             return False
 
-
     def stop_streaming(self):
         from apps.filtering.tasks import channel_log_info, channel_log_exception
         from celery import current_app as app
@@ -137,7 +131,6 @@ class Channel(models.Model):
             channel_log_exception.delay(message, self.screen_name)
             return False
 
-
     def get_triggers(self):
         """
         Returns a list of this channel's trigger words
@@ -145,7 +138,6 @@ class Channel(models.Model):
         #triggers = Trigger.objects.filter(channel=self)
         #return triggers
         return self.trigger_set.all()
-
 
     def get_filters(self):
         """

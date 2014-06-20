@@ -14,6 +14,7 @@ urlpatterns = patterns('apps.filtering.views',
     url(r'switch_triggers/(?P<pk>\w+)', SwitchTriggersView.as_view()),
     url(r'switch_replacements/(?P<pk>\w+)', SwitchReplacementsView.as_view()),
     url(r'switch_filters/(?P<pk>\w+)', SwitchFiltersView.as_view()),
+    url(r'switch_update_limit/(?P<pk>\w+)', SwitchUpdateLimitView.as_view()),
 
     url(r'^timeblock/list/(?P<pk>\w+)', TimeBlockListView.as_view()),
     url(r'^timeblock/add/', TimeBlockCreateView.as_view()),
