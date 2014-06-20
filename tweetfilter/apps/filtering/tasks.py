@@ -389,6 +389,9 @@ def retweet(tweet, txt=None, applying_hashtag=None):
     if tweet is not None and tweet.status == Tweet.STATUS_APPROVED:
         channel = Channel.objects.get(screen_name=tweet.mention_to)
 
+        if not channel.prevent_update_limit:
+            DELAY_DELTA = 0
+            
         if txt is None:
             txt = tweet.strip_channel_mention()
 

@@ -344,6 +344,33 @@ class SwitchReplacementDMView(CsrfExemptMixin, JSONResponseMixin,
             content_type="application/json")
 
 
+class SwitchUpdateLimitView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Enables or disables update limit prevention
+    """
+    model = Channel
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        try:
+            if obj.prevent_update_limit:
+                # disable
+                obj.prevent_update_limit = False
+                obj.save()
+            else:
+                # enable
+                obj.prevent_update_limit = True
+                obj.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            logger.exception("Error in SwitchUpdateLimitView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
 #==========================
 # Trigger words
 #==========================
