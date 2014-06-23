@@ -150,7 +150,7 @@ $(document).ready(function () {
         });
     });
 
-    $("#activate_prevent_update_limit").change(function () {
+    $("#activate_prevent_update_limit_check").change(function () {
         $.post("/filtering/switch_update_limit/" + $('#current_channel').val(), function (data) {
             // dar feedback?
         });

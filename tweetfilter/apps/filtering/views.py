@@ -39,7 +39,8 @@ class CheckStatusView(JSONResponseMixin, AjaxResponseMixin, DetailView):
                          'blacklist':  obj.blacklist_enabled,
                          'triggers': obj.triggers_enabled,
                          'replacements': obj.replacements_enabled,
-                         'filters': obj.filters_enabled
+                         'filters': obj.filters_enabled,
+                         'prevent_update_limit': obj.prevent_update_limit
         }
 
         return HttpResponse(json.dumps(response_data),
