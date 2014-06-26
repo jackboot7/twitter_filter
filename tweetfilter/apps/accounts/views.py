@@ -9,7 +9,6 @@ from django.http.response import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView
 from django.views.generic.base import View
 from django.views.generic.edit import DeleteView
-
 from twython.api import Twython
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin
 

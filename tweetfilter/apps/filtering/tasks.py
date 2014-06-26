@@ -3,13 +3,11 @@
 import datetime
 import logging
 from random import randint
+from exceptions import Exception
 
 from celery._state import current_task
 from celery import task
-
-from exceptions import Exception
 from celery.signals import task_revoked, task_failure, celeryd_after_setup, celeryd_init, worker_init, worker_shutdown
-
 from django.conf import settings
 from django.core.cache import cache
 from twython.streaming.api import TwythonStreamer
@@ -40,6 +38,7 @@ TASK_EXPIRES = 900  # 15 min expiry
 ##################################
 # Logging tasks
 ##################################
+
 @task(queue="logging", ignore_result=True)
 def channel_log(message, level, channel_id):
     logger = logging.LoggerAdapter(logging.getLogger("twitter"), {
@@ -47,6 +46,7 @@ def channel_log(message, level, channel_id):
     })
     logger.log(level=level, msg=message)
     return
+
 
 @task(queue="logging", ignore_result=True)
 def channel_log_debug(message, channel_id):
@@ -56,6 +56,7 @@ def channel_log_debug(message, channel_id):
     logger.debug(message)
     return
 
+
 @task(queue="logging", ignore_result=True)
 def channel_log_info(message, channel_id):
     logger = logging.LoggerAdapter(logging.getLogger("twitter"), {
@@ -63,6 +64,7 @@ def channel_log_info(message, channel_id):
     })
     logger.info(message)
     return
+
 
 @task(queue="logging", ignore_result=True)
 def channel_log_warning(message, channel_id):
@@ -72,6 +74,7 @@ def channel_log_warning(message, channel_id):
     logger.warning(message)
     return
 
+
 @task(queue="logging", ignore_result=True)
 def channel_log_exception(message, channel_id):
     logger = logging.LoggerAdapter(logging.getLogger("twitter"), {
@@ -79,6 +82,7 @@ def channel_log_exception(message, channel_id):
     })
     logger.error(message)
     return
+
 
 @task(queue="logging", ignore_result=True)
 def channel_log_error(message, channel_id):
@@ -138,11 +142,11 @@ class RetweetDelayedTask(DelayedTask):
 
                 return self.run(*args, **kwargs)    # Does nothing
 
-
     def set_channel_id(self, id):
         self.screen_name = id
 
     def calculate_eta(self, tweet_type):
+        """ Given a tweet type, it calculates the seconds until an available schedule block is found """
         blocks = ChannelScheduleBlock.objects.filter(channel=self.screen_name)
         eta = datetime.datetime.max
         #eta = blocks[0].next_datetime()
@@ -187,6 +191,7 @@ class ChannelStreamer(TwythonStreamer):
         self.handle_data(data)
 
     def handle_data(self, data):
+        """ calls the subtask chain for mentions and DMs received by the stream """
         if 'text' in data:
             for mention in data['entities']['user_mentions']:
                 if self.channel.screen_name.lower() == mention['screen_name'].lower():
@@ -224,6 +229,7 @@ class ChannelStreamer(TwythonStreamer):
 
 @task(queue="streaming", ignore_result=True, default_retry_delay=60, max_retries=None)
 def stream_channel(chan_id):
+    """ This task initializes a channel streaming process, if it isn't active yet (uses cache lock to verify) """
     chan = Channel.objects.get(screen_name=chan_id)
     if cache.add("streaming_lock_%s" % chan.screen_name, "true", None):  # Acquire lock
         try:
@@ -244,6 +250,7 @@ def stream_channel(chan_id):
 
 @task(queue="tweets", ignore_result=True)
 def store_tweet(data, channel_id):
+    """ Stores tweet in database, and creates a Tweet instance to be handled by all other tasks """
     import HTMLParser
     html = HTMLParser.HTMLParser()
 
@@ -274,9 +281,8 @@ def store_tweet(data, channel_id):
                     tweet.save()
                     channel_log_info.delay(tweet.__unicode__(), channel_id)
         else:
-            # should we handle the rest of the tweets?
-            # Maybe store them for future use.
             return None
+
         if cache.get('%s_limit_waiting' % tweet.mention_to) is not None:
             tweet.status = Tweet.STATUS_NOT_SENT
             tweet.save()
@@ -291,6 +297,7 @@ def store_tweet(data, channel_id):
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
 def triggers_filter(tweet):
+    """ Checks if tweet has any trigger in it. If not, FilterNotPassed exception is raised """
     if tweet is not None:
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
 
@@ -321,6 +328,7 @@ def triggers_filter(tweet):
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
 def is_user_allowed(tweet):
+    """ Checks if user is blacklisted before retweeting """
     if tweet is not None:
         from_user = tweet.screen_name
         channel = Channel.objects.get(screen_name=tweet.mention_to)
@@ -351,6 +359,7 @@ def is_user_allowed(tweet):
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
 def banned_words_filter(tweet):
+    """ Checks if there's any banned word in tweet content. If so, FilterNotPassed exception is raised """
     if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
         # if feature is disabled, pass the tweet
@@ -379,11 +388,16 @@ def banned_words_filter(tweet):
 
 @task(queue="tweets", base=RetweetDelayedTask, ignore_result=True, expires=TASK_EXPIRES)
 def delay_retweet(tweet):
+    """ Delays tweet until next available schedule. Responsible code is in RetweetDelayedTask class """
     pass
 
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES)
 def retweet(tweet, txt=None, applying_hashtag=None):
+    """ 
+    If tweet is approved, applies replacements and hashtags. Then it schedules tweeting DELAY_DELTA seconds 
+    after last tweet. This is to prevent update limit events
+    """
     LOCK_EXPIRE = 60 * 5    # Lock expires in 5 minutes
     DELAY_DELTA = 90        # allows updating status each minute per channel
 
@@ -423,7 +437,6 @@ def retweet(tweet, txt=None, applying_hashtag=None):
             try:
                 last = cache.get('%s_last_tweet' % channel.screen_name)
                 now = datetime.datetime.now()
-                #print "now = %s" % now     # correct
 
                 if last is not None and (now - last).total_seconds() < DELAY_DELTA:
                     # if it's not first tweet and last tweet is recent, delay.
@@ -455,6 +468,7 @@ def retweet(tweet, txt=None, applying_hashtag=None):
 
 @task(queue="tweets", ignore_result=True, expires=TASK_EXPIRES, max_retries=3)
 def update_status(channel_id, tweet, txt, hashtag=None):
+    """ sends processed tweet to the timeline """
     channel = Channel.objects.get(screen_name=channel_id)
     try:
         update_limit = cache.get('%s_limit_waiting' % channel.screen_name)
@@ -524,6 +538,7 @@ def update_status(channel_id, tweet, txt, hashtag=None):
 
 @worker_init.connect
 def worker_init_handler(sender=None, **kwargs):
+    """ initializes all streaming processes when streaming worker starts """
     if "streaming" in sender.app.amqp.queues:
         print "Streaming worker initialized."
         channels = Channel.objects.all()
@@ -534,25 +549,12 @@ def worker_init_handler(sender=None, **kwargs):
                 chan.stop_streaming()
 
 
-"""
-@task_revoked.connect
-def task_revoked_handler(sender=None, terminated=None, signum=None, expired=None, **kwargs):
-    print "TASK REVOKED:"
-    print "sender = %s" % sender
-    print "terminated = %s" % terminated
-    print "signum = %s" % signum
-    print "expired = %s" % expired
-    print "kwargs = %s" % kwargs
-"""
-
 @worker_shutdown.connect
 def worker_shutdown_handler(sender=None, **kwargs):
-    """
-    Releases all streaming locks before shutting down
-    """
+    """ releases all streaming locks before shutting down """
     if "streaming" in sender.app.amqp.queues:
         print "Streaming worker shutting down..."
         channels = Channel.objects.all()
         for chan in channels:
             chan.stop_streaming()
-            cache.delete("streaming_lock_%s" % chan.screen_name)    # release lock
+            cache.delete("streaming_lock_%s" % chan.screen_name)

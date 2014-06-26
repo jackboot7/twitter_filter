@@ -1,16 +1,20 @@
 import json
 import logging
-from braces.views import JSONResponseMixin, AjaxResponseMixin, CsrfExemptMixin, LoginRequiredMixin
 import datetime
+
+from braces.views import JSONResponseMixin, AjaxResponseMixin, CsrfExemptMixin, LoginRequiredMixin
 from django.forms.models import model_to_dict
 from django.http.response import HttpResponse
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView, DeleteView
+
 from apps.accounts.models import Channel
 from apps.hashtags.models import HashtagAdvertisement
 
+
 logger = logging.getLogger('app')
+
 
 class HashtagsDetailView(LoginRequiredMixin, DetailView):
     model = Channel
