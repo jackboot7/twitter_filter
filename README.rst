@@ -14,11 +14,11 @@ tareas simultáneas de manera asíncrona y controlada.
 .. contents:: Contenido
    :depth: 2
 
+
 Proyecto Django
 ---------------
 
-Para la interfaz web de la aplicación se utilizó el framework Django_ (versión 1.5.5). Mediante esta aplicación el usuario puede
-registrar y configurar las funcionalidades de cada canal.
+Para la interfaz web de la aplicación se utilizó el framework Django_ (versión 1.5.5). Mediante esta aplicación el usuario puede registrar y configurar las funcionalidades de cada canal.
 
 .. _Django: https://www.djangoproject.com/
 
@@ -32,6 +32,7 @@ El proyecto consta de los siguientes módulos
 * **notifications**: notificaciones dentro del sistema.
 * **scheduling**: módulo de tweets programados.
 * **twitter**: interfaz con el API de twitter.
+
 
 API de Twitter
 --------------
@@ -48,6 +49,7 @@ de facilitar todos los procesos de conexión con Twitter.
 .. _update: https://dev.twitter.com/docs/api/1.1/post/statuses/update
 .. _Twython: https://github.com/ryanmcgrath/twython
 
+
 Celery
 ------
 
@@ -63,6 +65,7 @@ Se puede instalar desde este enlace_, o directamente usando pip:
 
 .. _enlace: https://pypi.python.org/pypi/celery/
 
+
 Django-Celery
 ~~~~~~~~~~~~~
 
@@ -73,6 +76,7 @@ lo cual es necesario para la funcionalidad de *tweets programados*.
 Para instalar django-celery, seguir las instrucciones_ en la documentación oficial del paquete.
 
 .. _instrucciones: https://pypi.python.org/pypi/django-celery
+
 
 RabbitMQ
 ~~~~~~~~
@@ -277,8 +281,109 @@ encontrados con la configuración por defecto (multiprocessing):
 
 	$ python manage.py celery worker --pool=gevent --autoscale=300,20 -Q tweets,scheduling,notifications 
 	--hostname celery-worker1
-	
-Configuración del servidor
---------------------------
 
-...
+
+======================
+Información de soporte
+======================
+
+La siguiente información está destinada al manejo de configuraciones y procesos del lado de servidor, para monitoreo o desarrollo posterior.
+
+Por motivos de confidencialidad, los usuarios y contraseñas correspondientes a los distintos servicios se han entregado en un documento aparte a quien sea responsable de  
+
+Amazon AWS
+----------
+
+Actualmente la aplicación está corriendo en un servidor provisto por el servicio AWS de Amazon. Para entrar en el panel de configuración, debe ingresarse el usuario y clave correspondiente en la dirección http://aws.amazon.com/es
+
+Esto permite el manejo de los parámetros del servicio AWS, como capacidad de cómputo de los servidores, y la posibilidad de suscripción a otros servicios de Amazon. También provee el acceso a una interfaz de monitoreo de actividad del servidor.
+
+
+Arquitectura de sistema
+-----------------------
+
+La plataforma que sostiene la operatividad de la aplicación de Canales de Twitter consiste en una serie de servicios fundamentales ejecutándose en el servidor:
+
+* Nginx
+* uWSGI
+* Supervisor
+
+
+Nginx
+~~~~~
+
+Nginx es el servicio que recibe las solicitudes HTTP y sirve los archivos estáticos (imágenes, archivos de estilo, etc). La página oficial de nginx se encuentra en nginx.org.
+
+Para reiniciar, detener o iniciar el servicio de nginx, se ejecuta el siguiente script, con la opción correspondiente a la acción deseada (``restart``, ``stop`` o ``start``):
+
+.. code-block:: bash
+
+	sudo /etc/init.d/nginx (restart|stop|start)
+
+
+Los parámetros de configuración de nginx están definidos en ``tweet_filter/server_config/nginx.conf``.
+
+
+uWSGI 
+~~~~~
+
+uWSGI es el servicio encargado de ejecutar la aplicación Django, y se integra con nginx para dar acceso externo a la aplicación. 
+
+En `esta página <http://uwsgi-docs.readthedocs.org/en/latest/tutorials/Django_and_nginx.html>` puede verse una documentación acerca de cómo poner en funcionamiento un proyecto django usando nginx y uwsgi.
+
+Los parámetros de configuración de uWSGI están definidos en ``tweet_filter/server_config/marcaonline.ini``.
+
+
+Supervisor
+~~~~~~~~~~
+
+Supervisor es un sistema de control de procesos, y es el servicio que se encarga de mantener activos todos los servicios fundamentales, como los workers de celery y el servidor de aplicación uWSGI.
+
+Para saber el estado de los procesos manejados por supervisor, se ejecuta la siguiente instrucción:
+
+.. code-block:: bash
+
+	$ sudo supervisorctl status
+
+
+Para iniciar o detener algún servicio en particular, se ejecuta:
+
+.. code-block:: bash
+
+	$ sudo supervisorctl (stop|start) (<nombre_servicio>|all)
+
+
+Los parámetros para su configuración se encuentran en ``tweet_filter/server_config/supervisor.conf``, esto incluye cada servicio disponible para su manejo.
+
+Supervisor se encargará de mantener activos todos los servicios, y restablecer los mismos en caso de falla.
+
+Cuando se efectúan cambios en la configuración de supervisor, éste debe reiniciarse con los siguientes comandos:
+
+.. code-block:: bash
+
+	sudo supervisorctl reread
+	sudo supervisorctl update
+
+
+Para reiniciar la aplicación por completo, se recomienda no sólo detener los servicios mediante supervisor, sino también hacer un *flush* de la cache (memcache) y detener todos los procesos python que queden aún ejecutándose. La secuencia sería la siguiente:
+
+.. code-block:: bash
+
+	sudo supervisorctl stop all
+	sudo pkill python
+	echo 'flush_all' | netcat localhost 11211
+	sudo supervisorctl start all
+
+
+Logging
+-------
+
+Todos los eventos relevantes a la funcionalidad de la aplicación son registrados en el log ubicado en ``tweet_filter/server_logs/dev/twitter-all.log``. En este archivo se registra cada tweet de entrada por canal y el resultado del proceso de filtrado (tweet bloqueado o enviado exitosamente). Para monitorear el log en tiempo real, se puede usar la herramienta ``tail`` de unix, posiblemente filtrando con ``egrep``:
+
+.. code-block:: bash
+
+	$ tail -f twitter-all.log | egrep "trafficMIRANDA"
+
+Pueden encontrarse en el mismo directorio de logs, otras bitácoras concernientes al funcionamiento de celery, útiles en caso de falla.
+
+La configuración de logging se encuentra en el archivo principal de configuración del proyecto django (``tweet_filter/tweetfilter/tweetfilter/settings/common.py``). Para entender el mecanismo de bitácoras de django, debe referirse a la `documentación oficial <https://docs.djangoproject.com/en/dev/topics/logging/>`.
