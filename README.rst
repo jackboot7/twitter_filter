@@ -321,7 +321,7 @@ Para reiniciar, detener o iniciar el servicio de nginx, se ejecuta el siguiente 
 	sudo /etc/init.d/nginx (restart|stop|start)
 
 
-Los parámetros de configuración de nginx están definidos en ``tweet_filter/server_config/nginx.conf``.
+Los parámetros de configuración de nginx están definidos en "tweet_filter/server_config/nginx.conf".
 
 
 uWSGI 
@@ -329,9 +329,9 @@ uWSGI
 
 uWSGI es el servicio encargado de ejecutar la aplicación Django, y se integra con nginx para dar acceso externo a la aplicación. 
 
-En `esta página <http://uwsgi-docs.readthedocs.org/en/latest/tutorials/Django_and_nginx.html>` puede verse una documentación acerca de cómo poner en funcionamiento un proyecto django usando nginx y uwsgi.
+En `esta página <http://uwsgi-docs.readthedocs.org/en/latest/tutorials/Django_and_nginx.html>`_ puede verse una documentación acerca de cómo poner en funcionamiento un proyecto django usando nginx y uwsgi.
 
-Los parámetros de configuración de uWSGI están definidos en ``tweet_filter/server_config/marcaonline.ini``.
+Los parámetros de configuración de uWSGI están definidos en "tweet_filter/server_config/marcaonline.ini".
 
 
 Supervisor
@@ -353,7 +353,7 @@ Para iniciar o detener algún servicio en particular, se ejecuta:
 	$ sudo supervisorctl (stop|start) (<nombre_servicio>|all)
 
 
-Los parámetros para su configuración se encuentran en ``tweet_filter/server_config/supervisor.conf``, esto incluye cada servicio disponible para su manejo.
+Los parámetros para su configuración se encuentran en "tweet_filter/server_config/supervisor.conf", esto incluye cada servicio disponible para su manejo.
 
 Supervisor se encargará de mantener activos todos los servicios, y restablecer los mismos en caso de falla.
 
@@ -378,7 +378,7 @@ Para reiniciar la aplicación por completo, se recomienda no sólo detener los ser
 Logging
 -------
 
-Todos los eventos relevantes a la funcionalidad de la aplicación son registrados en el log ubicado en ``tweet_filter/server_logs/dev/twitter-all.log``. En este archivo se registra cada tweet de entrada por canal y el resultado del proceso de filtrado (tweet bloqueado o enviado exitosamente). Para monitorear el log en tiempo real, se puede usar la herramienta ``tail`` de unix, posiblemente filtrando con ``egrep``:
+Todos los eventos relevantes a la funcionalidad de la aplicación son registrados en el log ubicado en "tweet_filter/server_logs/dev/twitter-all.log". En este archivo se registra cada tweet de entrada por canal y el resultado del proceso de filtrado (tweet bloqueado o enviado exitosamente). Para monitorear el log en tiempo real, se puede usar la herramienta ``tail`` de unix, posiblemente filtrando con ``egrep``:
 
 .. code-block:: bash
 
@@ -386,4 +386,4 @@ Todos los eventos relevantes a la funcionalidad de la aplicación son registrados
 
 Pueden encontrarse en el mismo directorio de logs, otras bitácoras concernientes al funcionamiento de celery, útiles en caso de falla.
 
-La configuración de logging se encuentra en el archivo principal de configuración del proyecto django (``tweet_filter/tweetfilter/tweetfilter/settings/common.py``). Para entender el mecanismo de bitácoras de django, debe referirse a la `documentación oficial <https://docs.djangoproject.com/en/dev/topics/logging/>`.
+La configuración de logging se encuentra en el archivo principal de configuración del proyecto django ("tweet_filter/tweetfilter/tweetfilter/settings/common.py"). Para entender el mecanismo de bitácoras de django, debe referirse a la `documentación oficial <https://docs.djangoproject.com/en/dev/topics/logging/>`_.
