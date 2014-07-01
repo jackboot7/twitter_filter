@@ -32,8 +32,8 @@ banned_words_filter -->
 delay_retweet -->
 retweet -->
 update_status
-
 """
+
 TASK_EXPIRES = 900  # 15 min expiry
 
 
