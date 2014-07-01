@@ -269,40 +269,63 @@ Se encarga de la cola de logging, para escritura en los archivos de bitácora:
 	$ python manage.py celery worker --concurrency=1 -Q logging --hostname logging-worker1
 	
 
-``celery-worker1``
-..................
+``celery-schedule``
+...................
 
-Se encarga de ejecutar las tareas en las colas *tweets*, *scheduling* y *notifications*. 
-Este worker utiliza *gevent*, que es una biblioteca para el manejo de concurrencia en python. 
-Se requiere el uso de esta biblioteca como medida de optimización, y para evitar problemas de concurrencia 
-encontrados con la configuración por defecto (multiprocessing):
+Se encarga de atender las colas scheduling y notifications, para tweets programados y notificaciones, respectivamente.
 
 .. code-block:: bash
 
-	$ python manage.py celery worker --pool=gevent --autoscale=300,20 -Q tweets,scheduling,notifications 
-	--hostname celery-worker1
+    $ python manage.py celery worker --pool=gevent --autoscale=100,1 -Q scheduling,notifications --hostname celery-schedule
+
+Workers para tareas de filtrado y tweets
+........................................
+
+Actualmente se ejecutan 6 workers para atender la cola de tweets, para garantizar un flujo constante en la resolución 
+de estas tareas. Todos se invocan con una configuración como la siguiente:
+
+.. code-block:: bash
+
+	$ python manage.py celery worker --loglevel=ERROR --pool=gevent --autoscale=500,1 -Q tweets --hostname celery-worker1
+
+Estos workers utilizan `gevent <http://www.gevent.org/>`_, que es una biblioteca para el manejo de concurrencia en python. 
+Se requiere el uso de esta biblioteca como medida de optimización, y para evitar problemas de concurrencia 
+encontrados con la configuración por defecto (multiprocessing). El parámetro "loglevel" define qué nivel de mensajes se
+registran en la bitácora, actualmente se admiten únicamente errores, para evitar el crecimiento desmedido de los 
+archivos de log.
+
+Según la documentación de Celery, el número de workers óptimo debe ser no más del doble de núcleos de procesamiento de
+la máquina que hospeda el servicio. Para el momento de la redacción de este documento, el servidor cuenta con 4 núcleos.
+Es importante tomar en cuenta este factor en caso de hacer un cambio en la plataforma de hardware. La mayoría de los
+casos, las optimizaciones a realizarse consisten en la configuración de estos workers.
 
 
 ======================
 Información de soporte
 ======================
 
-La siguiente información está destinada al manejo de configuraciones y procesos del lado de servidor, para monitoreo o desarrollo posterior.
+La siguiente información está destinada al manejo de configuraciones y procesos del lado de servidor, para monitoreo 
+o desarrollo posterior.
 
-Por motivos de confidencialidad, los usuarios y contraseñas correspondientes a los distintos servicios se han entregado en un documento aparte a quien sea responsable de  
+Por motivos de confidencialidad, los usuarios y contraseñas correspondientes a los distintos servicios se han 
+entregado en un documento aparte a quien sea responsable del soporte de sistema.
 
 Amazon AWS
 ----------
 
-Actualmente la aplicación está corriendo en un servidor provisto por el servicio AWS de Amazon. Para entrar en el panel de configuración, debe ingresarse el usuario y clave correspondiente en la dirección http://aws.amazon.com/es
+Actualmente la aplicación está corriendo en un servidor provisto por el servicio AWS de Amazon. Para entrar en el 
+panel de configuración, debe ingresarse el usuario y clave correspondiente en la dirección http://aws.amazon.com/es .
 
-Esto permite el manejo de los parámetros del servicio AWS, como capacidad de cómputo de los servidores, y la posibilidad de suscripción a otros servicios de Amazon. También provee el acceso a una interfaz de monitoreo de actividad del servidor.
+Esto permite el manejo de los parámetros del servicio AWS, como capacidad de cómputo de los servidores, y la 
+posibilidad de suscripción a otros servicios de Amazon. También provee el acceso a una interfaz de monitoreo de 
+actividad del servidor.
 
 
 Arquitectura de sistema
 -----------------------
 
-La plataforma que sostiene la operatividad de la aplicación de Canales de Twitter consiste en una serie de servicios fundamentales ejecutándose en el servidor:
+La plataforma que sostiene la operatividad de la aplicación de Canales de Twitter consiste en los siguientes 
+servicios fundamentales:
 
 * Nginx
 * uWSGI
@@ -312,9 +335,11 @@ La plataforma que sostiene la operatividad de la aplicación de Canales de Twitte
 Nginx
 ~~~~~
 
-Nginx es el servicio que recibe las solicitudes HTTP y sirve los archivos estáticos (imágenes, archivos de estilo, etc). La página oficial de nginx se encuentra en nginx.org.
+Nginx es el servicio que recibe las solicitudes HTTP y sirve los archivos estáticos (imágenes, archivos de estilo, 
+etc). La página oficial de nginx se encuentra en nginx.org.
 
-Para reiniciar, detener o iniciar el servicio de nginx, se ejecuta el siguiente script, con la opción correspondiente a la acción deseada (``restart``, ``stop`` o ``start``):
+Para reiniciar, detener o iniciar el servicio de nginx, se ejecuta el siguiente script, con la opción 
+correspondiente a la acción deseada (``restart``, ``stop`` o ``start``):
 
 .. code-block:: bash
 
@@ -327,9 +352,11 @@ Los parámetros de configuración de nginx están definidos en "tweet_filter/server
 uWSGI 
 ~~~~~
 
-uWSGI es el servicio encargado de ejecutar la aplicación Django, y se integra con nginx para dar acceso externo a la aplicación. 
+uWSGI es el servicio encargado de ejecutar la aplicación Django, y se integra con nginx para dar acceso externo a 
+la aplicación. 
 
-En `esta página <http://uwsgi-docs.readthedocs.org/en/latest/tutorials/Django_and_nginx.html>`_ puede verse una documentación acerca de cómo poner en funcionamiento un proyecto django usando nginx y uwsgi.
+En `esta página <http://uwsgi-docs.readthedocs.org/en/latest/tutorials/Django_and_nginx.html>`_ puede verse una 
+documentación acerca de cómo poner en funcionamiento un proyecto django usando nginx y uwsgi.
 
 Los parámetros de configuración de uWSGI están definidos en "tweet_filter/server_config/marcaonline.ini".
 
@@ -337,7 +364,8 @@ Los parámetros de configuración de uWSGI están definidos en "tweet_filter/server
 Supervisor
 ~~~~~~~~~~
 
-Supervisor es un sistema de control de procesos, y es el servicio que se encarga de mantener activos todos los servicios fundamentales, como los workers de celery y el servidor de aplicación uWSGI.
+Supervisor es un sistema de control de procesos, y es el servicio que se encarga de mantener activos todos los 
+servicios básicos, como los workers de celery y el servidor de aplicación uWSGI.
 
 Para saber el estado de los procesos manejados por supervisor, se ejecuta la siguiente instrucción:
 
@@ -353,7 +381,8 @@ Para iniciar o detener algún servicio en particular, se ejecuta:
 	$ sudo supervisorctl (stop|start) (<nombre_servicio>|all)
 
 
-Los parámetros para su configuración se encuentran en "tweet_filter/server_config/supervisor.conf", esto incluye cada servicio disponible para su manejo.
+Los parámetros para su configuración se encuentran en "tweet_filter/server_config/supervisor.conf", esto incluye 
+cada servicio disponible para su manejo.
 
 Supervisor se encargará de mantener activos todos los servicios, y restablecer los mismos en caso de falla.
 
@@ -365,7 +394,9 @@ Cuando se efectúan cambios en la configuración de supervisor, éste debe reinicia
 	sudo supervisorctl update
 
 
-Para reiniciar la aplicación por completo, se recomienda no sólo detener los servicios mediante supervisor, sino también hacer un *flush* de la cache (memcache) y detener todos los procesos python que queden aún ejecutándose. La secuencia sería la siguiente:
+Para reiniciar la aplicación por completo, se recomienda no sólo detener los servicios mediante supervisor, sino 
+también hacer un *flush* de la cache (memcache) y detener todos los procesos python que queden aún ejecutándose. 
+La secuencia sería la siguiente:
 
 .. code-block:: bash
 
@@ -378,12 +409,18 @@ Para reiniciar la aplicación por completo, se recomienda no sólo detener los ser
 Logging
 -------
 
-Todos los eventos relevantes a la funcionalidad de la aplicación son registrados en el log ubicado en "tweet_filter/server_logs/dev/twitter-all.log". En este archivo se registra cada tweet de entrada por canal y el resultado del proceso de filtrado (tweet bloqueado o enviado exitosamente). Para monitorear el log en tiempo real, se puede usar la herramienta ``tail`` de unix, posiblemente filtrando con ``egrep``:
+Todos los eventos relevantes a la funcionalidad de la aplicación son registrados en el log ubicado en 
+"tweet_filter/server_logs/dev/twitter-all.log". En este archivo se registra cada tweet de entrada por canal 
+y el resultado del proceso de filtrado (tweet bloqueado o enviado exitosamente). Para monitorear el log en 
+tiempo real, se puede usar la herramienta ``tail`` de unix, posiblemente filtrando con ``egrep``:
 
 .. code-block:: bash
 
 	$ tail -f twitter-all.log | egrep "trafficMIRANDA"
 
-Pueden encontrarse en el mismo directorio de logs, otras bitácoras concernientes al funcionamiento de celery, útiles en caso de falla.
+Pueden encontrarse en el mismo directorio de logs, otras bitácoras concernientes al funcionamiento de celery, 
+útiles en caso de falla.
 
-La configuración de logging se encuentra en el archivo principal de configuración del proyecto django ("tweet_filter/tweetfilter/tweetfilter/settings/common.py"). Para entender el mecanismo de bitácoras de django, debe referirse a la `documentación oficial <https://docs.djangoproject.com/en/dev/topics/logging/>`_.
+La configuración de logging se encuentra en el archivo principal de configuración del proyecto Django 
+("tweet_filter/tweetfilter/tweetfilter/settings/common.py"). Para entender el mecanismo de bitácoras de Django, 
+es necesario referirse a la `documentación oficial <https://docs.djangoproject.com/en/dev/topics/logging/>`_.
