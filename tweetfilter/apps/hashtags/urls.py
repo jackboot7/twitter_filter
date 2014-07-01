@@ -1,5 +1,7 @@
 from django.conf.urls import *
+
 from apps.hashtags.views import *
+
 
 urlpatterns = patterns('apps.hashtags.views',
 

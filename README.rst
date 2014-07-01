@@ -1,223 +1,389 @@
-============
-TO-DO
-============
+================================
+Aplicación de Canales de Twitter
+================================
 
-* Arreglar el problema del ETA en posteo automÃ¡tico.
-* Implementar la tarea de celery que realiza el posteo periodico (posteo programado)
-* Integrar modulo de usuarios.
-* Montar la aplicaciÃ³n en el servidor.
-* Migrar vistas basadas en funciones a basadas en clases.
-* Reestructurar cÃ³digo segÃºn el issue: #35
-* DocumentaciÃ³n de cÃ³digo/mÃ³dulos.
-* ImplementaciÃ³n de pruebas TDD de los mÃ³dulos existentes. 
-* Pruebas de bloqueo de usuarios.
-* Bloqueo de usuarios por lista negra manual.
-* Posteo programado.
-* Posteo automÃ¡tico en bloques de horario.
-* El registro/login + creaciÃ³n de colaboradores.
-* Montar aplicaciÃ³n para el servidor.
+La aplicación de *Canales de Twitter* permite asociar una o más cuentas de twitter, con el fin de proveer una serie de 
+funcionalidades como *retweets automáticos*, *tweets programados* e *inserción de hashtags*, entre otras.
 
-========
-TAREAS
-========
+El funcionamiento de la aplicación se basa principalmente en el uso de Celery_, el cual permite la ejecución de varias 
+tareas simultáneas de manera asíncrona y controlada.
 
-*16/08/2013*:
-
-    * *Carlos*: 
-        - Prueba de bloqueo de usuarios.
-        - Estabilizar el branch dev_carlos.
-        - Iniciar branch para posteo_programado.
-
-    * *Luis*:
-        - Pruebas de mÃ³dulo de usuarios.
-        - Merge con el branch dev_carlos.
-        - Revisar los problemas con el mÃ³dulo de posteo automÃ¡tico.
+.. _Celery: http://www.celeryproject.org/
 
 
-*19/08/2013*:
-
-    * *Carlos*: ImplementaciÃ³n de la tarea para posteo programado. (terminar el mÃ³dulo)
-    * *Luis*:   Resolver problema con el ETA. (terminar el mÃ³dulo)
+.. contents:: Contenido
+   :depth: 2
 
 
-*20/08/2013*:
+Proyecto Django
+---------------
 
-    * *Carlos*: Pruebas del mÃ³dulo de posteo programado.
-    * *Luis*:   Pruebas del mÃ³dulo de posteo automÃ¡tico.
-    * *AMBOS*:  MigraciÃ³n de vistas a funciones basadas en clases, agregar django-braces.
+Para la interfaz web de la aplicación se utilizó el framework Django_ (versión 1.5.5). Mediante esta aplicación el usuario puede registrar y configurar las funcionalidades de cada canal.
 
-*21/08/2013*:
-    
-    * *AMBOS*:  
-        - Merge del cÃ³digo + integraciÃ³n con el mÃ³dulo de usuarios.
-        - Montar aplicaciÃ³n en el servidor.
-
-*22/08/2013*:
-    
-    * *AMBOS*:  
-        - Montar aplicaciÃ³n en el servidor.
-        - Hacer cambios en el cÃ³digo para agregar documentaciÃ³n y mejorar el cÃ³digo.
+.. _Django: https://www.djangoproject.com/
 
 
-=========================================================
-Requerimientos AplicaciÃ³n de Canales de Twitter (Fase 1)
-=========================================================
--------------------------------------
-MÃ³dulos funcionales de la aplicaciÃ³n.
--------------------------------------
+El proyecto consta de los siguientes módulos
 
-* **GestiÃ³n de usuarios**: Se refiere al manejo de usuarios dentro de la aplicaciÃ³n. Debe ser posible definir 
-  distintos roles por usuario.
-
-* **Tweets por posteo automÃ¡tico** ('Posteo automÃ¡tico'): El sistema hace tweets automÃ¡ticamente basÃ¡ndose en un conjunto de 
-  reglas defininadas por el usuario. Esta configuraciÃ³n incluye filtros, bloqueo de usuarios/contenido, etc.
-
-* **Tweets por posteo programado** ('Parrilla de posteo'): Permite al usuario hacer la programaciÃ³n de un tweet para ser enviado luego.
-
-* **Tweets por posteo manual** ('Scanner'):
-
-* **GestiÃ³n de Followers**: GestiÃ³n automÃ¡tica de follows/unfollows; bÃºsqueda de followers por canal, 
-  ficha de cada follower.
-
-* **Notificaciones**: Notificaciones de la actividad del sitio.
-
-* **Reportes**: Reportes de cada funcionalidad de la aplicaciÃ³n.
-
-* **Dashboard**: PÃ¡gina de inicio por canal. Debe presentar informaciÃ³n resumida de los distintos mÃ³dulos de la aplicaciÃ³n.
+* **accounts**: manejo y autenticación de los canales.
+* **control**: funcionalidades de control de las tareas de celery.
+* **filtering**: módulo de retweets automáticos.
+* **hashtags**: módulo de inserción de hashtags.
+* **notifications**: notificaciones dentro del sistema.
+* **scheduling**: módulo de tweets programados.
+* **twitter**: interfaz con el API de twitter.
 
 
----------------------
-GestiÃ³n de Usuarios
----------------------
+API de Twitter
+--------------
 
-MÃ³dulo para el registro y gestiÃ³n de usuarios de la aplicaciÃ³n.
+El API (*Application Programming Interface*) de Twitter permite a los programadores invocar remotamente funciones de
+Twitter. En el caso de la aplicación de Canales de Twitter, se requiere abrir un stream_ de un usuario para escuchar 
+en tiempo real todos los mensajes que lleguen a su *timeline*, incluyendo los mensajes directos (DM). Luego de que 
+un tweet pasa por el proceso de filtrado, se invoca la función update_ para enviarlo (retweet automático).
 
-++++++++++++++++++
-Roles de usuario
-++++++++++++++++++
-Un usuario puede tener uno de los siguientes 3 roles:
+Para efectuar las conexiones al API, la aplicación utiliza Twython_, que es una biblioteca de twython que se encarga
+de facilitar todos los procesos de conexión con Twitter.
 
-    - Administrador: Administrador general de la aplicaciÃ³n, tiene acceso a todos los datos de todos los usuarios y canales definidos.
-      Usa la interfaz de adminstrador de Django, adaptada para su uso.
-
-    - Cliente: Cliente de la apicaciÃ³n. Define y registra canales, puede administrar toda la funcionalidad para el canal, ver reportes y notificaciones, y definir
-      usuarios colaboradores para esa cuenta. La cantidad de canales y funcionalidad dependerÃ¡ siempre del plan que haya comprado el cliente.
-
-    - Colaborador: Usuarios con vistas limitadas, son cuentas creadas por el Â«ClienteÂ». El Â«ClienteÂ» debe configurar quÃ© limitaciones tiene cada uno de sus colaboradores.
-      La cantidad de colaboraores de cada Â«ClienteÂ» dependerÃ¡ del plan que se haya comprado.
-
-++++++++++++++++++++++++++++++++++++++
-Requerimientos funcionales del mÃ³dulo
-++++++++++++++++++++++++++++++++++++++
-
-- Como `usuario`, quiero poder registrarme en el sistema.
-- Como `usuario`, puedo tener diferentes roles en la aplicaciÃ³n.
-- Como `usuario`, puedo acceder a distintas funcionalidades dependiendo de mi rol.
-- Como `usuario`, tengo un perfil bÃ¡sico en la aplicaciÃ³n el cual puedo visitar.
-- Como `usuario`, puedo actualizar datos en mi perfil.
-- Como `usuario`, puedo cambiar mi contraseÃ±a.
-
-- Como `Â«ClienteÂ»`, 
-    + puedo agregar uno (o mÃ¡s) cuentas de Twitter para ser gestionada desde la aplicaciÃ³n.
-    + puedo ver todos los mÃ³dulos funcionales de la aplicaciÃ³n.
-    + puedo configurar todos los mÃ³dulos funcionales de la aplicaciÃ³n.
-    + puedo agregar colaboradores con su direcciÃ³n de correo/contraseÃ±a.
-    + puedo ver el perfil y la actividad en la aplicaciÃ³n de cada uno de mis colaboradores.
-    + puedo configurar los mÃ³dulos con los que cada Â«ColaboradorÂ» puede interactuar.
-
-- Como `Â«ColaboradorÂ»`, tengo acceso a los mÃ³dulos definidos por el `Â«ClienteÂ»` para mi.
-
-- Como `Â«AdministradorÂ»`,
-    + tengo acceso total a las distintos mÃ³dulos de la aplicaciÃ³n.
+.. _stream: https://dev.twitter.com/docs/streaming-apis/streams/user
+.. _update: https://dev.twitter.com/docs/api/1.1/post/statuses/update
+.. _Twython: https://github.com/ryanmcgrath/twython
 
 
--------------------------------
-Tweets por posteo automÃ¡tico
--------------------------------
-Se define un mÃ³dulo de posteo automÃ¡tico `por canal`.
+Celery
+------
 
-Este mÃ³dulo define una funcionalidad de bloqueo automÃ¡tico de tweets basado en las siguientes condiciones:
+Celery es una plataforma de gestión automatizada de colas de tareas. La ejecución de dichas tareas se realiza
+de manera asíncrona y concurrente.
 
-    - El tweet contiene palabras en la lista de filtros.
-    - El tweet es repetido.
-    - El contenido del tweet se puede identificar como spam (Â¿?)
+Se puede instalar desde este enlace_, o directamente usando pip:
 
-Este mÃ³dulo puede bloquear automÃ¡ticamente followers del canal basado en las siguientes condiciones:
+.. code-block:: bash
 
-    - El follower del canal envÃ­a mensaje en rÃ¡faga/spam.
-    - El follower se encuentra en una lista de bots.
+    $ pip install celery
+	
 
-El mÃ³dulo puede modificar el contenido de los tweets antes del RT:
-
-    - Solo se permitirÃ¡ la primera palabra de una frase en mayÃºsculas.
-    - Si una palabra (o frase) estÃ¡ en la lista de equivalentes, se harÃ¡ el cambio correspondiente.
-
-++++++++++++++++++++++++++++++++++++++
-Requerimientos funcionales del mÃ³dulo
-++++++++++++++++++++++++++++++++++++++
-
-- Como `usuario`, puedo agregar palabras a la lista de disparadores del canal.
-- Como `usuario`, puedo agregar palabras a la lista de filtradas del canal.
-- Como `usuario`, puedo agregar pares de palabras (o frases) en una lista de "equivalentes".
-- Como `usuario`, puedo agregar palabras a una lista de palabras para enfatizar.
-    + El Ã©nfasis se hace colocando la palabra en mayÃºsculas y entre tres parÃ©ntesis.
-- 
+.. _enlace: https://pypi.python.org/pypi/celery/
 
 
+Django-Celery
+~~~~~~~~~~~~~
 
--------------------------------
-Tweets por posteo programado
--------------------------------
-Se define un mÃ³dulo de posteo programado `por canal`. Se puede programar un tweet para ser enviado
-a futuro, en una fecha/hora especÃ­fica, o de manera cÃ­clica (ej. todos los jueves a las 3 p.m.)
+A partir de la versión 3.1 de Celery, no es requerido el paquete *django-celery* para integrar Celery con el 
+framework Django. Sin embargo, es necesario para poder manipular directamente la base de datos de tareas periódicas,
+lo cual es necesario para la funcionalidad de *tweets programados*.
 
-Este mÃ³dulo estÃ¡ disponible para el `Â«ClienteÂ»`  y para los `Â«ColaboradoresÂ»` que Ã©ste elija.
+Para instalar django-celery, seguir las instrucciones_ en la documentación oficial del paquete.
 
-
-++++++++++++++++++++++++++++++++++++++
-Requerimientos funcionales del mÃ³dulo
-++++++++++++++++++++++++++++++++++++++
-
-- Como `Â«ClienteÂ»`, puedo definir bloques de tiempo a nivel general por aplicaciÃ³n.
-- Como `Â«ClienteÂ»`, puedo editar o eliminar bloques de tiempo definidos anteriormente.
-- Como `Â«ClienteÂ»`, puedo activar o desactivar bloques de tiempo para un canal especÃ­fico.
-- Como `usuario`, puedo agregar un tweet para ser enviado a futuro.
-- Como `usuario`, puedo editar la configuraciÃ³n de un tweet programado anteriormente.
-- Como `usuario`, puedo borrar/cancelar el envÃ­o de un tweet programado anteriormente.
-- Como `usuario`, puedo ver una lista de tweets programados para enviarse.
-- Como `usuario`, puedo ver una lista de tweets programdos enviados anteriormente (historial)
-
-----------------------
-GestiÃ³n de Followers
-----------------------
-El mÃ³dulo de gestiÃ³n de followers tiene un componente automÃ¡tico y un componente manual.
-
-El componente automÃ¡tico debe encargarse de seguir y dejar de seguir Â«usuarios en TwitterÂ»,
+.. _instrucciones: https://pypi.python.org/pypi/django-celery
 
 
-++++++++++++++++++++++++++++++++++++++
-Requerimientos funcionales del mÃ³dulo
-++++++++++++++++++++++++++++++++++++++
+RabbitMQ
+~~~~~~~~
 
-- Como `usuario`, quiero listar los seguidores de una cuenta de mis cuentas de twitter (canal).
-- Como `usuario`, quiero crear listas de seguidores.
-- Como `usuario`, quero crear una lista de followers bloqueados a nivel de aplicaciÃ³n.
-- Como `usuario`, quiero buscar Â«usuarios de TwitterÂ» por ubicaciÃ³n geogrÃ¡fica (en la bio).
-- Como `usuario`, quiero ver una ficha de cada follower de mi canal.
-    + La ficha de un follower debe mostrar la informaciÃ³n bÃ¡sica del mismo (cantidad de tweets, nÃºmero de seguidores, biografÃ­a, ubicaciÃ³n, etc).
-    + La ficha de un follower muestra si este se enecuentra en alguna lista.
-- 
+Celery requiere interactuar con un *broker*, es decir, una plataforma que sirva la cola de mensajes. 
+En este caso hemos utilizado RabbitMQ_, que es el broker por defecto. Éste puede instalarse en Debian ejecutando 
+la siguiente instrucción:
 
-----------------------
-Reportes
-----------------------
+.. code-block:: bash
 
-- Como `Â«ClienteÂ»`, quiero ver un conjunto de reportes con grÃ¡ficos a partir de los datos sacados de cada mÃ³dulo funcional de la aplicaciÃ³n.
+	$ sudo apt-get install rabbitmq-server
 
----------------------
-Dashboard (Monitor)
----------------------
+Una vez instalado, ya el servidor debería estar ejecutándose en segundo plano. Para detener el servicio manualmente:
 
-- Como `usuario`, quiero ver un resumen de la actividad de los distintos mÃ³dulos activos para cada canal.
-- Como `usuario`, quiero ver este resumen presentado de forma legible.
-- Como `usuario`, quiero tener acceso a los mÃ³dulos que generaron la informaciÃ³n desde el monitor.
+.. code-block:: bash
+
+	$ sudo rabbitmqctl stop
+	
+Y para volver a iniciarlo:
+
+.. code-block:: bash
+
+	$ sudo rabbitmq-server
+
+También puede invocarse con la opción ``-detached`` para que se ejecute en segundo plano.
+	
+Es necesario entonces definir en el ``settings.py`` de la aplicación, el URL del servicio de rabbitMQ: 
+
+.. code-block:: python
+
+	BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+
+Para más información, revisar la documentación_ de RabbitMQ.
+
+
+.. _RabbitMQ: http://www.rabbitmq.com/
+.. _documentación: http://www.rabbitmq.com/admin-guide.html
+	
+
+Tareas
+~~~~~~
+
+Una tarea ejecutable por Celery se define como una función con el decorador ``@task``:
+
+.. code-block:: python
+
+	from celery.task.base import task
+	
+	@task(queue="tweets", ignore_result=True)
+	def send_tweet(channel_id, text):
+		channel = Channel.objects.filter(screen_name=channel_id)[0]	
+		twitter = Twitter(
+			key=settings.TWITTER_APP_KEY,
+			secret=settings.TWITTER_APP_SECRET,
+			token=channel.oauth_token,
+			token_secret=channel.oauth_secret)
+		twitter.tweet(text)
+
+La función anterior recibe el nombre de un canal y un texto, y simplemente instancia un objeto de la clase Twitter,
+que sirve como interfaz entre la aplicación y el API de Twitter. Luego, la instrucción ``twitter.tweet(text)`` 
+envía un tweet a través del API con el texto recibido.
+
+Si quisiéramos ejecutar esta tarea desde algún punto del programa, basta con la siguiente línea, por ejemplo: 
+
+.. code-block:: python
+
+	send_tweet.delay('TrafficTesting4', "esto es una prueba")
+
+Esto coloca una instancia de la tarea ``send_tweet`` en la cola "tweets" en RabbitMQ, con los argumentos específicos, 
+y el *worker* correspondiente se encargará de ejecutarla.
+
+Se especifica la opción ``ignore_results=True`` porque en el caso de la aplicación no es necesario guardar el 
+resultado de la ejecución de la tarea. Además, si los resultados no se ignoran, RabbitMQ crea una cola innecesaria
+por cada resultado, y nadie se encarga de limpiarla. Esto puede ocasionar una fuga de memoria con el tiempo.
+
+Para más información acerca de la ejecución de tareas, ver la documentación oficial_.
+
+.. _oficial: http://docs.celeryproject.org/en/latest/userguide/calling.html#guide-calling
+
+
+Tareas periódicas
+~~~~~~~~~~~~~~~~~
+
+Para la ejecución de tareas periódicas, Celery cuenta con la herramienta *celerybeat*, la cual se encarga de encolar
+ciertas tareas para que sean ejecutadas en intervalos de tiempo regulares, o periódicamente según algún horario definido.
+
+Una tarea periódica se define como cualquier otra tarea (usando el decorador ``@task``), y adicionalmente incluyendo 
+en ``settings.py`` la configuración de celerybeat:
+
+.. code-block:: python
+
+	from datetime import timedelta
+
+	CELERYBEAT_SCHEDULE = {
+		'test-every-30-seconds': {
+			'task': 'test_task',
+			'schedule': timedelta(seconds=30),
+			'args': ('arg1', 2)
+		},
+	}
+
+Esto define ``test_task`` como una tarea periódica por intervalos, ejecutándose cada 30 segundos. 
+Para esto es necesario ejecutar *celerybeat* 
+
+.. code-block:: bash
+
+	$ python manage.py celerybeat
+	
+*Celerybeat* se encargará de enviar a la cola respectiva la tarea cada 30 segundos para su ejecución.
+
+También es posible definir tareas periódicas usando un *crontab*, para definir de manera más concreta el momento
+de ejecución de las tareas. Por ejemplo, podemos especificar un día de la semana y una hora.
+
+.. code-block:: python
+
+	CELERYBEAT_SCHEDULE = {
+		# Se ejecuta los lunes a las 7:30 A.M
+		'test-every-monday-morning': {
+			'task': 'test_task',
+			'schedule': crontab(hour=7, minute=30, day_of_week=1),
+			'args': ('arg1', 2),
+		},
+	}
+	
+
+**Definir tareas periódicas dinámicamente**
+
+
+Para la funcionalidad de envío de *tweets programados*, es necesario crear tareas periódicas definiendo horarios
+dinámicamente, para esto es necesario instanciar manualmente las clases ``PeriodicTask`` y ``CrontabSchedule`` 
+del módulo ``djcelery`` (*django-celery*). 
+
+.. code-block:: python
+
+	from djcelery.models import PeriodicTask, CrontabSchedule
+	
+	cron = CrontabSchedule(
+		minute=30,
+		hour=7,
+		day_of_week='sunday,monday,friday')
+	cron.save()
+
+	ptask = PeriodicTask(
+		name="scheduled_tweet_%s" % cron.id,
+		task="send_tweet",
+		crontab=cron,
+		queue="tweets",
+		kwargs=json.dumps({
+			'channel_id': 'TrafficTesting4',
+			'text': "ola ke ase?"}))
+	ptask.save()
+
+Puede leerse más detalle sobre las tareas periódicas en la `documentación oficial`_.
+
+
+.. _documentación oficial: http://docs.celeryproject.org/en/master/userguide/periodic-tasks.html
+
+
+Workers
+~~~~~~~
+
+Para que Celery ejecute las tareas definidas anteriormente, se necesita activar al menos una instancia de la clase 
+*Worker*. Un worker es un servicio que se encarga de inspeccionar las colas correspondientes en el broker (RabbitMQ) 
+y ejecutar concurrentemente cada una de las tareas.
+
+En el caso de la aplicación de *Canales de Twitter*, se define una arquitectura con 3 workers.
+
+
+``stream-worker1``
+..................
+
+Se encarga de gestionar la cola *streaming*, para los procesos de streaming de cada canal. 
+Se inicia de la siguiente manera:
+
+.. code-block:: bash
+
+	$ python manage.py celery worker --autoscale=150,15 -Q streaming --hostname stream-worker1 -Ofair
+
+Se colocó la opción ``-Ofair`` para evitar que el worker reserve más tareas de las que puede resolver en un instante
+dado. Esto ocasionaba que algunos procesos de streaming no se iniciaran al activar el canal.
+
+	
+``logging-worker1``
+...................
+
+Se encarga de la cola de logging, para escritura en los archivos de bitácora:
+
+.. code-block:: bash
+
+	$ python manage.py celery worker --concurrency=1 -Q logging --hostname logging-worker1
+	
+
+``celery-worker1``
+..................
+
+Se encarga de ejecutar las tareas en las colas *tweets*, *scheduling* y *notifications*. 
+Este worker utiliza *gevent*, que es una biblioteca para el manejo de concurrencia en python. 
+Se requiere el uso de esta biblioteca como medida de optimización, y para evitar problemas de concurrencia 
+encontrados con la configuración por defecto (multiprocessing):
+
+.. code-block:: bash
+
+	$ python manage.py celery worker --pool=gevent --autoscale=300,20 -Q tweets,scheduling,notifications 
+	--hostname celery-worker1
+
+
+======================
+Información de soporte
+======================
+
+La siguiente información está destinada al manejo de configuraciones y procesos del lado de servidor, para monitoreo o desarrollo posterior.
+
+Por motivos de confidencialidad, los usuarios y contraseñas correspondientes a los distintos servicios se han entregado en un documento aparte a quien sea responsable de  
+
+Amazon AWS
+----------
+
+Actualmente la aplicación está corriendo en un servidor provisto por el servicio AWS de Amazon. Para entrar en el panel de configuración, debe ingresarse el usuario y clave correspondiente en la dirección http://aws.amazon.com/es
+
+Esto permite el manejo de los parámetros del servicio AWS, como capacidad de cómputo de los servidores, y la posibilidad de suscripción a otros servicios de Amazon. También provee el acceso a una interfaz de monitoreo de actividad del servidor.
+
+
+Arquitectura de sistema
+-----------------------
+
+La plataforma que sostiene la operatividad de la aplicación de Canales de Twitter consiste en una serie de servicios fundamentales ejecutándose en el servidor:
+
+* Nginx
+* uWSGI
+* Supervisor
+
+
+Nginx
+~~~~~
+
+Nginx es el servicio que recibe las solicitudes HTTP y sirve los archivos estáticos (imágenes, archivos de estilo, etc). La página oficial de nginx se encuentra en nginx.org.
+
+Para reiniciar, detener o iniciar el servicio de nginx, se ejecuta el siguiente script, con la opción correspondiente a la acción deseada (``restart``, ``stop`` o ``start``):
+
+.. code-block:: bash
+
+	sudo /etc/init.d/nginx (restart|stop|start)
+
+
+Los parámetros de configuración de nginx están definidos en "tweet_filter/server_config/nginx.conf".
+
+
+uWSGI 
+~~~~~
+
+uWSGI es el servicio encargado de ejecutar la aplicación Django, y se integra con nginx para dar acceso externo a la aplicación. 
+
+En `esta página <http://uwsgi-docs.readthedocs.org/en/latest/tutorials/Django_and_nginx.html>`_ puede verse una documentación acerca de cómo poner en funcionamiento un proyecto django usando nginx y uwsgi.
+
+Los parámetros de configuración de uWSGI están definidos en "tweet_filter/server_config/marcaonline.ini".
+
+
+Supervisor
+~~~~~~~~~~
+
+Supervisor es un sistema de control de procesos, y es el servicio que se encarga de mantener activos todos los servicios fundamentales, como los workers de celery y el servidor de aplicación uWSGI.
+
+Para saber el estado de los procesos manejados por supervisor, se ejecuta la siguiente instrucción:
+
+.. code-block:: bash
+
+	$ sudo supervisorctl status
+
+
+Para iniciar o detener algún servicio en particular, se ejecuta:
+
+.. code-block:: bash
+
+	$ sudo supervisorctl (stop|start) (<nombre_servicio>|all)
+
+
+Los parámetros para su configuración se encuentran en "tweet_filter/server_config/supervisor.conf", esto incluye cada servicio disponible para su manejo.
+
+Supervisor se encargará de mantener activos todos los servicios, y restablecer los mismos en caso de falla.
+
+Cuando se efectúan cambios en la configuración de supervisor, éste debe reiniciarse con los siguientes comandos:
+
+.. code-block:: bash
+
+	sudo supervisorctl reread
+	sudo supervisorctl update
+
+
+Para reiniciar la aplicación por completo, se recomienda no sólo detener los servicios mediante supervisor, sino también hacer un *flush* de la cache (memcache) y detener todos los procesos python que queden aún ejecutándose. La secuencia sería la siguiente:
+
+.. code-block:: bash
+
+	sudo supervisorctl stop all
+	sudo pkill python
+	echo 'flush_all' | netcat localhost 11211
+	sudo supervisorctl start all
+
+
+Logging
+-------
+
+Todos los eventos relevantes a la funcionalidad de la aplicación son registrados en el log ubicado en "tweet_filter/server_logs/dev/twitter-all.log". En este archivo se registra cada tweet de entrada por canal y el resultado del proceso de filtrado (tweet bloqueado o enviado exitosamente). Para monitorear el log en tiempo real, se puede usar la herramienta ``tail`` de unix, posiblemente filtrando con ``egrep``:
+
+.. code-block:: bash
+
+	$ tail -f twitter-all.log | egrep "trafficMIRANDA"
+
+Pueden encontrarse en el mismo directorio de logs, otras bitácoras concernientes al funcionamiento de celery, útiles en caso de falla.
+
+La configuración de logging se encuentra en el archivo principal de configuración del proyecto django ("tweet_filter/tweetfilter/tweetfilter/settings/common.py"). Para entender el mecanismo de bitácoras de django, debe referirse a la `documentación oficial <https://docs.djangoproject.com/en/dev/topics/logging/>`_.

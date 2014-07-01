@@ -22,6 +22,7 @@ var
             $('#activate_triggers_check').attr('checked', data.triggers);
             $('#activate_replacements_check').attr('checked', data.replacements);
             $('#activate_filters_check').attr('checked', data.filters);
+            $('#activate_prevent_update_limit_check').attr('checked', data.prevent_update_limit);
 
             if($('#activate_timeblocks_check').is(":checked")){
                 $('#timeblocks_box').fadeIn();
@@ -148,5 +149,13 @@ $(document).ready(function () {
             }
         });
     });
+
+    $("#activate_prevent_update_limit_check").change(function () {
+        $.post("/filtering/switch_update_limit/" + $('#current_channel').val(), function (data) {
+            // dar feedback?
+        });
+    });
+
+    
 
 });

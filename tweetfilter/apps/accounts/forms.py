@@ -1,28 +1,16 @@
 # -*- coding: utf-8 -*-
 
-"""
-    Forms for the accounts module:
-
-    We use crispy_forms to extend and style the forms from the backend.
-    http://django-crispy-forms.readthedocs.org/en/d-0/
-
-"""
-
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import PasswordChangeForm as DjangoPasswordChangeForm
 from django.contrib.auth.forms import PasswordResetForm as DjangoPasswordResetForm
-
 from django import forms
-
 from django.core.urlresolvers import reverse_lazy
-
 from braces.forms import UserKwargModelFormMixin
-
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit
-
 from registration.forms import RegistrationFormUniqueEmail, RegistrationFormTermsOfService
+
 
 # Use this tuple to config the Bootstrap Helper Attributes from crispy_forms
 bootstrap_helper_attr = (True, True)
@@ -32,14 +20,10 @@ class LoginForm(AuthenticationForm):
     """
     Same fields as original login form.
     Extended to add crispy helpers.
-
     """
-
     def __init__(self, *args, **kwargs):
         self.helper = FormHelper()
         self.helper.form_id = 'id-login-form'
-        # CSS CLASS
-        #self.helper.form_class = ''
         self.helper.form_method = 'post'
         self.helper.form_action = 'login'
 
@@ -53,9 +37,7 @@ class LoginForm(AuthenticationForm):
 class UserRegistrationForm(RegistrationFormUniqueEmail, RegistrationFormTermsOfService):
     """
     Registration form for Users
-
     """
-
     def __init__(self, *args, **kwargs):
         self.helper = FormHelper()
         self.helper.form_id = 'id-user-registration-form'
@@ -73,7 +55,6 @@ class PasswordChangeForm(DjangoPasswordChangeForm):
     """
     Change Passwords for users
     """
-
     def __init__(self, *args, **kwargs):
         self.helper = FormHelper()
         self.helper.form_id = 'id-change-password-form'
@@ -91,7 +72,6 @@ class PasswordResetForm(DjangoPasswordResetForm):
     """
     Reset password using an email field.
     """
-
     def __init__(self, *args, **kwargs):
         self.helper = FormHelper()
         self.helper.form_id = 'id-reset-password-form'

@@ -8,6 +8,9 @@ from apps.twitter.models import Tweet
 
 
 class Channel(models.Model):
+    """
+    A Channel represents a twitter account that is subscribed to the app service 
+    """
     STATUS_DISABLED = 0
     STATUS_ENABLED = 1
 
@@ -30,9 +33,6 @@ class Channel(models.Model):
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=STATUS_ENABLED)
     user = models.ForeignKey(User, blank=True, null=True)
 
-    # tiempo máximo que debe esperarse antes de volver a enviar status
-    # tweet_timedelta = models.IntegerField(default=60)
-
     # Resultado de la tarea de streaming (necesario para desactivar)
     streaming_task = PickledObjectField()
 
@@ -48,6 +48,7 @@ class Channel(models.Model):
     filters_enabled = models.BooleanField(default=True)
     scheduleblocks_enabled = models.BooleanField(default=True)
     blacklist_enabled = models.BooleanField(default=True)
+    prevent_update_limit = models.BooleanField(default=True)
 
     # Scheduling config
     scheduling_enabled = models.BooleanField(default=False)
@@ -55,41 +56,41 @@ class Channel(models.Model):
     # Hashtags config
     hashtags_enabled = models.BooleanField(default=False)
 
-
     def delete(self):
+        """ stops streaming and scheduled tasks before deleting itself """
         self.stop_streaming()
         schedules = self.scheduledtweet_set.all()
         for schedule in schedules:
             schedule.delete()
         super(Channel, self).delete()
 
-
     def get_last_update(self):
+        """ gets channel's last succesfully sent tweet """
         try:
             update = Tweet.objects.filter(status=Tweet.STATUS_SENT, mention_to=self.screen_name).order_by('-id')[0]
             return update
         except Exception, e:
             return None
 
-
     def activate(self):
+        """ sets status as enabled and initializes streaming task """
         self.status = self.STATUS_ENABLED
         if self.init_streaming():
             self.save()
 
-
     def deactivate(self):
+        """ sets status as disabled and stops streaming task """
         self.status = self.STATUS_DISABLED
 
         if self.stop_streaming():
             self.save()
 
-
     def is_active(self):
+        """ returns channel status """
         return self.status == self.STATUS_ENABLED
 
-
     def switch_status(self):
+        """ changes channel status """
         from apps.filtering.tasks import channel_log_error
         try:
             if self.is_active():
@@ -103,9 +104,11 @@ class Channel(models.Model):
             return False
 
     def is_streaming(self, exclude_task_id=None):
+        """ returns True if its streaming task is currently active """
         return channel_is_streaming(self.screen_name, exclude_task_id)
 
     def init_streaming(self, force=False):
+        """ initializes channel streaming task """
         STREAMING_QUEUE_NAME = "streaming"
 
         from apps.filtering.tasks import stream_channel, channel_log_exception
@@ -118,8 +121,8 @@ class Channel(models.Model):
                 self.screen_name)
             return False
 
-
     def stop_streaming(self):
+        """ revokes channel streaming task """
         from apps.filtering.tasks import channel_log_info, channel_log_exception
         from celery import current_app as app
         try:
@@ -137,19 +140,10 @@ class Channel(models.Model):
             channel_log_exception.delay(message, self.screen_name)
             return False
 
-
     def get_triggers(self):
-        """
-        Returns a list of this channel's trigger words
-        """
-        #triggers = Trigger.objects.filter(channel=self)
-        #return triggers
+        """ returns a list of this channel's trigger words """
         return self.trigger_set.all()
 
-
     def get_filters(self):
-        """
-        Returns a list of this channel's trigger words
-        """
-
+        """ returns a list of this channel's filter words """
         return self.filter_set.all()

@@ -64,14 +64,13 @@ def channel_is_streaming(screen_name, exclude_id=None):
     """
     active_tasks = get_active_tasks()
     regex = re.compile("(u'(?P<name>\w+)',)")
-    if active_tasks is not None:
+    if active_tasks:
         for worker_id in active_tasks:
-            if active_tasks[worker_id] is not None:
+            if active_tasks[worker_id]:
                 for task in active_tasks[worker_id]:
                     if task['name'] == "apps.filtering.tasks.stream_channel":
-                        print task['id']
                         r = regex.search(task['args'])
-                        if r is not None and r.group('name') == screen_name and task['id'] != exclude_id:
+                        if r and r.group('name') == screen_name and task['id'] != exclude_id:
                             return True
     return False
 
@@ -83,12 +82,12 @@ def get_streaming_task_ids(screen_name, exclude_id=None):
     streaming_tasks = []
     active_tasks = get_active_tasks()
     regex = re.compile("(u'(?P<name>\w+)',)")
-    if active_tasks is not None:
+    if active_tasks:
         for worker_id in active_tasks:
-            if active_tasks[worker_id] is not None:
+            if active_tasks[worker_id]:
                 for task in active_tasks[worker_id]:
                     if task['name'] == "apps.filtering.tasks.stream_channel":
                         r = regex.search(task['args'])
-                        if r is not None and r.group('name') == screen_name and task['id'] != exclude_id:
+                        if r and r.group('name') == screen_name and task['id'] != exclude_id:
                             streaming_tasks.append(task['id'])
     return streaming_tasks

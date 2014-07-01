@@ -1,12 +1,16 @@
+# -*- coding: utf-8 -*-
+
 import datetime
 from exceptions import Exception
 import json
 import logging
+
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin, LoginRequiredMixin
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.views.generic import DetailView, View, DeleteView
 from django.views.generic.edit import UpdateView
+
 from apps.accounts.models import Channel
 from apps.control.models import ScheduleBlock
 from apps.filtering import tasks
@@ -39,7 +43,8 @@ class CheckStatusView(JSONResponseMixin, AjaxResponseMixin, DetailView):
                          'blacklist':  obj.blacklist_enabled,
                          'triggers': obj.triggers_enabled,
                          'replacements': obj.replacements_enabled,
-                         'filters': obj.filters_enabled
+                         'filters': obj.filters_enabled,
+                         'prevent_update_limit': obj.prevent_update_limit
         }
 
         return HttpResponse(json.dumps(response_data),
@@ -222,6 +227,10 @@ class SwitchFiltersView(CsrfExemptMixin, JSONResponseMixin,
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
 
+"""
+The following views are available for linking keywords to message types (DM or mention). 
+This feature is currently unavailable
+"""
 
 class SwitchTriggerMentionView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, UpdateView):
@@ -342,7 +351,36 @@ class SwitchReplacementDMView(CsrfExemptMixin, JSONResponseMixin,
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
+"""
+End of keyword-messagetype views
+"""
 
+class SwitchUpdateLimitView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Enables or disables update limit prevention
+    """
+    model = Channel
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        try:
+            if obj.prevent_update_limit:
+                # disable
+                obj.prevent_update_limit = False
+                obj.save()
+            else:
+                # enable
+                obj.prevent_update_limit = True
+                obj.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            logger.exception("Error in SwitchUpdateLimitView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
 
 #==========================
 # Trigger words
@@ -350,6 +388,9 @@ class SwitchReplacementDMView(CsrfExemptMixin, JSONResponseMixin,
 
 class TriggerCreateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
+    """
+    Creates a new trigger keyword
+    """
     model = Trigger
 
     def post_ajax(self, request, *args, **kwargs):
@@ -376,6 +417,9 @@ class TriggerCreateView(CsrfExemptMixin, JSONResponseMixin,
 
 
 class TriggerListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Shows a channel trigger list
+    """
     model = Channel
 
     def get_ajax(self, request, *args, **kwargs):
@@ -392,11 +436,13 @@ class TriggerListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
 
 class TriggerDeleteView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DeleteView):
+    """
+    Deletes a trigger
+    """
     model = Trigger
     success_url = "/"
 
     def post_ajax(self, request, *args, **kwargs):
-        #obj = self.get_object()
         self.delete(request)
         response_data = {'result': "ok"}
 
@@ -411,7 +457,7 @@ class TriggerDeleteView(CsrfExemptMixin, JSONResponseMixin,
 class ReplacementCreateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
     model = Replacement
-
+    """ Creates a replacement keyword """
     def post_ajax(self, request, *args, **kwargs):
 
         try:
@@ -437,6 +483,9 @@ class ReplacementCreateView(CsrfExemptMixin, JSONResponseMixin,
 
 
 class ReplacementListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Shows a channel replacement keyword list
+    """
     model = Channel
 
     def get_ajax(self, request, *args, **kwargs):
@@ -452,6 +501,9 @@ class ReplacementListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
 
 class ReplacementDeleteView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DeleteView):
+    """
+    Deletes a replacement
+    """
     model = Replacement
     success_url = "/"
 
@@ -470,6 +522,9 @@ class ReplacementDeleteView(CsrfExemptMixin, JSONResponseMixin,
 
 class FilterCreateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
+    """
+    Adds a banned word
+    """
     model = Filter
 
     def post_ajax(self, request, *args, **kwargs):
@@ -496,6 +551,9 @@ class FilterCreateView(CsrfExemptMixin, JSONResponseMixin,
 
 
 class FilterListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Shows a channel banned word list
+    """
     model = Channel
 
     def get_ajax(self, request, *args, **kwargs):
@@ -512,6 +570,9 @@ class FilterListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
 
 class FilterDeleteView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DeleteView):
+    """
+    Deletes a filter word
+    """
     model = Filter
     success_url = "/"
 
@@ -529,6 +590,9 @@ class FilterDeleteView(CsrfExemptMixin, JSONResponseMixin,
 #==========================
 
 class BlockedUserListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Shows all blacklisted users for a channel
+    """
     model = Channel
 
     def get_ajax(self, request, *args, **kwargs):
@@ -540,16 +604,17 @@ class BlockedUserListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
             json_list.append(dict)
 
         return self.render_json_response(json_list)
-        #return self.render_json_response(objs)
 
 
 class BlockedUserDeleteView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DeleteView):
+    """
+    Unblocks a user from a channel
+    """
     model = BlockedUser
     success_url = "/"
 
     def post_ajax(self, request, *args, **kwargs):
-        #obj = self.get_object()
         self.delete(request)
         response_data = {'result': "ok"}
 
@@ -558,6 +623,9 @@ class BlockedUserDeleteView(CsrfExemptMixin, JSONResponseMixin,
 
 class BlockedUserCreateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
+    """
+    Adds a user to the channel blacklist
+    """
     model = BlockedUser
 
     def post_ajax(self, request, *args, **kwargs):
@@ -587,6 +655,9 @@ class BlockedUserCreateView(CsrfExemptMixin, JSONResponseMixin,
 #=========================
 
 class TimeBlockListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    View that shows a list of all instances of ChannelScheduleBlock linked to the channel
+    """
     model = Channel
     context_object_name = "timeblock_list"
 
@@ -645,6 +716,9 @@ class TimeBlockListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
 
 class TimeBlockCreateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
+    """
+    Adds a scheduled block to a channel
+    """
     model = ScheduleBlock
 
     def post_ajax(self, request, *args, **kwargs):
@@ -679,6 +753,9 @@ class TimeBlockCreateView(CsrfExemptMixin, JSONResponseMixin,
 
 class TimeBlockDeleteView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DeleteView):
+    """
+    Deletes a scheduled block
+    """
     model = ScheduleBlock   # ChannelScheduleBlock # ????
     success_url = "/"
 
@@ -692,6 +769,9 @@ class TimeBlockDeleteView(CsrfExemptMixin, JSONResponseMixin,
 
 class TimeBlockUpdateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, UpdateView):
+    """
+    View class that handles editing of a scheduled block
+    """
     model = ChannelScheduleBlock
 
     def post_ajax(self, request, *args, **kwargs):

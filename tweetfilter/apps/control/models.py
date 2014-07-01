@@ -9,6 +9,9 @@ from apps.twitter.models import Tweet
 
 
 class Schedule(models.Model):
+    """
+    Represents a subset of week days. 
+    """
     time = models.TimeField()
 
     # Appliable weekdays
@@ -69,6 +72,9 @@ class Schedule(models.Model):
 
 
 class ScheduleBlock(models.Model):
+    """ 
+    A ScheduleBlock represents the times at which a Channel is able to reweet.
+    """
     start = models.TimeField()  # start time of the day
     end = models.TimeField()    # end time of the day
 
@@ -222,21 +228,17 @@ class UpdateLimit(models.Model):
             status=Tweet.STATUS_SENT)
 
         day_tweets = sent_tweets.filter(date_time__range=(today_min, today_max))
-        #self.total_tweets_sent = len(day_tweets)
         self.total_tweets_sent = day_tweets.count()
 
         now = datetime.datetime.utcnow()
         now = now.replace(tzinfo=pytz.utc)
 
-        #now = datetime.datetime.now()
         one_hour_ago = now - datetime.timedelta(hours=1)
         hour_tweets = sent_tweets.filter(date_time__range=(one_hour_ago, now))
-        #self.tweets_sent_last_hour = len(hour_tweets)
         self.tweets_sent_last_hour = hour_tweets.count()
 
         fifteen_minutes_ago = now - datetime.timedelta(minutes=15)
         minute_tweets = sent_tweets.filter(date_time__range=(fifteen_minutes_ago, now))
-        #self.tweets_sent_last_15min = len(minute_tweets)
         self.tweets_sent_last_15min = minute_tweets.count()
 
         # caller is responsible for saving

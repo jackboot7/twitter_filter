@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import re
+
 from unidecode import unidecode
 from apps.accounts.models import Channel
 from django.db import models
 
-# Create your models here.
 from apps.control.models import ScheduleBlock
 from apps.twitter.models import Tweet
 
@@ -19,7 +21,6 @@ class BlockedUser(models.Model):
     channel = models.ForeignKey(Channel)
 
 
-# lista blanca
 class AllowedUser(models.Model):
     screen_name = models.CharField(max_length=16)
     channel = models.ForeignKey(Channel)
@@ -51,15 +52,19 @@ class Keyword(models.Model):
     enabled_dm = models.BooleanField(default=True)
 
     def normalize(self, string):
-        return unidecode(string.lower())    # convert to unicode
+        """ returns a string without special characters and in lowecase """
+        return unidecode(string.lower())
 
     def normalized_text(self):
+        """ returns normalized version of keword text """
         return self.normalize(self.text)
 
     def equals(self, other_text):
+        """ performs string comparison with another text in a normalized way """
         return self.normalized_text() == self.normalize(other_text)
 
     def occurs_in(self, string):
+        """ returns True if the keyword occurs in <string> """
         if len(self.text.split()) > 1:
             # if the keyword is a phrase, searches for direct occurrence in the string
             return self.normalized_text() in self.normalize(string)
@@ -69,13 +74,13 @@ class Keyword(models.Model):
             return self.normalized_text() in words
 
     def get_words(self, string):
-        # returns string as a list of words, stripping punctuations, spaces and special chars
+        """ returns string as a list of words, stripping punctuations, spaces and special chars """
         return "".join((
             char if char.isalpha() or char.isdigit() or char == "@" or char == "_" or char == "#"
             else " ") for char in string).split()
 
     def get_normalized_words(self, string):
-        # returns string as a list of normalized words
+        """ returns string as a list of normalized words """
         return "".join((
             char if char.isalpha() or char.isdigit() or char == "@" or char == "_" or char == "#"
             else " ") for char in self.normalize(string)).split()
@@ -83,16 +88,16 @@ class Keyword(models.Model):
 
 class Trigger(Keyword):
     """
-    A trigger is a word that makes the tweet be marked as "relevant".
+    A trigger is a keyword that makes the tweet be marked as "relevant".
     Only tweets containing triggers are candidates for retweeting
     """
     ACTION_RETWEET = 1
 
     ACTION_CHOICES = (
         (ACTION_RETWEET, "Retweet"),
+        # other actions are implementable
     )
 
-    #text = models.CharField(max_length=32)
     action = models.IntegerField(choices=ACTION_CHOICES, default=ACTION_RETWEET)
     channel = models.ForeignKey(Channel)
 
@@ -110,7 +115,6 @@ class Filter(Keyword):
         (ACTION_BLOCK_USER, "Bloquear usuario"),
         )
 
-    #text = models.CharField(max_length=32)
     action = models.SmallIntegerField(choices=ACTION_CHOICES, default=ACTION_BLOCK_TWEET)
     channel = models.ForeignKey(Channel)
 
@@ -141,6 +145,4 @@ class Replacement(Keyword):
                     regexp = re.compile(r"(\W|^)(%s)\b" % word)
                     txt = regexp.sub(r"\g<1>%s" % self.replace_with, txt)
         return txt
-
-
 
