@@ -229,10 +229,8 @@ del módulo ``djcelery`` (*django-celery*).
 			'text': "ola ke ase?"}))
 	ptask.save()
 
-Puede leerse más detalle sobre las tareas periódicas en la `documentación oficial`_.
-
-
-.. _documentación oficial: http://docs.celeryproject.org/en/master/userguide/periodic-tasks.html
+Puede leerse más detalle sobre las tareas periódicas en la 
+`documentación oficial <http://docs.celeryproject.org/en/master/userguide/periodic-tasks.html>`_.
 
 
 Workers
