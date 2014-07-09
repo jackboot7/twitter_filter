@@ -2,22 +2,27 @@
 
 import json
 import logging
-from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin, LoginRequiredMixin
 import datetime
+
+from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin, LoginRequiredMixin
 from django.http.response import HttpResponse
 from django.views.generic import DetailView
 from django.views.generic.base import View
 from django.views.generic.edit import DeleteView, UpdateView
+
 from apps.accounts.models import Channel
+from apps.control.models import ItemGroup
 from apps.scheduling.models import ScheduledTweet
 from apps.twitter.api import ChannelAPI
 
+
 logger = logging.getLogger('app')
 
+
 class ScheduledPostsDetailView(LoginRequiredMixin, DetailView):
-    model = Channel
+    model = ItemGroup
     template_name = "scheduling/index.html"
-    context_object_name = "channel"
+    context_object_name = "group"
 
 
 #==========================
@@ -50,7 +55,6 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
-
         try:
             if obj.scheduling_enabled:
                 # disable
@@ -83,11 +87,11 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
 
 class ScheduledTweetListView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DetailView):
-    model = Channel
+    model = ItemGroup
     context_object_name = "scheduled_tweet_list"
 
     def get_ajax(self, request, *args, **kwargs):
-        objs = ScheduledTweet.objects.filter(channel=self.get_object())
+        objs = ScheduledTweet.objects.filter(group=self.get_object())
         json_list = []
 
         for scheduled_tweet in objs:
@@ -134,7 +138,6 @@ class ScheduledTweetCreateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
 
         try:
-            chan = Channel.objects.filter(screen_name=request.POST['channel'])[0]
             block = ScheduledTweet()
             block.text = request.POST['text']
             block.time = datetime.datetime.strptime(request.POST['time'], "%H:%M").time()
@@ -145,7 +148,7 @@ class ScheduledTweetCreateView(CsrfExemptMixin, JSONResponseMixin,
             block.friday = True if request.POST['friday'] == "1" else False
             block.saturday = True if request.POST['saturday'] == "1" else False
             block.sunday = True if request.POST['sunday'] == "1" else False
-            block.channel = chan
+            block.group = request.POST['group_id']
             block.save()
             response_data = {'result': "ok"}
         except Exception, e:
@@ -155,33 +158,37 @@ class ScheduledTweetCreateView(CsrfExemptMixin, JSONResponseMixin,
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
 
+
 class ScheduledTweetSendView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
 
     def post_ajax(self, request, *args, **kwargs):
         tweet_id = kwargs['pk']
         tweet_obj = ScheduledTweet.objects.filter(id=tweet_id)[0]
-        channel = tweet_obj.channel
-        api = ChannelAPI(channel)
-        try:
-            api.tweet(tweet_obj.text)
-            response_data = {'result': "ok"}
-        except Exception, e:
-            if "duplicate" in e.args[0]:
-                msg = u"Este mensaje ya se ha enviado recientemente"
-            elif "update limit" in e.args[0]:
-                msg = u"El canal no puede publicar por razones de 'update limit'"
-            elif "unauthorized" in e.args[0]:
-                msg = u"La cuenta actual no está autorizada para publicar. " \
-                      u"Se recomienda revocar la aplicación desde twitter y volver a registrar el canal"
-            else:
-                msg = args[0]
-            response_data = {'result': "fail", 'error_msg': msg}
-            pass
+        group = tweet_obj.group
+        for channel in group.channel_set.all():
+            api = ChannelAPI(channel)
+            try:
+                api.tweet(tweet_obj.text)
+                response_data = {'result': "ok"}
+            except Exception, e:
+                """
+                if "duplicate" in e.args[0]:
+                    msg = u"Este mensaje ya se ha enviado recientemente"
+                elif "update limit" in e.args[0]:
+                    msg = u"El canal no puede publicar por razones de 'update limit'"
+                elif "unauthorized" in e.args[0]:
+                    msg = u"La cuenta actual no está autorizada para publicar. " \
+                          u"Se recomienda revocar la aplicación desde twitter y volver a registrar el canal"
+                else:
+                    msg = args[0]
+                    response_data = {'result': "fail", 'error_msg': msg}
+                """
+                # acumular mensajes de error
+                pass
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
-
 
 
 class ScheduledTweetDeleteView(CsrfExemptMixin, JSONResponseMixin,
@@ -190,7 +197,6 @@ class ScheduledTweetDeleteView(CsrfExemptMixin, JSONResponseMixin,
     success_url = "/"
 
     def post_ajax(self, request, *args, **kwargs):
-        #obj = self.get_object()
         self.delete(request)
         response_data = {'result': "ok"}
 

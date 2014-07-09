@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
-from time import strptime
+import pytz
 import datetime
+from time import strptime
+
 from django.db import models
 from django.core.cache import cache
-import pytz
-from apps.notifications.models import Notification
+from django.contrib.contenttypes.models import ContentType
+
 from apps.twitter.models import Tweet
+from apps.notifications.models import Notification
 
 
 class Schedule(models.Model):
@@ -256,3 +259,27 @@ class UpdateLimit(models.Model):
                u"Tweets enviados los últimos 15 minutos: %s" % (self.total_tweets_sent,
                                                                 self.tweets_sent_last_hour,
                                                                 self.tweets_sent_last_15min)
+
+
+class ItemGroup(models.Model):
+    """
+    Serves as a wrapper for a set of items of the same type (triggers, hashtags, blocked users, etc).
+    Its purpose is to integrate different channels so that they can share items, clearing the need to
+    redefine settings for each channel. 
+    """
+    content_type = models.ForeignKey(ContentType)
+    name = models.CharField(max_length=64)
+    exclusive = models.BooleanField(default=False)
+
+    def __init__(self, *args, **kwargs):
+        class_type = kwargs.pop('class_type', None)
+        super(ItemGroup, self).__init__(*args, **kwargs)
+        if class_type is not None:
+            self.content_type = ContentType.objects.get_for_model(class_type)
+
+    def get_class(self):
+        return self.content_type.model_class()
+
+    def get_channels(self):
+        return self.channel_set.all()
+        

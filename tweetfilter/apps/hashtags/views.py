@@ -10,6 +10,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView, DeleteView
 
 from apps.accounts.models import Channel
+from apps.control.models import ItemGroup
 from apps.hashtags.models import HashtagAdvertisement
 
 
@@ -17,9 +18,9 @@ logger = logging.getLogger('app')
 
 
 class HashtagsDetailView(LoginRequiredMixin, DetailView):
-    model = Channel
+    model = ItemGroup
     template_name = "hashtags/index.html"
-    context_object_name = "channel"
+    context_object_name = "group"
 
 
 class CheckStatusView(JSONResponseMixin, AjaxResponseMixin, DetailView):
@@ -70,11 +71,11 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
 
 class HashtagListView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, DetailView):
-    model = Channel
+    model = ItemGroup
     context_object_name = "hashtag_list"
 
     def get_ajax(self, request, *args, **kwargs):
-        objs = HashtagAdvertisement.objects.filter(channel=self.get_object())
+        objs = HashtagAdvertisement.objects.filter(group=self.get_object())
         json_list = []
 
         for hashtag in objs:
@@ -85,16 +86,16 @@ class HashtagListView(CsrfExemptMixin, JSONResponseMixin,
 
         return self.render_json_response(json_list)
 
+
 class HashtagCreateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
     model = HashtagAdvertisement
 
     def post_ajax(self, request, *args, **kwargs):
 
-        try:
-            chan = Channel.objects.filter(screen_name=request.POST['channel'])[0]
+        try:        
             hashtag = HashtagAdvertisement()
-            hashtag.channel = chan
+            hashtag.group = request.POST['group_id']
             hashtag.text = request.POST['text']
             hashtag.quantity = request.POST['qty']
             hashtag.start = datetime.datetime.strptime(request.POST['start'], "%H:%M").time()
@@ -154,6 +155,7 @@ class HashtagUpdateView(CsrfExemptMixin, JSONResponseMixin,
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
+
 
 class HashtagResetView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, UpdateView):

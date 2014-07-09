@@ -3,6 +3,9 @@ from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.db import models
 from picklefield.fields import PickledObjectField
+from django.contrib.contenttypes.models import ContentType
+
+from apps.control.models import ItemGroup
 from apps.control.tasks import channel_is_streaming, queue_is_active, get_streaming_task_ids
 from apps.twitter.models import Tweet
 
@@ -55,6 +58,9 @@ class Channel(models.Model):
 
     # Hashtags config
     hashtags_enabled = models.BooleanField(default=False)
+
+    #
+    groups = models.ManyToManyField(ItemGroup)
 
     def delete(self):
         """ stops streaming and scheduled tasks before deleting itself """
@@ -147,3 +153,8 @@ class Channel(models.Model):
     def get_filters(self):
         """ returns a list of this channel's filter words """
         return self.filter_set.all()
+
+    def get_groups(self, clazz):
+        """ returns a list of item groups of certain type """
+        clazz_type = ContentType.objects.get_for_model(clazz)
+        return self.groups.filter(content_type__pk=clazz_type.id)

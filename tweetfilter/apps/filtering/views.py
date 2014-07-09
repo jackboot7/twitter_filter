@@ -16,7 +16,9 @@ from apps.control.models import ScheduleBlock
 from apps.filtering import tasks
 from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleBlock, Replacement, Keyword
 
+
 logger = logging.getLogger('app')
+
 
 class FilteringDetailView(LoginRequiredMixin, DetailView):
     """
@@ -60,7 +62,6 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
-
         try:
             if obj.retweets_enabled:
                 # if enabled: disable.
@@ -96,7 +97,6 @@ class SwitchScheduleBlocksView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
-
         try:
             if obj.scheduleblocks_enabled:
                 # disable
@@ -124,7 +124,6 @@ class SwitchBlackListView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
-
         try:
             if obj.blacklist_enabled:
                 # disable
@@ -153,7 +152,6 @@ class SwitchTriggersView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
-
         try:
             if obj.triggers_enabled:
                 # disable
@@ -181,7 +179,6 @@ class SwitchReplacementsView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
-
         try:
             if obj.replacements_enabled:
                 # disable
@@ -209,7 +206,6 @@ class SwitchFiltersView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
-
         try:
             if obj.filters_enabled:
                 # disable
@@ -396,16 +392,15 @@ class TriggerCreateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
 
         try:
-            triggers = Trigger.objects.filter(channel=request.POST['trigger_channel'])
+            triggers = Trigger.objects.filter(group__pk=request.POST['group_id'])
             for tr in triggers:
                 if tr.equals(request.POST['trigger_text']):
                     response_data = {'result': "duplicate"}
                     break
             else:
-                chan = Channel.objects.filter(screen_name=request.POST['trigger_channel'])[0]
                 trigger = Trigger()
                 trigger.text = request.POST['trigger_text']
-                trigger.channel = chan
+                trigger.group = request.POST['group_id'] # es ID, esto cuela???
                 trigger.save()
                 response_data = {'result': "ok"}
         except Exception, e:
@@ -420,10 +415,10 @@ class TriggerListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     """
     Shows a channel trigger list
     """
-    model = Channel
+    model = ItemGroup
 
     def get_ajax(self, request, *args, **kwargs):
-        objs = Trigger.objects.filter(channel=self.get_object()).order_by("text")
+        objs = Trigger.objects.filter(group=self.get_object()).order_by("text")
 
         json_list = []
         for trigger in objs:
@@ -431,7 +426,6 @@ class TriggerListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
             json_list.append(dict)
 
         return self.render_json_response(json_list)
-        #return self.render_json_response(objs)
 
 
 class TriggerDeleteView(CsrfExemptMixin, JSONResponseMixin,
@@ -461,17 +455,16 @@ class ReplacementCreateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
 
         try:
-            reps = Replacement.objects.filter(channel=request.POST['replacement_channel'])
+            reps = Replacement.objects.filter(group__pk=request.POST['group_id'])
             for rp in reps:
                 if rp.equals(request.POST['replacement_text']):
                     response_data = {'result': "duplicate"}
                     break
             else:
-                chan = Channel.objects.filter(screen_name=request.POST['replacement_channel'])[0]
                 replacement = Replacement()
                 replacement.text = request.POST['replacement_text']
                 replacement.replace_with = request.POST['replacement_replace_with']
-                replacement.channel = chan
+                replacement.group = request.POST['group_id']    # id?????
                 replacement.save()
                 response_data = {'result': "ok"}
         except Exception, e:
@@ -486,10 +479,10 @@ class ReplacementListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     """
     Shows a channel replacement keyword list
     """
-    model = Channel
+    model = ItemGroup
 
     def get_ajax(self, request, *args, **kwargs):
-        objs = Replacement.objects.filter(channel=self.get_object()).order_by("text")
+        objs = Replacement.objects.filter(group=self.get_object()).order_by("text")
         json_list = []
 
         for rep in objs:
@@ -508,7 +501,6 @@ class ReplacementDeleteView(CsrfExemptMixin, JSONResponseMixin,
     success_url = "/"
 
     def post_ajax(self, request, *args, **kwargs):
-        #obj = self.get_object()
         self.delete(request)
         response_data = {'result': "ok"}
 
@@ -530,16 +522,15 @@ class FilterCreateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
 
         try:
-            filters = Filter.objects.filter(channel=request.POST['filter_channel'])
+            filters = Filter.objects.filter(group__pk=request.POST['group_id'])
             for fl in filters:
                 if fl.equals(request.POST['filter_text']):
                     response_data = {'result': "duplicate"}
                     break
             else:
-                chan = Channel.objects.filter(screen_name=request.POST['filter_channel'])[0]
                 filter = Filter()
                 filter.text = request.POST['filter_text']
-                filter.channel = chan
+                filter.group = request.POST['group_id']
                 filter.save()
                 response_data = {'result': "ok"}
         except Exception, e:
@@ -554,10 +545,10 @@ class FilterListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     """
     Shows a channel banned word list
     """
-    model = Channel
+    model = ItemGroup
 
     def get_ajax(self, request, *args, **kwargs):
-        objs = Filter.objects.filter(channel=self.get_object()).order_by("text")
+        objs = Filter.objects.filter(group=self.get_object()).order_by("text")
 
         json_list = []
         for trigger in objs:
@@ -565,7 +556,6 @@ class FilterListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
             json_list.append(dict)
 
         return self.render_json_response(json_list)
-        #return self.render_json_response(objs)
 
 
 class FilterDeleteView(CsrfExemptMixin, JSONResponseMixin,
@@ -593,10 +583,10 @@ class BlockedUserListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     """
     Shows all blacklisted users for a channel
     """
-    model = Channel
+    model = ItemGroup
 
     def get_ajax(self, request, *args, **kwargs):
-        objs = BlockedUser.objects.filter(channel=self.get_object()).order_by("screen_name")
+        objs = BlockedUser.objects.filter(group=self.get_object()).order_by("screen_name")
 
         json_list = []
         for user in objs:
@@ -621,6 +611,7 @@ class BlockedUserDeleteView(CsrfExemptMixin, JSONResponseMixin,
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
 
+
 class BlockedUserCreateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
     """
@@ -629,17 +620,16 @@ class BlockedUserCreateView(CsrfExemptMixin, JSONResponseMixin,
     model = BlockedUser
 
     def post_ajax(self, request, *args, **kwargs):
-        blocked_users = BlockedUser.objects.filter(channel=request.POST['blocked_user_channel'])
+        blocked_users = BlockedUser.objects.filter(group__pk=request.POST['group_id'])
         for bo in blocked_users:
             if bo.screen_name.lower() == request.POST['blocked_user_name'].lower():
                 response_data = {'result': "duplicate"}
                 break
         else:
             try:
-                chan = Channel.objects.filter(screen_name=request.POST['blocked_user_channel'])[0]
                 user = BlockedUser()
                 user.screen_name = request.POST['blocked_user_name']
-                user.channel = chan
+                user.group = request.POST['group_id']
                 user.save()
                 response_data = {'result': "ok"}
             except Exception, e:
