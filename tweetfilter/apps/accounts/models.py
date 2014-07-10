@@ -158,3 +158,14 @@ class Channel(models.Model):
         """ returns a list of item groups of certain type """
         clazz_type = ContentType.objects.get_for_model(clazz)
         return self.groups.filter(content_type__pk=clazz_type.id)
+
+    def init_default_groups(self):
+        """ creates default item groups for the channel. This should be called only once after authentication """
+        self.groups.add(
+            ItemGroup(class_type=Trigger, channel_exclusive=True, name="Disparadores del canal"), 
+            ItemGroup(class_type=Filter, channel_exclusive=True, name="Retenedores del canal"),
+            ItemGroup(class_type=Replacement, channel_exclusive=True, name="Supresores del canal"),
+            ItemGroup(class_type=BlockedUser, channel_exclusive=True, name="Usuarios bloqueados del canal"),
+            ItemGroup(class_type=ScheduledTweet, channel_exclusive=True, name="Tweets programados del canal"),
+            ItemGroup(class_type=HashtagAdvertisement, channel_exclusive=True, name="Sufijos del canal"))
+        self.save()
