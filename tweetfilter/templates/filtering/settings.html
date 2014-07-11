@@ -60,8 +60,7 @@
                 <tr id='trigger_group_row_{{ trigger_group.name }}'>
                     <td><a id="edit_trigger_group_btn_{{ trigger_group.id }}" href="#add_trigger_group_modal" data-toggle='modal'/>{{ trigger_group.name }}</a>
                     </td>
-
-                    <td> <a>[Asociar]</a> </td>  <!-- icono -->
+                    <td class="link_channels_btn"> <a>[Asociar]</a> </td>  <!-- icono -->
                     <td> <a id='delete_trigger_group_{{ trigger_group.id }}' class='delete_channel' title='Haga click para eliminar el grupo' href='#delete_confirm_modal' data-toggle='modal'><span class='badge badge-important' contenteditable='false'>x</span></a></td>
                 </tr>
                 {% endfor %}
@@ -84,7 +83,8 @@
                         </h3>
                     </div>
                     <div class="modal-body">
-                        <div class="span7">
+                        
+                        <div class="span11">
                             <!--<h5>Hashtag</h5>-->
                             <table>
                                 <tr>
@@ -93,9 +93,36 @@
                                 </tr>
                             </table>
                         </div>
-                        <div class="span5">
-                            <!-- agregar palabras -->
+                        <div class="span11">
+                            &nbsp;
+                            <br>
                         </div>
+                    
+                        <div class="span8">
+                            <div class="rounded_box fill_green" id="triggers_box">
+                                <h3>Disparadores</h3>
+
+                                <div class="scrollable" id="trigger_list_div">
+                                    <table class="table" id="trigger_list_table" style="display:none">
+                                        <thead>
+                                            <tr>
+                                                <th>Texto</th>
+                                                <th>Eliminar</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="trigger_list_tbody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <span id="no_triggers_message">El grupo no contiene disparadores</span> <br><br>
+
+                                <table><tr>
+                                    <td><input type="text" id="add_trigger_text"></td>
+                                    <td class="button_td"> &nbsp;<a id="add_trigger_btn" class="btn btn-primary btn-small">Agregar</a></td>
+                                </tr></table>
+                            </div> <!-- end rounded box -->
+                        </div> <!-- end span -->
+                    
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_trigger_group_btn">Guardar</button>

@@ -417,7 +417,7 @@ class TriggerCreateView(CsrfExemptMixin, JSONResponseMixin,
             else:
                 trigger = Trigger()
                 trigger.text = request.POST['trigger_text']
-                trigger.group = request.POST['group_id'] # es ID, esto cuela???
+                trigger.group.pk = request.POST['group_id'] # es ID, esto cuela???
                 trigger.save()
                 response_data = {'result': "ok"}
         except Exception, e:
