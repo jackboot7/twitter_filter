@@ -804,3 +804,77 @@ class TimeBlockUpdateView(CsrfExemptMixin, JSONResponseMixin,
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
+
+
+#============================
+# Item group management views
+#============================
+
+class TriggerGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, View):
+    """
+    Creates a new trigger group
+    """
+    model = ItemGroup
+
+    def post_ajax(self, request, *args, **kwargs):
+        try:
+            trigger_groups = ItemGroup.objects.filter(content_type="Trigger")
+            for group in trigger_groups:
+                if group.name == request.POST['trigger_group_name']:
+                    response_data = {'result': "duplicate"}
+                    break
+            else:
+                new_group = ItemGroup()
+                new_group.content_type = "Trigger"
+                new_group.name = request.POST['trigger_group_name']
+                new_group.save()
+                response_data = {'result': "ok"}
+        except Exception, e:
+            logger.exception("Error al crear grupo de triggers")
+            response_data = {'result': e}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class TriggerGroupUpdateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Update Trigger group attributes
+    """
+    model = ItemGroup
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            trigger_groups = ItemGroup.objects.filter(content_type="Trigger")
+            for group in trigger_groups:
+                if group.name == request.POST['trigger_group_name']:
+                    response_data = {'result': "duplicate"}
+                    break
+            else:
+                obj.name = request.POST['trigger_group_name']
+                obj.save()
+                response_data = {'result': "ok"}
+        except Exception, e:
+            response_data = {'result': e.args[0]}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class TriggerGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
+    """
+    Shows a all non-exclusive trigger groups
+    """
+    queryset = ItemGroup.objects.filter(content_type="Trigger").filter(channel_exclusive=False)
+
+    def get_ajax(self, request, *args, **kwargs):
+        json_list = []
+        group_list = self.get_queryset()
+        for group in group_list:
+            group_dict = model_to_dict(group)
+            json_list.append(group_dict)
+
+        return self.render_json_response(json_list)

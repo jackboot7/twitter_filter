@@ -52,6 +52,7 @@
                 </h1>
             </div>
 
+            {% if user.is_authenticated %}
             <div class="navbar">
                 <div class="navbar-inner">
                     <div class="container-fluid">
@@ -59,16 +60,16 @@
                         <div class="nav-collapse collapse navbar-responsive-collapse">
                             <ul class="nav">
 
-                                <li class="active">
+                                <li id="menu_home_li" class="menu_li">
                                     <a href="/">Home</a>
                                 </li>
-                                <li>
+                                <li id="menu_filtering_li" class="menu_li">
                                     <a href="/filtering/">Retweet automático</a>
                                 </li>
-                                <li>
+                                <li id="menu_scheduling_li" class="menu_li">
                                     <a href="/scheduling/">Tweets programados</a>
                                 </li>
-                                <li>
+                                <li id="menu_hashtags_li" class="menu_li">
                                     <a href="/hashtags/">Sufijos</a>
                                 </li>
                             </ul>
@@ -110,6 +111,7 @@
                     </div>
                 </div>
             </div> <!-- end navbar -->
+            {% endif %}
 
             <div class="alert alert-success" id="alert_success" style="display: none">
                 <button type="button" class="close" data-dismiss="alert">×</button>

@@ -155,7 +155,4 @@ $(document).ready(function () {
             // dar feedback?
         });
     });
-
-    
-
 });

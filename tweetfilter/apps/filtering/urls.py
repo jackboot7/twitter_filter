@@ -45,4 +45,9 @@ urlpatterns = patterns('apps.filtering.views',
     url(r'^blocked_user/list/(?P<pk>\w+)', BlockedUserListView.as_view()),
     url(r'^blocked_user/delete/(?P<pk>\w+)', BlockedUserDeleteView.as_view()),
     url(r'^blocked_user/add', BlockedUserCreateView.as_view()),
+
+    ##################
+    url(r'^trigger_group/add/', TriggerGroupCreateView.as_view()),
+    url(r'^trigger_group/update/(?P<pk>\w+)', TriggerGroupUpdateView.as_view(), name="edit_trigger_group"),
+    url(r'^trigger_group/list/', TriggerGroupListView.as_view()),
 )

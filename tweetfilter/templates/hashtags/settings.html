@@ -97,12 +97,15 @@
 {% endblock %} <!-- endblock section_body -->
 
 {% block page_scripts %}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/hashtags/settings.js"></script>
+    <!--
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/script.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/triggers.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/replacements.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/filters.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/timeblocks.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/blocked_users.js"></script>
+    -->
 {% endblock %}
 
 {% block modal_header %}

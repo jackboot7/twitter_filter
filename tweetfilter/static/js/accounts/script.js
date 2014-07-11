@@ -63,8 +63,8 @@ var
 $(document).ready(function () {
     "use strict";
 
-    //$('#channel_list_table').hide();
-    //$('#no_channels_message').hide();
+    $('.menu_li').removeClass("active");
+    $('#menu_home_li').addClass("active");
 
     if($('#channel_added').val() === "true") {
         channel_add_success();

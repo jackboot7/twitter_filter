@@ -8,14 +8,6 @@
     <input type="hidden" id="current_channel" value="{{ channel.screen_name }}" xmlns="http://www.w3.org/1999/html">
     <ul class="nav nav-tabs" id="channel_nav">
         {% block nav_bar %}
-            <!--
-            <li>
-                <a>Monitor</a>
-            </li>-->
-            <!--
-            <li>
-                <a href="#">Seguidores</a>
-            </li>-->
             <li id="nav_tab_home">
                 <a href="/filtering/edit/{{ channel.screen_name }}">Retweets automáticos</a>
             </li>
@@ -28,20 +20,9 @@
                 <a href="#">Hashtags</a>
             </li>
 
-            <!--
-            <li>
-                <a>
-                    Colaboradores
-                </a>
-            </li>-->
-
             <li class="disabled" id="nav_tab_config">
                 <!--<a href="#">Configuración</a>-->
-            </li><!--
-<li class="disabled">
-    <a href="#">Messages</a>
-</li>
--->
+            </li>
         {% endblock %} <!-- endblock nav_bar -->
     </ul>
 
@@ -70,7 +51,7 @@
                         </tr>
                         </thead>
                         <tbody id="hashtag_list_tbody">
-
+                        
                         </tbody>
 
                     </table>
