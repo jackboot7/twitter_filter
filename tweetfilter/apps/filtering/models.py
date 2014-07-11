@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-
 import re
 
 from unidecode import unidecode
-from apps.accounts.models import Channel
 from django.db import models
 
-from apps.control.models import ScheduleBlock, ItemGroup
+from apps.accounts.models import Channel, ItemGroup
+from apps.control.models import ScheduleBlock
 from apps.twitter.models import Tweet
+
 
 class BlockedUser(models.Model):
     """

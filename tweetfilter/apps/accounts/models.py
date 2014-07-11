@@ -5,9 +5,31 @@ from django.db import models
 from picklefield.fields import PickledObjectField
 from django.contrib.contenttypes.models import ContentType
 
-from apps.control.models import ItemGroup
 from apps.control.tasks import channel_is_streaming, queue_is_active, get_streaming_task_ids
 from apps.twitter.models import Tweet
+
+
+class ItemGroup(models.Model):
+    """
+    Serves as a wrapper for a set of items of the same type (triggers, hashtags, blocked users, etc).
+    Its purpose is to integrate different channels so that they can share items, clearing the need to
+    redefine settings for each channel. 
+    """
+    content_type = models.ForeignKey(ContentType)
+    name = models.CharField(max_length=64)
+    channel_exclusive = models.BooleanField(default=False)
+
+    def __init__(self, *args, **kwargs):
+        class_type = kwargs.pop('class_type', None)
+        super(ItemGroup, self).__init__(*args, **kwargs)
+        if class_type is not None:
+            self.content_type = ContentType.objects.get_for_model(class_type)
+
+    def get_class(self):
+        return self.content_type.model_class()
+
+    def get_channels(self):
+        return self.channel_set.all()
 
 
 class Channel(models.Model):

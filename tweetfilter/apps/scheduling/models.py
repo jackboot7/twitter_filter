@@ -1,8 +1,8 @@
 import json
 from django.db import models
 from djcelery.models import PeriodicTask, CrontabSchedule
-from apps.accounts.models import Channel
-from apps.control.models import Schedule, ItemGroup
+from apps.accounts.models import Channel, ItemGroup
+from apps.control.models import Schedule
 
 
 class ScheduledTweet(Schedule):

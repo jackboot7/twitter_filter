@@ -10,8 +10,7 @@ from django.views.generic import DetailView
 from django.views.generic.base import View
 from django.views.generic.edit import DeleteView, UpdateView
 
-from apps.accounts.models import Channel
-from apps.control.models import ItemGroup
+from apps.accounts.models import Channel, ItemGroup
 from apps.scheduling.models import ScheduledTweet
 from apps.twitter.api import ChannelAPI
 

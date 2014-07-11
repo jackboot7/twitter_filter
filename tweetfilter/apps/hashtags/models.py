@@ -1,7 +1,7 @@
 from django.db import models
 
-from apps.accounts.models import Channel
-from apps.control.models import ScheduleBlock, ItemGroup
+from apps.accounts.models import Channel, ItemGroup
+from apps.control.models import ScheduleBlock
 
 
 class HashtagAdvertisement(ScheduleBlock):

@@ -9,8 +9,7 @@ from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView, DeleteView
 
-from apps.accounts.models import Channel
-from apps.control.models import ItemGroup
+from apps.accounts.models import Channel, ItemGroup
 from apps.hashtags.models import HashtagAdvertisement
 
 
