@@ -183,6 +183,10 @@ class Channel(models.Model):
 
     def init_default_groups(self):
         """ creates default item groups for the channel. This should be called only once after authentication """
+        from apps.filtering.models import Trigger, Filter, Replacement, BlockedUser
+        from apps.scheduling.models import ScheduledTweet
+        from apps.hashtags.models import HashtagAdvertisement
+        
         self.groups.add(
             ItemGroup(class_type=Trigger, channel_exclusive=True, name="Disparadores del canal"), 
             ItemGroup(class_type=Filter, channel_exclusive=True, name="Retenedores del canal"),

@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from django.views.generic import DetailView, View, DeleteView
 from django.views.generic.edit import UpdateView
 
-from apps.accounts.models import Channel
+from apps.accounts.models import Channel, ItemGroup
 from apps.control.models import ScheduleBlock
 from apps.filtering import tasks
 from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleBlock, Replacement, Keyword

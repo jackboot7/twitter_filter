@@ -1,6 +1,6 @@
 from celery.task.base import task
 from django.conf import settings
-from apps.accounts.models import Channel
+from apps.accounts.models import ItemGroup 
 from apps.twitter.api import Twitter
 
 @task(queue="tweets", ignore_result=True)
