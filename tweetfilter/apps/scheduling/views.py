@@ -9,6 +9,7 @@ from django.http.response import HttpResponse
 from django.views.generic import DetailView
 from django.views.generic.base import View
 from django.views.generic.edit import DeleteView, UpdateView
+from django.views.generic.list import ListView
 
 from apps.accounts.models import Channel, ItemGroup
 from apps.scheduling.models import ScheduledTweet
@@ -16,6 +17,19 @@ from apps.twitter.api import ChannelAPI
 
 
 logger = logging.getLogger('app')
+
+
+class ScheduledPostsHomeView(LoginRequiredMixin, ListView):
+    """
+    Renders the main interface for scheduling module config
+    """
+    template_name = "filtering/settings.html"
+    queryset = ItemGroup.objects.filter(channel_exclusive=False)
+
+    def get_context_data(self, **kwargs):
+        context = super(ScheduledPostsHomeView, self).get_context_data(**kwargs)
+        context['scheduled_tweet_groups'] = self.get_queryset().filter(content_type="ScheduledTweet")
+        return context
 
 
 class ScheduledPostsDetailView(LoginRequiredMixin, DetailView):

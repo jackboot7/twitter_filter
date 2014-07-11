@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block section_title %}
+    Configuración de Tweets Programados
+{% endblock %}
+
+{% block section_body %}
+
+<ul class="nav nav-tabs" id="channel_nav">
+    {% block nav_bar %}
+        <!--
+        <li>
+            <a>Monitor</a>
+        </li>-->
+        <!--
+        <li>
+            <a href="#">Seguidores</a>
+        </li>
+        <li id="nav_tab_home" class="active">
+            <a href="#">Retweets automáticos</a>
+        </li>
+        <li>
+            <a href="/scheduling/edit/{{ channel.screen_name }}">Tweets programados</a>
+        </li>
+        <li>
+            <a href="/hashtags/edit/{{ channel.screen_name }}">Hashtags</a>
+        </li>
+
+        
+        <li>
+            <a>
+                Colaboradores
+            </a>
+        </li>
+
+        <li class="disabled" id="nav_tab_config">
+            <a href="#">Configuración</a>
+        </li>
+        <li class="disabled">
+            <a href="#">Messages</a>
+        </li>
+-->
+    {% endblock %} <!-- endblock nav_bar -->
+</ul>
+
+<div class="row-fluid">
+    <div class="span5 rounded_box fill_white">
+        <fieldset>
+            <legend>Configuración</legend>
+            El módulo de retweets automáticos está:
+            <a class="no_decoration" id="switch_retweets_btn" title='' >
+                &nbsp;<span id="switch_retweets_label" class='label' ></span>
+            </a>
+        </fieldset>
+    </div>
+</div>
+
+<div class="row-fluid">
+    <div class="span8 rounded_box fill_white">
+        <div class="span8">
+        <!--<input type="hidden" id="channel_added" value="{{ channel_added }}">-->
+        <h3>Grupos de disparadores</h3>
+        {% if trigger_groups %}
+        <table class="table" id="trigger_groups_table">
+            <thead>
+            <tr>
+                <th>
+                    Nombre
+                </th>
+                <th>
+                    Asociar canales
+                </th>
+                <th>
+                    Eliminar
+                </th>
+            </tr>
+            </thead>
+            <tbody id="trigger_groups_tbody">
+                {% for trigger_group in trigger_groups %}
+                <tr id='trigger_group_row_{{ trigger_group.name }}'>
+                    <td><a href="{% url 'edit_group' trigger_group.id %}"/>{{ trigger_group.name }}</a>
+                    </td>
+
+                    <td> <a>Asociar a...</a> </td>  <!-- icono -->
+                    <td> <a id='delete_trigger_group_{{ trigger_group.id }}' class='delete_channel' title='Haga click para eliminar el grupo' href='#delete_confirm_modal' data-toggle='modal'><span class='badge badge-important' contenteditable='false'>x</span></a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <span id="no_trigger_groups_message">No hay grupos de disparadores</span> <br><br>
+        {% endif %}
+        <a id="call_twitter_auth" href="#" role="button" class="btn btn-primary" data-toggle="modal">Crear grupo</a>        
+    </div>
+</div>
+
+{% endblock %} <!-- endblock section_body -->
+
+{% block page_scripts %}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/script.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/triggers.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/replacements.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/filters.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/timeblocks.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/blocked_users.js"></script>
+{% endblock %}
+
+{% block modal_header %}
+    <!-- hola -->
+{% endblock %}
+
+{% block modal_body %}
+{% endblock %}
+
+{% block right_column %}
+{% endblock %}

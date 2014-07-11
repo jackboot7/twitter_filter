@@ -9,6 +9,7 @@ from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin, 
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.views.generic import DetailView, View, DeleteView
+from django.views.generic.list import ListView
 from django.views.generic.edit import UpdateView
 
 from apps.accounts.models import Channel, ItemGroup
@@ -20,9 +21,25 @@ from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleB
 logger = logging.getLogger('app')
 
 
-class FilteringDetailView(LoginRequiredMixin, DetailView):
+class FilteringHomeView(LoginRequiredMixin, ListView):
     """
     Renders the main interface for filtering module config
+    """
+    template_name = "filtering/settings.html"
+    queryset = ItemGroup.objects.filter(channel_exclusive=False)
+
+    def get_context_data(self, **kwargs):
+        context = super(FilteringHomeView, self).get_context_data(**kwargs)
+        context['trigger_groups'] = self.get_queryset().filter(content_type="Trigger")
+        context['filter_groups'] = self.get_queryset().filter(content_type="Filter")
+        context['replacement_groups'] = self.get_queryset().filter(content_type="Replacement")
+        context['blocked_user_groups'] = self.get_queryset().filter(content_type="BlockedUser")
+        return context
+
+
+class FilteringDetailView(LoginRequiredMixin, DetailView):
+    """
+    Renders the channel interface for filtering settings
     """
     model = Channel
     template_name = "filtering/index.html"

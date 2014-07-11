@@ -8,12 +8,26 @@ from django.http.response import HttpResponse
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView, DeleteView
+from django.views.generic.list import ListView
 
 from apps.accounts.models import Channel, ItemGroup
 from apps.hashtags.models import HashtagAdvertisement
 
 
 logger = logging.getLogger('app')
+
+
+class HashtagsHomeView(LoginRequiredMixin, ListView):
+    """
+    Renders the main interface for hashtags module config
+    """
+    template_name = "hashtags/settings.html"
+    queryset = ItemGroup.objects.filter(channel_exclusive=False)
+
+    def get_context_data(self, **kwargs):
+        context = super(HashtagsHomeView, self).get_context_data(**kwargs)
+        context['hashtag_groups'] = self.get_queryset().filter(content_type="HashtagAdvertisement")
+        return context
 
 
 class HashtagsDetailView(LoginRequiredMixin, DetailView):

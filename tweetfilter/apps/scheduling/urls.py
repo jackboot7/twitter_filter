@@ -4,7 +4,8 @@ from apps.scheduling.views import *
 
 urlpatterns = patterns('apps.scheduling.views',
 
-    url(r'^edit/(?P<pk>\w+)', ScheduledPostsDetailView.as_view()),   # module main view
+    url(r'^$', ScheduledPostsHomeView.as_view(), name="scheduling_home"),
+    url(r'^edit/(?P<pk>\w+)', ScheduledPostsDetailView.as_view()),
 
     url(r'check_status/(?P<pk>\w+)', CheckStatusView.as_view()),
     url(r'switch_status/(?P<pk>\w+)', SwitchStatusView.as_view()),

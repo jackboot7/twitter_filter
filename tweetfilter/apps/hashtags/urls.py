@@ -5,7 +5,8 @@ from apps.hashtags.views import *
 
 urlpatterns = patterns('apps.hashtags.views',
 
-    url(r'^edit/(?P<pk>\w+)', HashtagsDetailView.as_view()),   # module main view
+    url(r'^$', HashtagsHomeView.as_view(), name="hashtags_home"),
+    url(r'^edit/(?P<pk>\w+)', HashtagsDetailView.as_view()),
 
     url(r'check_status/(?P<pk>\w+)', CheckStatusView.as_view()),
     url(r'switch_status/(?P<pk>\w+)', SwitchStatusView.as_view()),

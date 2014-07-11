@@ -3,7 +3,6 @@ from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.db import models
 from picklefield.fields import PickledObjectField
-from django.contrib.contenttypes.models import ContentType
 
 from apps.control.tasks import channel_is_streaming, queue_is_active, get_streaming_task_ids
 from apps.twitter.models import Tweet
@@ -15,7 +14,7 @@ class ItemGroup(models.Model):
     Its purpose is to integrate different channels so that they can share items, clearing the need to
     redefine settings for each channel. 
     """
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.CharField(max_length=64)
     name = models.CharField(max_length=64)
     channel_exclusive = models.BooleanField(default=False)
 
@@ -23,10 +22,7 @@ class ItemGroup(models.Model):
         class_type = kwargs.pop('class_type', None)
         super(ItemGroup, self).__init__(*args, **kwargs)
         if class_type is not None:
-            self.content_type = ContentType.objects.get_for_model(class_type)
-
-    def get_class(self):
-        return self.content_type.model_class()
+            self.content_type = class_type
 
     def get_channels(self):
         return self.channel_set.all()
@@ -87,9 +83,11 @@ class Channel(models.Model):
     def delete(self):
         """ stops streaming and scheduled tasks before deleting itself """
         self.stop_streaming()
+        """ # se necesita borrar los scheduled tweets?
         schedules = self.scheduledtweet_set.all()
         for schedule in schedules:
             schedule.delete()
+        """
         super(Channel, self).delete()
 
     def get_last_update(self):
@@ -168,30 +166,32 @@ class Channel(models.Model):
             channel_log_exception.delay(message, self.screen_name)
             return False
 
-    def get_triggers(self):
-        """ returns a list of this channel's trigger words """
-        return self.trigger_set.all()
+    def get_trigger_groups(self):
+        """ returns a list of this channel's trigger groups """
+        return self.get_groups("Trigger")
 
-    def get_filters(self):
-        """ returns a list of this channel's filter words """
-        return self.filter_set.all()
+    def get_filter_groups(self):
+        """ returns a list of this channel's filter groups """
+        return self.get_groups("Filter")
 
-    def get_groups(self, clazz):
+    def get_groups(self, class_name):
         """ returns a list of item groups of certain type """
-        clazz_type = ContentType.objects.get_for_model(clazz)
-        return self.groups.filter(content_type__pk=clazz_type.id)
+        return self.groups.filter(content_type=class_name)
 
     def init_default_groups(self):
         """ creates default item groups for the channel. This should be called only once after authentication """
-        from apps.filtering.models import Trigger, Filter, Replacement, BlockedUser
-        from apps.scheduling.models import ScheduledTweet
-        from apps.hashtags.models import HashtagAdvertisement
-        
-        self.groups.add(
-            ItemGroup(class_type=Trigger, channel_exclusive=True, name="Disparadores del canal"), 
-            ItemGroup(class_type=Filter, channel_exclusive=True, name="Retenedores del canal"),
-            ItemGroup(class_type=Replacement, channel_exclusive=True, name="Supresores del canal"),
-            ItemGroup(class_type=BlockedUser, channel_exclusive=True, name="Usuarios bloqueados del canal"),
-            ItemGroup(class_type=ScheduledTweet, channel_exclusive=True, name="Tweets programados del canal"),
-            ItemGroup(class_type=HashtagAdvertisement, channel_exclusive=True, name="Sufijos del canal"))
+        triggers = ItemGroup(class_type="Trigger", channel_exclusive=True, name="Disparadores del canal")
+        filters = ItemGroup(class_type="Filter", channel_exclusive=True, name="Retenedores del canal")
+        replacements = ItemGroup(class_type="Replacement", channel_exclusive=True, name="Supresores del canal")
+        blocked_users = ItemGroup(class_type="BlockedUser", channel_exclusive=True, name="Usuarios bloqueados del canal")
+        scheduled_tweets = ItemGroup(class_type="ScheduledTweet", channel_exclusive=True, name="Tweets programados del canal")
+        hashtags = ItemGroup(class_type="HashtagAdvertisement", channel_exclusive=True, name="Sufijos del canal")
+        triggers.save()
+        filters.save()
+        replacements.save()
+        blocked_users.save()
+        scheduled_tweets.save()
+        hashtags.save()
+
+        self.groups.add(triggers, filters, replacements, blocked_users, scheduled_tweets, hashtags)
         self.save()

@@ -6,7 +6,8 @@ from apps.filtering.views import *
 
 urlpatterns = patterns('apps.filtering.views',
 
-    url(r'edit/(?P<pk>\w+)', FilteringDetailView.as_view(), name='edit_channel'),    # module main view
+    url(r'^$', FilteringHomeView.as_view(), name='filtering_home'),    # module main view
+    url(r'edit/(?P<pk>\w+)', FilteringDetailView.as_view(), name='edit_channel'),
 
     url(r'check_status/(?P<pk>\w+)', CheckStatusView.as_view()),
     url(r'switch_status/(?P<pk>\w+)', SwitchStatusView.as_view()),
