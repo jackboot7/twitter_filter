@@ -21,18 +21,57 @@ from apps.filtering.models import BlockedUser, Trigger, Filter, ChannelScheduleB
 logger = logging.getLogger('app')
 
 
-class FilteringHomeView(LoginRequiredMixin, ListView):
+class TriggersHomeView(LoginRequiredMixin, ListView):
     """
-    Renders the main interface for filtering module config
+    Renders the main interface for filtering module config (trigger groups tab)
     """
-    template_name = "filtering/settings.html"
+    template_name = "filtering/trigger_settings.html"
     queryset = ItemGroup.objects.filter(channel_exclusive=False)
 
     def get_context_data(self, **kwargs):
-        context = super(FilteringHomeView, self).get_context_data(**kwargs)
+        context = super(TriggersHomeView, self).get_context_data(**kwargs)
         context['trigger_groups'] = self.get_queryset().filter(content_type="Trigger")
-        context['filter_groups'] = self.get_queryset().filter(content_type="Filter")
+        context['channel_list'] = Channel.objects.filter(user_id=self.request.user.id)
+        return context
+
+
+class ReplacementsHomeView(LoginRequiredMixin, ListView):
+    """
+    Renders the main interface for filtering module config (replacement groups tab)
+    """
+    template_name = "filtering/replacement_settings.html"
+    queryset = ItemGroup.objects.filter(channel_exclusive=False)
+
+    def get_context_data(self, **kwargs):
+        context = super(ReplacementsHomeView, self).get_context_data(**kwargs)
         context['replacement_groups'] = self.get_queryset().filter(content_type="Replacement")
+        context['channel_list'] = Channel.objects.filter(user_id=self.request.user.id)
+        return context
+
+
+class FiltersHomeView(LoginRequiredMixin, ListView):
+    """
+    Renders the main interface for filtering module config (filter groups tab)
+    """
+    template_name = "filtering/filter_settings.html"
+    queryset = ItemGroup.objects.filter(channel_exclusive=False)
+
+    def get_context_data(self, **kwargs):
+        context = super(FiltersHomeView, self).get_context_data(**kwargs)
+        context['filter_groups'] = self.get_queryset().filter(content_type="Filter")
+        context['channel_list'] = Channel.objects.filter(user_id=self.request.user.id)
+        return context
+
+
+class BlockedUsersHomeView(LoginRequiredMixin, ListView):
+    """
+    Renders the main interface for filtering module config (blocked user groups tabs)
+    """
+    template_name = "filtering/blocked_user_settings.html"
+    queryset = ItemGroup.objects.filter(channel_exclusive=False)
+
+    def get_context_data(self, **kwargs):
+        context = super(BlockedUsersHomeView, self).get_context_data(**kwargs)
         context['blocked_user_groups'] = self.get_queryset().filter(content_type="BlockedUser")
         context['channel_list'] = Channel.objects.filter(user_id=self.request.user.id)
         return context
@@ -475,6 +514,7 @@ class ReplacementCreateView(CsrfExemptMixin, JSONResponseMixin,
 
         try:
             reps = Replacement.objects.filter(group__pk=request.POST['group_id'])
+            group = ItemGroup.objects.filter(id=request.POST['group_id'])[0]
             for rp in reps:
                 if rp.equals(request.POST['replacement_text']):
                     response_data = {'result': "duplicate"}
@@ -483,7 +523,7 @@ class ReplacementCreateView(CsrfExemptMixin, JSONResponseMixin,
                 replacement = Replacement()
                 replacement.text = request.POST['replacement_text']
                 replacement.replace_with = request.POST['replacement_replace_with']
-                replacement.group = request.POST['group_id']    # id?????
+                replacement.group = group
                 replacement.save()
                 response_data = {'result': "ok"}
         except Exception, e:
@@ -945,3 +985,79 @@ class ItemGroupDeleteView(CsrfExemptMixin, JSONResponseMixin,
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
+
+
+class ReplacementGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, View):
+    """
+    Creates a new replacement group
+    """
+    model = ItemGroup
+
+    def post_ajax(self, request, *args, **kwargs):
+        try:
+            replacement_groups = ItemGroup.objects.filter(content_type="Replacement")
+            for group in replacement_groups:
+                if group.name == request.POST['replacement_group_name']:
+                    response_data = {'result': "duplicate"}
+                    break
+            else:
+                new_group = ItemGroup()
+                new_group.content_type = "Replacement"
+                new_group.name = request.POST['replacement_group_name']
+                new_group.save()
+                response_data = {'result': "ok", 'group_obj': model_to_dict(new_group)}
+        except Exception, e:
+            logger.exception("Error al crear grupo de supresores")
+            response_data = {'result': e}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ReplacementGroupUpdateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Update Replacement group attributes
+    """
+    model = ItemGroup
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            replacement_groups = ItemGroup.objects.filter(content_type="Replacement").exclude(id=obj.id)
+            for group in replacement_groups:
+                if group.name == request.POST['replacement_group_name']:
+                    response_data = {'result': "duplicate"}
+                    break
+            else:
+                obj.name = request.POST['replacement_group_name']
+                obj.save()
+                response_data = {'result': "ok"}
+        except Exception, e:
+            response_data = {'result': e.args[0]}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ReplacementGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
+    """
+    Shows a all non-exclusive replacement groups
+    """
+    queryset = ItemGroup.objects.filter(content_type="Replacement").filter(channel_exclusive=False)
+
+    def get_ajax(self, request, *args, **kwargs):
+        json_list = []
+        group_list = self.get_queryset()
+
+        for group in group_list:
+            group_dict = model_to_dict(group)
+            group_dict['channels'] = []
+            
+            for chan in group.channel_set.all():
+                group_dict['channels'].append(chan.screen_name)
+            
+            json_list.append(group_dict)
+
+        return self.render_json_response(json_list)

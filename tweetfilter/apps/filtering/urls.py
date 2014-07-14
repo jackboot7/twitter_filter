@@ -6,7 +6,6 @@ from apps.filtering.views import *
 
 urlpatterns = patterns('apps.filtering.views',
 
-    url(r'^$', FilteringHomeView.as_view(), name='filtering_home'),    # module main view
     url(r'edit/(?P<pk>\w+)', FilteringDetailView.as_view(), name='edit_channel'),
 
     url(r'check_status/(?P<pk>\w+)', CheckStatusView.as_view()),
@@ -47,10 +46,19 @@ urlpatterns = patterns('apps.filtering.views',
     url(r'^blocked_user/add', BlockedUserCreateView.as_view()),
 
     ##################
+    url(r'^trigger_group/$', TriggersHomeView.as_view(), name='triggers_home'),    # module main view
     url(r'^trigger_group/add/', TriggerGroupCreateView.as_view()),
     url(r'^trigger_group/update/(?P<pk>\w+)', TriggerGroupUpdateView.as_view(), name="edit_trigger_group"),
     url(r'^trigger_group/list/', TriggerGroupListView.as_view()),
     url(r'^trigger_group/delete/(?P<pk>\w+)', ItemGroupDeleteView.as_view()),
     url(r'^trigger_group/set_channels/(?P<pk>\w+)', SetItemGroupChannelsView.as_view()),
     url(r'^trigger_group/list_channels/(?P<pk>\w+)', ItemGroupChannelListView.as_view()),
+    
+    url(r'^replacement_group/$', ReplacementsHomeView.as_view(), name='replacements_home'),
+    url(r'^replacement_group/add/', ReplacementGroupCreateView.as_view()),
+    url(r'^replacement_group/update/(?P<pk>\w+)', ReplacementGroupUpdateView.as_view(), name="edit_replacement_group"),
+    url(r'^replacement_group/list/', ReplacementGroupListView.as_view()),
+    url(r'^replacement_group/delete/(?P<pk>\w+)', ItemGroupDeleteView.as_view()),
+    url(r'^replacement_group/set_channels/(?P<pk>\w+)', SetItemGroupChannelsView.as_view()),
+    url(r'^replacement_group/list_channels/(?P<pk>\w+)', ItemGroupChannelListView.as_view()),
 )
