@@ -34,6 +34,7 @@ class FilteringHomeView(LoginRequiredMixin, ListView):
         context['filter_groups'] = self.get_queryset().filter(content_type="Filter")
         context['replacement_groups'] = self.get_queryset().filter(content_type="Replacement")
         context['blocked_user_groups'] = self.get_queryset().filter(content_type="BlockedUser")
+        context['channel_list'] = Channel.objects.filter(user_id=self.request.user.id)
         return context
 
 
@@ -409,6 +410,7 @@ class TriggerCreateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
 
         try:
+            group = ItemGroup.objects.filter(id=request.POST['group_id'])[0]
             triggers = Trigger.objects.filter(group__pk=request.POST['group_id'])
             for tr in triggers:
                 if tr.equals(request.POST['trigger_text']):
@@ -417,7 +419,7 @@ class TriggerCreateView(CsrfExemptMixin, JSONResponseMixin,
             else:
                 trigger = Trigger()
                 trigger.text = request.POST['trigger_text']
-                trigger.group.pk = request.POST['group_id'] # es ID, esto cuela???
+                trigger.group =  group
                 trigger.save()
                 response_data = {'result': "ok"}
         except Exception, e:
@@ -829,7 +831,7 @@ class TriggerGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
                 new_group.content_type = "Trigger"
                 new_group.name = request.POST['trigger_group_name']
                 new_group.save()
-                response_data = {'result': "ok"}
+                response_data = {'result': "ok", 'group_obj': model_to_dict(new_group)}
         except Exception, e:
             logger.exception("Error al crear grupo de triggers")
             response_data = {'result': e}
@@ -848,7 +850,7 @@ class TriggerGroupUpdateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
         try:
-            trigger_groups = ItemGroup.objects.filter(content_type="Trigger")
+            trigger_groups = ItemGroup.objects.filter(content_type="Trigger").exclude(id=obj.id)
             for group in trigger_groups:
                 if group.name == request.POST['trigger_group_name']:
                     response_data = {'result': "duplicate"}
@@ -873,8 +875,73 @@ class TriggerGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
     def get_ajax(self, request, *args, **kwargs):
         json_list = []
         group_list = self.get_queryset()
+
         for group in group_list:
             group_dict = model_to_dict(group)
+            group_dict['channels'] = []
+            
+            for chan in group.channel_set.all():
+                group_dict['channels'].append(chan.screen_name)
+            
             json_list.append(group_dict)
 
         return self.render_json_response(json_list)
+
+
+class SetItemGroupChannelsView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Associates a list of channels to the item group
+    """
+    model = ItemGroup
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            channels = json.loads(request.POST['channels'])
+            obj.channel_set.clear()
+            
+            for chan in channels:
+                obj.channel_set.add(chan)
+
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            logger.exception("Error in SwitchStatusView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ItemGroupChannelListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Given an item group, returns all channels associated with it
+    """
+    model = ItemGroup
+
+    def get_ajax(self, request,  *args, **kwargs):
+        obj = self.get_object()
+        response_data = []
+        
+        for chan in obj.channel_set.all():
+            response_data.append(chan.screen_name)
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ItemGroupDeleteView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, DeleteView):
+    """
+    Deletes an item group
+    """
+    model = ItemGroup
+    success_url = "/"
+
+    def post_ajax(self, request, *args, **kwargs):
+        self.delete(request)
+        response_data = {'result': "ok"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
