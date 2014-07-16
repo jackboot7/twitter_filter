@@ -18,7 +18,7 @@
         <li id="filtering_filters_tab" class="filtering_tab">
             <a href="/filtering/filter_group/">Retenedores</a>
         </li>
-        <li id="filtering_filters_tab" class="filtering_tab active">
+        <li id="filtering_blocked_users_tab" class="filtering_tab active">
             <a href="">Usuarios bloqueados</a>
         </li>
     {% endblock %} <!-- endblock nav_bar -->
@@ -38,9 +38,9 @@
 <div class="row-fluid">
     <div class="span8 rounded_box fill_white">
         <div class="span8">
-        <h4>Grupos de disparadores</h4>
+        <h4>Grupos de usuarios bloqueados</h4>
         
-        <table class="table" id="trigger_group_list_table">
+        <table class="table" id="blocked_user_group_list_table">
             <thead>
             <tr>
                 <th>
@@ -54,24 +54,24 @@
                 </th>
             </tr>
             </thead>
-            <tbody id="trigger_group_list_tbody">
+            <tbody id="blocked_user_group_list_tbody">
                 
             </tbody>
         </table>
         
-        <span id="no_trigger_groups_message">No hay grupos de disparadores</span> <br><br>
+        <span id="no_blocked_user_groups_message">No hay grupos de usuarios bloqueados</span> <br><br>
         
         
-        <a id="add_trigger_group_btn" href="#add_trigger_group_modal" class="btn btn-primary btn-small" data-toggle='modal'>Crear grupo</a>
+        <a id="add_blocked_user_group_btn" href="#add_blocked_user_group_modal" class="btn btn-primary btn-small" data-toggle='modal'>Crear grupo</a>
     </div>
 </div>
 
-<div id="add_trigger_group_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <input type="hidden" id="editing_trigger_group_id" value="">
+<div id="add_blocked_user_group_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <input type="hidden" id="editing_blocked_user_group_id" value="">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="trigger_group_modal_title">
-            Crear grupo de disparadores
+        <h3 id="blocked_user_group_modal_title">
+            Crear grupo de usuarios bloqueados
         </h3>
     </div>
     <div class="modal-body">
@@ -81,7 +81,7 @@
             <table>
                 <tr>
                     <td><label>Nombre del grupo:&nbsp;</label></td>
-                    <td><input id="add_trigger_group_name" type="text" class="span10" maxlength="64"></td>
+                    <td><input id="add_blocked_user_group_name" type="text" class="span10" maxlength="64"></td>
                 </tr>
             </table>
         </div>
@@ -91,36 +91,36 @@
         </div>
     
         <div class="span8">
-            <div class="rounded_box fill_green" id="triggers_box">
-                <h3>Disparadores</h3>
+            <div class="rounded_box fill_gray" id="blocked_users_box">
+                <h3>Usuarios bloqueados</h3>
 
-                <div class="scrollable" id="trigger_list_div">
-                    <table class="table" id="trigger_list_table" style="display:none">
+                <div class="scrollable" id="blocked_user_list_div">
+                    <table class="table" id="blocked_user_list_table" style="display:none">
                         <thead>
                             <tr>
-                                <th>Texto</th>
+                                <th>Nombre</th>
                                 <th>Eliminar</th>
                             </tr>
                         </thead>
-                        <tbody id="trigger_list_tbody">
+                        <tbody id="blocked_user_list_tbody">
                         </tbody>
                     </table>
                 </div>
-                <span id="no_triggers_message">El grupo no contiene disparadores</span> <br><br>
+                <span id="no_blocked_users_message">El grupo no contiene usuarios bloqueados</span> <br><br>
 
                 <table><tr>
-                    <td><input type="text" id="add_trigger_text"></td>
-                    <td class="button_td"> &nbsp;<a id="add_trigger_btn" class="btn btn-primary btn-small">Agregar</a></td>
+                    <td><input type="text" id="add_blocked_user_name"></td>
+                    <td class="button_td"> &nbsp;<a id="add_blocked_user_btn" class="btn btn-primary btn-small">Agregar</a></td>
                 </tr></table>
             </div> <!-- end rounded box -->
         </div> <!-- end span -->
     
     </div>
     <div class="modal-footer">
-        <button class="btn btn-primary" aria-hidden="true" id="save_trigger_group_btn">Guardar</button>
+        <button class="btn btn-primary" aria-hidden="true" id="save_blocked_user_group_btn">Guardar</button>
         <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
     </div>
-</div> <!-- Add trigger group modal -->
+</div> <!-- Add blocked_user group modal -->
 
 
 <div id="add_channels_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -161,33 +161,33 @@
     </div>
 </div> <!-- link channels group modal -->
 
-<div id="delete_trigger_group_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div id="delete_blocked_user_group_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
         <h3>
-            Eliminar grupo de disparadores
+            Eliminar grupo de usuarios bloqueados
         </h3>
     </div>
     <div class="modal-body">
-        <input type="hidden" id="deleting_trigger_group_id" value="">
+        <input type="hidden" id="deleting_blocked_user_group_id" value="">
         <p>
-            Está seguro de que desea eliminar el grupo de disparadores seleccionado?
+            Está seguro de que desea eliminar el grupo de usuarios bloqueados seleccionado?
         </p>
     </div>
     <div class="modal-footer">
         <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
-        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_trigger_group_confirmed">Sí, eliminar</button>
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_blocked_user_group_confirmed">Sí, eliminar</button>
     </div>
-</div> <!-- delete trigger group modal -->
+</div> <!-- delete blocked_user group modal -->
 
 {% endblock %} <!-- endblock section_body -->
 
 {% block page_scripts %}
 
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/settings.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/blocked_user_settings.js"></script>
     <!--
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/script.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/triggers.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/blocked_users.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/replacements.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/filters.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/timeblocks.js"></script>

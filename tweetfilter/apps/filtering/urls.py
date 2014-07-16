@@ -7,6 +7,7 @@ from apps.filtering.views import *
 urlpatterns = patterns('apps.filtering.views',
 
     url(r'edit/(?P<pk>\w+)', FilteringDetailView.as_view(), name='edit_channel'),
+    url(r'^$', TriggersHomeView.as_view()), # Main module settings
 
     url(r'check_status/(?P<pk>\w+)', CheckStatusView.as_view()),
     url(r'switch_status/(?P<pk>\w+)', SwitchStatusView.as_view()),
@@ -61,4 +62,20 @@ urlpatterns = patterns('apps.filtering.views',
     url(r'^replacement_group/delete/(?P<pk>\w+)', ItemGroupDeleteView.as_view()),
     url(r'^replacement_group/set_channels/(?P<pk>\w+)', SetItemGroupChannelsView.as_view()),
     url(r'^replacement_group/list_channels/(?P<pk>\w+)', ItemGroupChannelListView.as_view()),
+
+    url(r'^filter_group/$', FiltersHomeView.as_view(), name='filters_home'),
+    url(r'^filter_group/add/', FilterGroupCreateView.as_view()),
+    url(r'^filter_group/update/(?P<pk>\w+)', FilterGroupUpdateView.as_view(), name="edit_filter_group"),
+    url(r'^filter_group/list/', FilterGroupListView.as_view()),
+    url(r'^filter_group/delete/(?P<pk>\w+)', ItemGroupDeleteView.as_view()),
+    url(r'^filter_group/set_channels/(?P<pk>\w+)', SetItemGroupChannelsView.as_view()),
+    url(r'^filter_group/list_channels/(?P<pk>\w+)', ItemGroupChannelListView.as_view()),
+
+    url(r'^blocked_user_group/$', BlockedUsersHomeView.as_view(), name='blocked_users_home'),
+    url(r'^blocked_user_group/add/', BlockedUserGroupCreateView.as_view()),
+    url(r'^blocked_user_group/update/(?P<pk>\w+)', BlockedUserGroupUpdateView.as_view(), name="edit_blocked_user_group"),
+    url(r'^blocked_user_group/list/', BlockedUserGroupListView.as_view()),
+    url(r'^blocked_user_group/delete/(?P<pk>\w+)', ItemGroupDeleteView.as_view()),
+    url(r'^blocked_user_group/set_channels/(?P<pk>\w+)', SetItemGroupChannelsView.as_view()),
+    url(r'^blocked_user_group/list_channels/(?P<pk>\w+)', ItemGroupChannelListView.as_view()),
 )
