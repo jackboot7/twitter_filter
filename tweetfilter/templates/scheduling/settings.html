@@ -1,67 +1,18 @@
 {% extends 'base.html' %}
 
 {% block section_title %}
-    Configuración de Tweets Programados
+    Tweets programados
 {% endblock %}
 
 {% block section_body %}
 
-<ul class="nav nav-tabs" id="channel_nav">
-    {% block nav_bar %}
-        <!--
-        <li>
-            <a>Monitor</a>
-        </li>-->
-        <!--
-        <li>
-            <a href="#">Seguidores</a>
-        </li>
-        <li id="nav_tab_home" class="active">
-            <a href="#">Retweets automáticos</a>
-        </li>
-        <li>
-            <a href="/scheduling/edit/{{ channel.screen_name }}">Tweets programados</a>
-        </li>
-        <li>
-            <a href="/hashtags/edit/{{ channel.screen_name }}">Hashtags</a>
-        </li>
-
-        
-        <li>
-            <a>
-                Colaboradores
-            </a>
-        </li>
-
-        <li class="disabled" id="nav_tab_config">
-            <a href="#">Configuración</a>
-        </li>
-        <li class="disabled">
-            <a href="#">Messages</a>
-        </li>
--->
-    {% endblock %} <!-- endblock nav_bar -->
-</ul>
-
-<div class="row-fluid">
-    <div class="span5 rounded_box fill_white">
-        <fieldset>
-            <legend>Configuración</legend>
-            El módulo de retweets automáticos está:
-            <a class="no_decoration" id="switch_retweets_btn" title='' >
-                &nbsp;<span id="switch_retweets_label" class='label' ></span>
-            </a>
-        </fieldset>
-    </div>
-</div>
 
 <div class="row-fluid">
     <div class="span8 rounded_box fill_white">
         <div class="span8">
-        <!--<input type="hidden" id="channel_added" value="{{ channel_added }}">-->
-        <h3>Grupos de disparadores</h3>
-        {% if trigger_groups %}
-        <table class="table" id="trigger_groups_table">
+        <h4>Grupos de tweets programados</h4>
+        
+        <table class="table" id="scheduled_tweet_group_list_table">
             <thead>
             <tr>
                 <th>
@@ -75,32 +26,223 @@
                 </th>
             </tr>
             </thead>
-            <tbody id="trigger_groups_tbody">
-                {% for trigger_group in trigger_groups %}
-                <tr id='trigger_group_row_{{ trigger_group.name }}'>
-                    <td><a href="{% url 'edit_group' trigger_group.id %}"/>{{ trigger_group.name }}</a>
-                    </td>
-
-                    <td> <a>Asociar a...</a> </td>  <!-- icono -->
-                    <td> <a id='delete_trigger_group_{{ trigger_group.id }}' class='delete_channel' title='Haga click para eliminar el grupo' href='#delete_confirm_modal' data-toggle='modal'><span class='badge badge-important' contenteditable='false'>x</span></a></td>
-                </tr>
-                {% endfor %}
+            <tbody id="scheduled_tweet_group_list_tbody">
+                
             </tbody>
         </table>
-        {% else %}
-        <span id="no_trigger_groups_message">No hay grupos de disparadores</span> <br><br>
-        {% endif %}
-        <a id="call_twitter_auth" href="#" role="button" class="btn btn-primary" data-toggle="modal">Crear grupo</a>        
+        
+        <span id="no_scheduled_tweet_groups_message">No hay grupos de tweets programados</span> <br><br>
+        
+        <a id="add_scheduled_tweet_group_btn" href="#add_scheduled_tweet_group_modal" class="btn btn-primary btn-small" data-toggle='modal'>Crear grupo</a>
     </div>
 </div>
+
+<div id="add_scheduled_tweet_group_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <input type="hidden" id="editing_scheduled_tweet_group_id" value="">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="scheduled_tweet_group_modal_title">
+            Crear grupo de tweets programados
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div class="span11">
+            <!--<h5></h5>-->
+            <table>
+                <tr>
+                    <td><label>Nombre del grupo:&nbsp;</label></td>
+                    <td><input id="add_scheduled_tweet_group_name" type="text" class="span10" maxlength="64"></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="span11">
+            &nbsp;
+            <br>
+        </div>
+    
+        <div class="span11">
+            <div class="rounded_box fill_gray">
+                <h4>Bloques de publicación automática</h4>
+
+                <div id="scheduled_tweet_list">
+                    <table class="table" id="scheduled_tweet_list_table">
+                        <thead>
+                        <tr>
+                            <th>Mensaje</th><th>Hora y fecha</th>
+                        </tr>
+                        </thead>
+                        <tbody id="scheduled_tweet_list_tbody">
+                        </tbody>
+
+                    </table>
+                </div>
+
+                <span id="no_scheduled_tweets_message">
+                    Actualmente no hay bloques de publicación automática
+                </span>
+                <br><br>
+                <a id="add_scheduled_tweet_btn" href="#add_scheduled_tweet_modal" class="btn btn-primary btn-small" data-toggle='modal'>Agregar tweet programado</a>
+            </div>
+        </div>
+    </div> <!-- end span -->
+    
+    <div class="modal-footer">
+        <button class="btn btn-primary" aria-hidden="true" id="save_scheduled_tweet_group_btn">Guardar</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+    </div>
+</div> <!-- Add scheduled_tweet group modal -->
+
+
+<div id="add_scheduled_tweet_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <input type="hidden" id="editing_scheduled_tweet_id">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="scheduled_tweet_modal_title">
+            Añadir tweet programado
+        </h3>
+    </div>
+    
+    <div class="modal-body">
+        <div class="span8">
+            <table>
+                <tr>
+                    <td class="td_right_padding"><label>Mensaje: </label>
+                        <span class="float_right" id="tweet_char_count"></span></td><td><textarea id="scheduled_tweet_text"></textarea></td>
+                </tr>
+                <tr>
+                    <td><label>Hora de publicación: </label></td>
+                    <td><!--<select class="input-mini" id="start_hour_select"></select>-->
+                        <!--<select class="input-mini" id="start_minute_select"></select>-->
+                        <input type="text" class="input-mini" id="scheduled_tweet_timepicker">
+                    </td>
+                </tr>
+            </table>
+            <br>
+
+        </div>
+
+        <div class="span4" id="weekdays_select_div">
+            <label class="checkbox"><input type="checkbox" id="monday_check"> Lunes</label>
+            <label class="checkbox"><input type="checkbox" id="tuesday_check"> Martes</label>
+            <label class="checkbox"><input type="checkbox" id="wednesday_check"> Miércoles</label>
+            <label class="checkbox"><input type="checkbox" id="thursday_check"> Jueves</label>
+            <label class="checkbox"><input type="checkbox" id="friday_check"> Viernes</label>
+            <label class="checkbox"><input type="checkbox" id="saturday_check"> Sábado</label>
+            <label class="checkbox"><input type="checkbox" id="sunday_check"> Domingo</label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_scheduled_tweet_btn">Guardar</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+    </div>
+</div> <!-- Add scheduled_tweet modal -->
+
+<div id="delete_scheduled_tweet_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>
+        Eliminar mensaje automático
+    </h3>
+</div>
+<div class="modal-body">
+    <input type="hidden" id="deleting_scheduled_tweet_id" value="">
+    <p>
+        Está seguro de que desea eliminar el bloque de publicación seleccionado?
+    </p>
+</div>
+<div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_scheduled_tweet_confirmed">Sí, eliminar</button>
+</div>
+</div> <!-- delete scheduled_tweet modal -->
+
+<div id="send_now_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>
+        Enviar ahora
+    </h3>
+</div>
+<div class="modal-body">
+    <input type="hidden" id="sending_now_tweet_id" value="">
+    <p>
+        El siguiente mensaje se publicará de manera inmediata:
+    </p>
+    <p><blockquote><span class="" id="sending_now_tweet_text"></span></blockquote></p>
+</div>
+<div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="send_now_confirmed">Enviar</button>
+</div>
+</div> <!-- send_now_post modal -->
+
+
+<div id="add_channels_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="add_channels_modal_title">
+            Asociar grupo a varios canales
+        </h3>
+    </div>
+    <div class="modal-body">
+        
+        <div class="span11">
+            <p>Seleccione uno o más canales para asociarlos a este grupo</p>
+            
+        </div>
+        <!-- 
+        <div class="span11">
+            &nbsp;
+            <br>
+        </div>
+        -->
+        <div class="span11">
+            {% if channel_list %}
+            <select id="link_channels_select" name="link_channels_select" multiple="multiple">
+                {% for channel in channel_list %}
+                <option value="{{ channel.screen_name }}">{{ channel.screen_name }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+                <span>No hay canales registrados</span>
+            {% endif %}
+        </div> <!-- end span -->
+    
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_channels_btn">Guardar</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+    </div>
+</div> <!-- link channels group modal -->
+
+<div id="delete_scheduled_tweet_group_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>
+            Eliminar grupo de tweets programados
+        </h3>
+    </div>
+    <div class="modal-body">
+        <input type="hidden" id="deleting_scheduled_tweet_group_id" value="">
+        <p>
+            Está seguro de que desea eliminar el grupo de tweets programados seleccionado?
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_scheduled_tweet_group_confirmed">Sí, eliminar</button>
+    </div>
+</div> <!-- delete scheduled_tweet group modal -->
 
 {% endblock %} <!-- endblock section_body -->
 
 {% block page_scripts %}
-    <script type="text/javascript" src="{{ STATIC_URL }}js/scheduling/script.js"></script>
+
+    <script type="text/javascript" src="{{ STATIC_URL }}js/scheduling/settings.js"></script>
     <!--
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/script.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/triggers.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/scheduled_tweets.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/replacements.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/filters.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/timeblocks.js"></script>

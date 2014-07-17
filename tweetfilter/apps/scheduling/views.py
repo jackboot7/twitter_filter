@@ -4,6 +4,7 @@ import json
 import logging
 import datetime
 
+from django.forms.models import model_to_dict
 from braces.views import AjaxResponseMixin, JSONResponseMixin, CsrfExemptMixin, LoginRequiredMixin
 from django.http.response import HttpResponse
 from django.views.generic import DetailView
@@ -23,7 +24,7 @@ class ScheduledPostsHomeView(LoginRequiredMixin, ListView):
     """
     Renders the main interface for scheduling module config
     """
-    template_name = "filtering/settings.html"
+    template_name = "scheduling/settings.html"
     queryset = ItemGroup.objects.filter(channel_exclusive=False)
 
     def get_context_data(self, **kwargs):
@@ -237,6 +238,145 @@ class ScheduledTweetUpdateView(CsrfExemptMixin, JSONResponseMixin,
             response_data = {'result': "ok"}
         except Exception, e:
             response_data = {'result': e}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+#==============
+# Groups views
+#==============
+
+class ScheduledTweetGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, View):
+    """
+    Creates a new ScheduledTweet group
+    """
+    model = ItemGroup
+
+    def post_ajax(self, request, *args, **kwargs):
+        try:
+            scheduled_tweet_groups = ItemGroup.objects.filter(content_type="ScheduledTweet")
+            for group in scheduled_tweet_groups:
+                if group.name == request.POST['scheduled_tweet_group_name']:
+                    response_data = {'result': "duplicate"}
+                    break
+            else:
+                new_group = ItemGroup()
+                new_group.content_type = "ScheduledTweet"
+                new_group.name = request.POST['scheduled_tweet_group_name']
+                new_group.save()
+                response_data = {'result': "ok", 'group_obj': model_to_dict(new_group)}
+        except Exception, e:
+            logger.exception("Error al crear grupo de ScheduledTweet")
+            response_data = {'result': e}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ScheduledTweetGroupUpdateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Update ScheduledTweet group attributes
+    """
+    model = ItemGroup
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            scheduled_tweet_groups = ItemGroup.objects.filter(content_type="ScheduledTweet").exclude(id=obj.id)
+            for group in scheduled_tweet_groups:
+                if group.name == request.POST['scheduled_tweet_group_name']:
+                    response_data = {'result': "duplicate"}
+                    break
+            else:
+                obj.name = request.POST['scheduled_tweet_group_name']
+                obj.save()
+                response_data = {'result': "ok"}
+        except Exception, e:
+            response_data = {'result': e.args[0]}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ScheduledTweetGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
+    """
+    Shows a all non-exclusive scheduled tweet groups
+    """
+    queryset = ItemGroup.objects.filter(content_type="ScheduledTweet").filter(channel_exclusive=False)
+
+    def get_ajax(self, request, *args, **kwargs):
+        json_list = []
+        group_list = self.get_queryset()
+
+        for group in group_list:
+            group_dict = model_to_dict(group)
+            group_dict['channels'] = []
+            
+            for chan in group.channel_set.all():
+                group_dict['channels'].append(chan.screen_name)
+            
+            json_list.append(group_dict)
+
+        return self.render_json_response(json_list)
+
+
+class SetItemGroupChannelsView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Associates a list of channels to the item group
+    """
+    model = ItemGroup
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            channels = json.loads(request.POST['channels'])
+            obj.channel_set.clear()
+            
+            for chan in channels:
+                obj.channel_set.add(chan)
+
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            logger.exception("Error in SwitchStatusView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ItemGroupChannelListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Given an item group, returns all channels associated with it
+    """
+    model = ItemGroup
+
+    def get_ajax(self, request,  *args, **kwargs):
+        obj = self.get_object()
+        response_data = []
+        
+        for chan in obj.channel_set.all():
+            response_data.append(chan.screen_name)
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ItemGroupDeleteView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, DeleteView):
+    """
+    Deletes an item group
+    """
+    model = ItemGroup
+    success_url = "/"
+
+    def post_ajax(self, request, *args, **kwargs):
+        self.delete(request)
+        response_data = {'result': "ok"}
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
