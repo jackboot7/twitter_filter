@@ -82,7 +82,7 @@
                     Actualmente no hay bloques de publicación automática
                 </span>
                 <br><br>
-                <a id="add_scheduled_tweet_btn" href="#add_scheduled_tweet_modal" class="btn btn-primary btn-small" data-toggle='modal'>Agregar tweet programado</a>
+                <a id="add_scheduled_tweet_btn" href="#" class="btn btn-primary btn-small" >Agregar tweet programado</a> <!-- href="#add_scheduled_tweet_modal" data-toggle='modal' -->
             </div>
         </div>
     </div> <!-- end span -->
@@ -94,17 +94,14 @@
 </div> <!-- Add scheduled_tweet group modal -->
 
 
-<div id="add_scheduled_tweet_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div id="add_scheduled_tweet_modal" style="display:none"> <!-- class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" -->
     <input type="hidden" id="editing_scheduled_tweet_id">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="scheduled_tweet_modal_title">
-            Añadir tweet programado
-        </h3>
-    </div>
     
-    <div class="modal-body">
-        <div class="span8">
+    <h3 id="scheduled_tweet_modal_title">
+        Añadir tweet programado
+    </h3>
+    <div> <!-- class="modal-body" -->
+        <div class="span4">
             <table>
                 <tr>
                     <td class="td_right_padding"><label>Mensaje: </label>
@@ -131,10 +128,17 @@
             <label class="checkbox"><input type="checkbox" id="saturday_check"> Sábado</label>
             <label class="checkbox"><input type="checkbox" id="sunday_check"> Domingo</label>
         </div>
+
     </div>
-    <div class="modal-footer">
-        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_scheduled_tweet_btn">Guardar</button>
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+    <div class="span4">
+        &nbsp;
+    </div>
+    <div class="span4">
+        &nbsp;
+    </div>
+    <div class="span4"> <!-- class="modal-footer" -->
+        <button class="btn btn-primary" id="save_scheduled_tweet_btn">Guardar</button>
+        <button id="close_scheduled_tweet_tooltip" class="btn">Cancelar</button> <!-- data-dismiss="modal" aria-hidden="true" -->
     </div>
 </div> <!-- Add scheduled_tweet modal -->
 

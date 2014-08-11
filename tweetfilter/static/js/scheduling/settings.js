@@ -279,9 +279,11 @@ $(document).ready(function () {
         clear_add_scheduled_tweet_group_form();
     });
 
+    /*
     $('#add_scheduled_tweet_btn').click(function () {
         submit_new_scheduled_tweet();
     });
+    */
 
     $('#add_channels_modal').click(function () {
         /////
@@ -307,5 +309,28 @@ $(document).ready(function () {
        uncheckAllText: "Ninguno",
        noneSelectedText: "Seleccionar canales"
     });
+    
+    var modal_body = $($('#add_scheduled_tweet_modal').html())
+
+    modal_body.find('#close_scheduled_tweet_tooltip').click(function () {
+        $('#add_scheduled_tweet_btn').tooltipster('hide');
+    });
+
+    modal_body.find('#save_scheduled_tweet_btn').click(function () {
+       alert("guardar el peo");
+    });
+
+    $('#add_scheduled_tweet_btn').tooltipster({
+        position: 'right',
+        interactive: true,
+        content: modal_body,
+        trigger: 'click',
+        
+        theme: 'tooltipster-light',
+        maxWidth: 420
+        
+    });
+
+    
     
 });
