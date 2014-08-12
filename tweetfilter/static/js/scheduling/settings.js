@@ -1,6 +1,60 @@
 var
 
+    submit_scheduled_tweet = function () {
+        "use strict";
+
+        var url;
+
+        if ($('#editing_scheduled_tweet_id').val() === "") {
+            url = "/scheduling/add/";
+        }else{
+            url = "/scheduling/update/" + $('#editing_scheduled_tweet_id').val();
+        }
+
+        $.post(url, {
+            'text':$.trim($('#scheduled_tweet_text').val()),
+            'time': $('#scheduled_tweet_timepicker').val(),
+            'monday': $('#monday_check').is(':checked') ? 1 : 0,
+            'tuesday': $('#tuesday_check').is(':checked') ? 1 : 0,
+            'wednesday': $('#wednesday_check').is(':checked') ? 1 : 0,
+            'thursday': $('#thursday_check').is(':checked') ? 1 : 0,
+            'friday': $('#friday_check').is(':checked') ? 1 : 0,
+            'saturday': $('#saturday_check').is(':checked') ? 1 : 0,
+            'sunday': $('#sunday_check').is(':checked') ? 1 : 0,
+            'group_id': $('#editing_scheduled_tweet_group_id').val()
+        }, function (data) {
+
+            if(data.result === "ok") {
+                load_scheduled_tweet_table();
+                clear_add_scheduled_tweet_form();
+            }else{
+                //scheduled_post_add_error(data.result);
+                alert("hubo un error. Intente de nuevo");
+            }
+        });
+
+    },
+
+    clear_add_scheduled_tweet_form = function () {
+        "use strict";
+
+        $('#editing_scheduled_tweet_id').val('');
+        $('#scheduled_tweet_timepicker').val('');
+        $('#scheduled_tweet_text').val('');
+
+        $('#monday_check').attr('checked', true);
+        $('#tuesday_check').attr('checked', true);
+        $('#wednesday_check').attr('checked', true);
+        $('#thursday_check').attr('checked', true);
+        $('#friday_check').attr('checked', true);
+        $('#saturday_check').attr('checked', true);
+        $('#sunday_check').attr('checked', true);
+
+        count_characters($('#scheduled_tweet_text'), $('#tweet_char_count'));
+    },
+
     submit_channels = function () {
+        "use strict";
         
         var checked_channels = $("#link_channels_select").val();
 
@@ -15,29 +69,9 @@ var
         });
     },
 
-    submit_new_scheduled_tweet = function () {
+    delete_scheduled_tweet = function (scheduled_tweet_id) {
         "use strict";
 
-        var scheduled_tweet_text = $.trim($('#add_scheduled_tweet_text').val());
-        if(scheduled_tweet_text.length > 0) {
-            $.post("/scheduling/scheduled_tweet/add/", {
-                'scheduled_tweet_text': scheduled_tweet_text,
-                'group_id': $('#editing_scheduled_tweet_group_id').val()
-            }, function (data) {
-                if(data.result === "ok") {
-                    $('#add_scheduled_tweet_text').val("");
-                    load_scheduled_tweet_table();
-                }else if(data.result === "duplicate"){
-                    alert("La palabra introducida ya existe en la lista");
-                }else{
-                    alert(data.result);
-                    //scheduled_tweet_add_error(data.result)
-                }
-            });
-        }
-    },
-
-    delete_scheduled_tweet = function (scheduled_tweet_id) {
         $.post("/scheduling/scheduled_tweet/delete/" + scheduled_tweet_id, function (data) {
             if(data.result === "ok") {
                 load_scheduled_tweet_table();
@@ -92,6 +126,8 @@ var
     },
 
     manage_linked_channels = function (group) {
+        "use strict";
+
         $('#editing_scheduled_tweet_group_id').val(group.id);
         
         /*$.each(group.channels, function (index, value) {
@@ -113,6 +149,8 @@ var
     },
 
     delete_scheduled_tweet_group = function () {
+        "use strict";
+
         $.post("/scheduling/scheduled_tweet_group/delete/" + $('#deleting_scheduled_tweet_group_id').val(), function (data) {
             if(data.result === "ok") {
                 load_scheduled_tweet_group_table();
@@ -221,17 +259,19 @@ var
         return true;
     },
 
-    count_characters = function () {
+    //count_characters = function () {
+    count_characters = function (text_field, count_label) {
         "use strict";
 
-        var count = 140 - parseInt($('#scheduled_tweet_text').val().length, 10);
-        $('#tweet_char_count').text(count);
+        //var count = 140 - parseInt($('#scheduled_tweet_text').val().length, 10);
+        var count = 140 - parseInt(text_field.val().length, 10);
+        count_label.text(count);
         if(count > 20){
-            $('#tweet_char_count').css({'color': '#999999'});
+            count_label.css({'color': '#999999'});
         }else if(count <= 10){
-            $('#tweet_char_count').css({'color': '#D40D12'});
+            count_label.css({'color': '#D40D12'});
         }else{
-            $('#tweet_char_count').css({'color': '#5C0002'});
+            count_label.css({'color': '#5C0002'});
         }
     };
 
@@ -242,16 +282,8 @@ $(document).ready(function () {
     $('#menu_scheduling_li').addClass("active");
     
     clear_add_scheduled_tweet_group_form();
+    clear_add_scheduled_tweet_form();
     load_scheduled_tweet_group_table();
-
-    $('#scheduled_tweet_timepicker').timepicker({
-        hourText: 'Hora',
-        minuteText: 'Minutos'
-    });
-
-    $('#scheduled_tweet_text').bind("keyup change input", function () {
-        count_characters();
-    });
 
     $('#send_now_confirmed').click(function () {
         $.post("/scheduling/send/" + $('#sending_now_tweet_id').val(),
@@ -279,15 +311,10 @@ $(document).ready(function () {
         clear_add_scheduled_tweet_group_form();
     });
 
-    /*
-    $('#add_scheduled_tweet_btn').click(function () {
-        submit_new_scheduled_tweet();
-    });
-    */
 
-    $('#add_channels_modal').click(function () {
+    /*$('#add_channels_modal').click(function () {
         /////
-    });
+    });*/
 
     $('#save_channels_btn').click(function () {
         submit_channels();
@@ -295,12 +322,6 @@ $(document).ready(function () {
 
     $('#delete_scheduled_tweet_group_confirmed').click(function () {
         delete_scheduled_tweet_group();
-    });
-
-    $('#add_scheduled_tweet_text').keypress(function (e) {
-        if (e.which === 13) {
-            submit_new_scheduled_tweet();
-        }
     });
 
     $("#link_channels_select").multiselect({
@@ -311,26 +332,41 @@ $(document).ready(function () {
     });
     
     var modal_body = $($('#add_scheduled_tweet_modal').html())
-
-    modal_body.find('#close_scheduled_tweet_tooltip').click(function () {
-        $('#add_scheduled_tweet_btn').tooltipster('hide');
-    });
-
-    modal_body.find('#save_scheduled_tweet_btn').click(function () {
-       alert("guardar el peo");
-    });
+    $('#add_scheduled_tweet_modal').empty()
 
     $('#add_scheduled_tweet_btn').tooltipster({
         position: 'right',
         interactive: true,
         content: modal_body,
         trigger: 'click',
-        
         theme: 'tooltipster-light',
-        maxWidth: 420
-        
-    });
+        maxWidth: 420,
+        autoClose: false,
+        multiple: true,
+        functionBefore: function (origin, continueTooltip) {
+                var content = origin.tooltipster('content');
 
-    
+                content.find('#scheduled_tweet_timepicker').timepicker({
+                    hourText: 'Hora',
+                    minuteText: 'Minutos'
+                });
+
+                content.find('#close_scheduled_tweet_tooltip').click(function () {
+                    $('#add_scheduled_tweet_btn').tooltipster('hide');
+                    clear_add_scheduled_tweet_form();
+                });
+
+                content.find('#save_scheduled_tweet_btn').click(function () {
+                   submit_scheduled_tweet();
+                   // probablemente hay que pasarle los datos
+                });
+
+                content.find('#scheduled_tweet_text').bind("keyup change input", function () {
+                    count_characters(content.find('#scheduled_tweet_text'), content.find('#tweet_char_count'));
+                });
+
+                continueTooltip();
+            }
+    });
     
 });
