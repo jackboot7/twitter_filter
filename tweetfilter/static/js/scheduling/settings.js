@@ -1,14 +1,81 @@
 var
+    
+    validate_add_scheduled_tweet_form = function () {
+        "use strict";
+
+        if($.trim($('#scheduled_tweet_text').val()) === ""){
+            alert("Debe ingresar un texto para la publicación");
+            return false;
+        }
+
+        if($.trim($('#scheduled_tweet_text').val()).length > 140){
+            alert("Debe ingresar un texto menor a 140 caracteres");
+            return false;
+        }
+
+        if($('#scheduled_tweet_timepicker').val() === ""){
+            alert("Debe ingresar la hora de publicación");
+            return false;
+        }
+
+        if (!($('#monday_check').is(':checked') ||
+            $('#tuesday_check').is(':checked') ||
+            $('#wednesday_check').is(':checked') ||
+            $('#thursday_check').is(':checked') ||
+            $('#friday_check').is(':checked') ||
+            $('#saturday_check').is(':checked') ||
+            $('#sunday_check').is(':checked'))){
+            //Si no está chequeado ningún día
+            alert("Debe seleccionar al menos un día de la semana");
+            return false;
+        }else{
+            return true;
+        }
+    },
+
+    show_add_scheduled_tweet_form = function () {
+        $('#scheduled_tweet_table_div').hide();
+        $('#add_scheduled_tweet_modal').show();
+        $('#scheduled_tweet_group_modal_footer').hide();
+    },
+
+    hide_add_scheduled_tweet_form = function () {
+        $('#add_scheduled_tweet_modal').hide();
+        $('#scheduled_tweet_table_div').show();
+        $('#scheduled_tweet_group_modal_footer').show();
+    },
+
+    edit_scheduled_tweet = function (scheduled_post) {
+        "use strict";
+
+        show_add_scheduled_tweet_form();
+
+        //alert(JSON.stringify(scheduled_post));
+        $('#scheduled_tweet_modal_title').text("Editar tweet programado");
+        $('#editing_scheduled_tweet_id').val(scheduled_post.id);
+
+        $('#scheduled_tweet_text').val(scheduled_post.text);
+        $('#scheduled_tweet_timepicker').val(scheduled_post.time);
+        $('#monday_check').attr('checked', scheduled_post.monday);
+        $('#tuesday_check').attr('checked', scheduled_post.tuesday);
+        $('#wednesday_check').attr('checked', scheduled_post.wednesday);
+        $('#thursday_check').attr('checked', scheduled_post.thursday);
+        $('#friday_check').attr('checked', scheduled_post.friday);
+        $('#saturday_check').attr('checked', scheduled_post.saturday);
+        $('#sunday_check').attr('checked', scheduled_post.sunday);
+
+        count_characters();
+    },
 
     submit_scheduled_tweet = function () {
         "use strict";
 
         var url;
 
-        if ($('#editing_scheduled_tweet_id').val() === "") {
-            url = "/scheduling/add/";
+        if ($('#editing_scheduled_tweet_id').val()) {
+            url = "/scheduling/scheduled_tweet/update/" + $('#editing_scheduled_tweet_id').val();
         }else{
-            url = "/scheduling/update/" + $('#editing_scheduled_tweet_id').val();
+            url = "/scheduling/scheduled_tweet/add/";
         }
 
         $.post(url, {
@@ -23,20 +90,21 @@ var
             'sunday': $('#sunday_check').is(':checked') ? 1 : 0,
             'group_id': $('#editing_scheduled_tweet_group_id').val()
         }, function (data) {
-
             if(data.result === "ok") {
                 load_scheduled_tweet_table();
-                clear_add_scheduled_tweet_form();
             }else{
                 //scheduled_post_add_error(data.result);
                 alert("hubo un error. Intente de nuevo");
             }
+
         });
 
     },
 
     clear_add_scheduled_tweet_form = function () {
         "use strict";
+
+        hide_add_scheduled_tweet_form();
 
         $('#editing_scheduled_tweet_id').val('');
         $('#scheduled_tweet_timepicker').val('');
@@ -50,7 +118,7 @@ var
         $('#saturday_check').attr('checked', true);
         $('#sunday_check').attr('checked', true);
 
-        count_characters($('#scheduled_tweet_text'), $('#tweet_char_count'));
+        count_characters();
     },
 
     submit_channels = function () {
@@ -86,18 +154,25 @@ var
             $('#scheduled_tweet_list_tbody').empty();
 
             if (data.length > 0) {
+                var modal_body = $($('#add_scheduled_tweet_modal').html());
+
                 $('#no_scheduled_tweets_message').hide();
                 $('#scheduled_tweet_list_table').show();
 
                 $.each(data, function (idx, elem) {
                     $('#scheduled_tweet_list_tbody').append(
                         "<tr>" +
-                            "<td>" + elem.text + "</td>" +
+                            "<td><a id='edit_scheduled_tweet_" + elem.id + "' href='#'>" + elem.text_excerpt + "</a></td>" +
+                            "<td>" + elem.date_time + "</td>" +
                             "<td><a href='#' id='delete_scheduled_tweet_" + elem.id +"' class='delete_scheduled_tweet' " +
                             "title='Haga click para eliminar tweet programado'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</td>" +
                         "</tr>"
                     );
+
+                    $('#edit_scheduled_tweet_' + elem.id).click(function () {
+                        edit_scheduled_tweet(elem);
+                    });
 
                     $('#delete_scheduled_tweet_' + elem.id).click(function () {
                         delete_scheduled_tweet(elem.id);
@@ -122,7 +197,7 @@ var
         $('#save_scheduled_tweet_group_btn').attr('data-dismiss', "modal");
 
         load_scheduled_tweet_table();
-        // mostrar lista de scheduled_tweets
+        $('#scheduled_tweet_table_div').show();
     },
 
     manage_linked_channels = function (group) {
@@ -259,19 +334,17 @@ var
         return true;
     },
 
-    //count_characters = function () {
-    count_characters = function (text_field, count_label) {
+    count_characters = function () {
         "use strict";
 
-        //var count = 140 - parseInt($('#scheduled_tweet_text').val().length, 10);
-        var count = 140 - parseInt(text_field.val().length, 10);
-        count_label.text(count);
+        var count = 140 - parseInt($('#scheduled_tweet_text').val().length, 10);
+        $('#tweet_char_count').text(count);
         if(count > 20){
-            count_label.css({'color': '#999999'});
+            $('#tweet_char_count').css({'color': '#999999'});
         }else if(count <= 10){
-            count_label.css({'color': '#D40D12'});
+            $('#tweet_char_count').css({'color': '#D40D12'});
         }else{
-            count_label.css({'color': '#5C0002'});
+            $('#tweet_char_count').css({'color': '#5C0002'});
         }
     };
 
@@ -284,6 +357,8 @@ $(document).ready(function () {
     clear_add_scheduled_tweet_group_form();
     clear_add_scheduled_tweet_form();
     load_scheduled_tweet_group_table();
+
+    $('#scheduled_tweet_table_div').hide();
 
     $('#send_now_confirmed').click(function () {
         $.post("/scheduling/send/" + $('#sending_now_tweet_id').val(),
@@ -331,42 +406,37 @@ $(document).ready(function () {
        noneSelectedText: "Seleccionar canales"
     });
     
-    var modal_body = $($('#add_scheduled_tweet_modal').html())
-    $('#add_scheduled_tweet_modal').empty()
-
-    $('#add_scheduled_tweet_btn').tooltipster({
-        position: 'right',
-        interactive: true,
-        content: modal_body,
-        trigger: 'click',
-        theme: 'tooltipster-light',
-        maxWidth: 420,
-        autoClose: false,
-        multiple: true,
-        functionBefore: function (origin, continueTooltip) {
-                var content = origin.tooltipster('content');
-
-                content.find('#scheduled_tweet_timepicker').timepicker({
-                    hourText: 'Hora',
-                    minuteText: 'Minutos'
-                });
-
-                content.find('#close_scheduled_tweet_tooltip').click(function () {
-                    $('#add_scheduled_tweet_btn').tooltipster('hide');
-                    clear_add_scheduled_tweet_form();
-                });
-
-                content.find('#save_scheduled_tweet_btn').click(function () {
-                   submit_scheduled_tweet();
-                   // probablemente hay que pasarle los datos
-                });
-
-                content.find('#scheduled_tweet_text').bind("keyup change input", function () {
-                    count_characters(content.find('#scheduled_tweet_text'), content.find('#tweet_char_count'));
-                });
-
-                continueTooltip();
-            }
+    $('#add_scheduled_tweet_btn').click(function () {
+        $('#scheduled_tweet_modal_title').text("Agregar tweet programado");
+        show_add_scheduled_tweet_form();
     });
-    
+
+    $('#close_scheduled_tweet_form').click(function () {
+        hide_add_scheduled_tweet_form();
+    });
+
+    $('#save_scheduled_tweet_btn').click(function () {
+        if(validate_add_scheduled_tweet_form()){
+            submit_scheduled_tweet();
+            clear_add_scheduled_tweet_form();
+        }else{
+            return false;
+        }
+    });
+
+    $('#scheduled_tweet_timepicker').timepicker({
+        hourText: 'Hora',
+        minuteText: 'Minutos'
+    });
+
+    $('#scheduled_tweet_text').bind("keyup change input", function () {
+        count_characters();
+    });    
+
+    $("#link_channels_select").multiselect({
+       selectedText: "# de # seleccionados",
+       checkAllText: "Todos",
+       uncheckAllText: "Ninguno",
+       noneSelectedText: "Seleccionar canales"
+    });
 });

@@ -277,5 +277,4 @@ $(document).ready(function () {
        uncheckAllText: "Ninguno",
        noneSelectedText: "Seleccionar canales"
     });
-    
 });

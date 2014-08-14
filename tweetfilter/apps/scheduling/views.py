@@ -30,6 +30,7 @@ class ScheduledPostsHomeView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super(ScheduledPostsHomeView, self).get_context_data(**kwargs)
         context['scheduled_tweet_groups'] = self.get_queryset().filter(content_type="ScheduledTweet")
+        context['channel_list'] = Channel.objects.filter(user_id=self.request.user.id)
         return context
 
 
@@ -130,7 +131,7 @@ class ScheduledTweetListView(CsrfExemptMixin, JSONResponseMixin,
             json_list.append({
                 'id': scheduled_tweet.id,
                 'text': scheduled_tweet.text,
-                'text_excerpt': scheduled_tweet.get_excerpt() + "...",
+                'text_excerpt': scheduled_tweet.get_excerpt(),
                 'date_time': ("%s (%s)") % (scheduled_tweet.time.strftime("%H:%M"), dias),
                 'time': scheduled_tweet.time.strftime("%H:%M"),
                 'monday': scheduled_tweet.monday,
@@ -152,6 +153,8 @@ class ScheduledTweetCreateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
 
         try:
+            group = ItemGroup.objects.filter(id=request.POST['group_id'])[0]
+            
             block = ScheduledTweet()
             block.text = request.POST['text']
             block.time = datetime.datetime.strptime(request.POST['time'], "%H:%M").time()
@@ -162,7 +165,7 @@ class ScheduledTweetCreateView(CsrfExemptMixin, JSONResponseMixin,
             block.friday = True if request.POST['friday'] == "1" else False
             block.saturday = True if request.POST['saturday'] == "1" else False
             block.sunday = True if request.POST['sunday'] == "1" else False
-            block.group = request.POST['group_id']
+            block.group = group
             block.save()
             response_data = {'result': "ok"}
         except Exception, e:
