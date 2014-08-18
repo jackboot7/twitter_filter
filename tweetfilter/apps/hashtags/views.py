@@ -26,7 +26,8 @@ class HashtagsHomeView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(HashtagsHomeView, self).get_context_data(**kwargs)
-        context['hashtag_groups'] = self.get_queryset().filter(content_type="HashtagAdvertisement")
+        context['hashtag_groups'] = self.get_queryset().filter(content_type="Hashtag")
+        context['channel_list'] = Channel.objects.filter(user_id=self.request.user.id)
         return context
 
 
@@ -107,8 +108,10 @@ class HashtagCreateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
 
         try:        
+            group = ItemGroup.objects.filter(id=request.POST['group_id'])[0]
+
             hashtag = HashtagAdvertisement()
-            hashtag.group = request.POST['group_id']
+            hashtag.group = group
             hashtag.text = request.POST['text']
             hashtag.quantity = request.POST['qty']
             hashtag.start = datetime.datetime.strptime(request.POST['start'], "%H:%M").time()
@@ -123,7 +126,7 @@ class HashtagCreateView(CsrfExemptMixin, JSONResponseMixin,
             hashtag.save()
             response_data = {'result': "ok"}
         except Exception, e:
-            logger.exception("Error while creating scheduled tweet")
+            logger.exception("Error while creating hashtag: %s" % e.args[0])
             response_data = {'result': e.args[0]}
 
         return HttpResponse(json.dumps(response_data),
@@ -182,6 +185,145 @@ class HashtagResetView(CsrfExemptMixin, JSONResponseMixin,
             response_data = {'result': "ok"}
         except Exception, e:
             response_data = {'result': "fail", 'exception': e.args[0]}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+#==============
+# Groups views
+#==============
+
+class HashtagGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, View):
+    """
+    Creates a new Hashtag group
+    """
+    model = ItemGroup
+
+    def post_ajax(self, request, *args, **kwargs):
+        try:
+            hashtag_groups = ItemGroup.objects.filter(content_type="Hashtag")
+            for group in hashtag_groups:
+                if group.name == request.POST['hashtag_group_name']:
+                    response_data = {'result': "duplicate"}
+                    break
+            else:
+                new_group = ItemGroup()
+                new_group.content_type = "Hashtag"
+                new_group.name = request.POST['hashtag_group_name']
+                new_group.save()
+                response_data = {'result': "ok", 'group_obj': model_to_dict(new_group)}
+        except Exception, e:
+            logger.exception("Error al crear grupo de Hashtag")
+            response_data = {'result': e}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class HashtagGroupUpdateView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Update Hashtag group attributes
+    """
+    model = ItemGroup
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            hashtag_groups = ItemGroup.objects.filter(content_type="Hashtag").exclude(id=obj.id)
+            for group in hashtag_groups:
+                if group.name == request.POST['hashtag_group_name']:
+                    response_data = {'result': "duplicate"}
+                    break
+            else:
+                obj.name = request.POST['hashtag_group_name']
+                obj.save()
+                response_data = {'result': "ok"}
+        except Exception, e:
+            response_data = {'result': e.args[0]}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class HashtagGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
+    """
+    Shows a all non-exclusive Hashtag groups
+    """
+    queryset = ItemGroup.objects.filter(content_type="Hashtag").filter(channel_exclusive=False)
+
+    def get_ajax(self, request, *args, **kwargs):
+        json_list = []
+        group_list = self.get_queryset()
+
+        for group in group_list:
+            group_dict = model_to_dict(group)
+            group_dict['channels'] = []
+            
+            for chan in group.channel_set.all():
+                group_dict['channels'].append(chan.screen_name)
+            
+            json_list.append(group_dict)
+
+        return self.render_json_response(json_list)
+
+
+class SetItemGroupChannelsView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Associates a list of channels to the item group
+    """
+    model = ItemGroup
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            channels = json.loads(request.POST['channels'])
+            obj.channel_set.clear()
+            
+            for chan in channels:
+                obj.channel_set.add(chan)
+
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            logger.exception("Error in SwitchStatusView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ItemGroupChannelListView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Given an item group, returns all channels associated with it
+    """
+    model = ItemGroup
+
+    def get_ajax(self, request,  *args, **kwargs):
+        obj = self.get_object()
+        response_data = []
+        
+        for chan in obj.channel_set.all():
+            response_data.append(chan.screen_name)
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ItemGroupDeleteView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, DeleteView):
+    """
+    Deletes an item group
+    """
+    model = ItemGroup
+    success_url = "/"
+
+    def post_ajax(self, request, *args, **kwargs):
+        self.delete(request)
+        response_data = {'result': "ok"}
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")

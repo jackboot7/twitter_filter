@@ -175,7 +175,9 @@ var
                     });
 
                     $('#delete_scheduled_tweet_' + elem.id).click(function () {
-                        delete_scheduled_tweet(elem.id);
+                        if (confirm("Está seguro de que desea eliminar el tweet programado seleccionado?")) {
+                            delete_scheduled_tweet(elem.id);
+                        }
                     });
                 });
 

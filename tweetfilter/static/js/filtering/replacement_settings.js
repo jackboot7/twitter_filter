@@ -68,7 +68,9 @@ var
                     );
 
                     $('#delete_replacement_' + elem.id).click(function () {
-                        delete_replacement(elem.id);
+                        if (confirm("Está seguro de que desea eliminar el supresor seleccionado?")) {
+                            delete_replacement(elem.id);
+                        }
                     });
                 });
 

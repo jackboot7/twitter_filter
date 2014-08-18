@@ -72,7 +72,9 @@ var
                     );
 
                     $('#delete_filter_' + elem.id).click(function () {
-                        delete_filter(elem.id);
+                        if (confirm("Está seguro de que desea eliminar el retenedor seleccionado?")) {
+                            delete_filter(elem.id);
+                        }
                     });
                 });
 

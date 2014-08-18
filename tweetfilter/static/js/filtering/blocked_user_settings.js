@@ -77,7 +77,9 @@ var
                     );
 
                     $('#delete_blocked_user_' + elem.id).click(function () {
-                        delete_blocked_user(elem.id);
+                        if (confirm("Está seguro de que desea desbloquear al usuario?")) {
+                            delete_blocked_user(elem.id);
+                        }
                     });
                 });
 

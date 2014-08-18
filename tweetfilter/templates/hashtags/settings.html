@@ -61,7 +61,7 @@
             <br>
         </div>
         
-        <div id="add_hashtag_modal" style="display:none"> <!-- nuevo sufijo -->
+        <div id="add_hashtag_modal"> <!-- nuevo sufijo -->
             <input type="hidden" id="editing_hashtag_id">
             
             <h4 id="hashtag_modal_title">
@@ -70,7 +70,6 @@
             </h4>
             <div> <!-- class="modal-body" -->
                 <div class="span7">
-                    <h5>Hashtag</h5>
                     <table>
                         <tr>
                             <td><label>Texto:&nbsp;</label></td>
@@ -81,7 +80,7 @@
                             <td><input id="add_hashtag_qty" type="text" class="span4" value="0"></td>
                         </tr>
                         <tr>
-                            <td><h5>Horario</h5></td><td>&nbsp;</td>
+                            <td>&nbsp;</td><td>&nbsp;</td>
                         </tr>
                         <tr>
                             <td><label>Hora de inicio: </label></td>
@@ -92,7 +91,7 @@
                         <tr>
                             <td><label>Hora de fin: </label></td>
                             <td>
-                                <input type="text" class="input-mini" id="add_hashtag_end_timepicker">
+                                    <input type="text" class="input-mini" id="add_hashtag_end_timepicker">
                             </td>
                         </tr>
                     </table>
@@ -108,18 +107,17 @@
                     <label class="checkbox"><input type="checkbox" id="add_hashtag_saturday_check"> Sábado</label>
                     <label class="checkbox"><input type="checkbox" id="add_hashtag_sunday_check"> Domingo</label>
                 </div>
-
-                <div class="modal-footer">
+                <div class="span7">
+                    &nbsp;
+                </div>
+                
+                <div class="span7">
                     <button class="btn btn-primary" id="save_hashtag_btn">Guardar</button>
-                    <button class="btn">Cancelar</button>
+                    <button class="btn" id="close_hashtag_form">Cancelar</button>
                 </div>
 
             </div>
             
-            <div class="span4" class="modal-footer" id="scheduled_tweet_group_modal_footer"> <!-- class="modal-footer" -->
-                <button class="btn btn-primary" id="save_hashtag_btn">Guardar</button>
-                <button id="close_hashtag_form" class="btn">Cancelar</button> <!-- data-dismiss="modal" aria-hidden="true" -->
-            </div>
         </div> <!-- Add hashtag modal -->
 
         <div class="span11" id="hashtag_table_div">
@@ -143,10 +141,10 @@
                 </div>
 
                 <span id="no_hashtags_message">
-                    Actualmente no hay bloques de publicación automática
+                    Actualmente no hay sufijos definidos
                 </span>
                 <br><br>
-                <a id="add_hashtag_btn" href="#" class="btn btn-primary btn-small" >Agregar tweet programado</a> <!-- href="#add_hashtag_modal" data-toggle='modal' -->
+                <a id="add_hashtag_btn" href="#" class="btn btn-primary btn-small" >Agregar sufijo</a> <!-- href="#add_hashtag_modal" data-toggle='modal' -->
             </div>
         </div>
     </div> <!-- end span -->
@@ -158,44 +156,23 @@
 </div> <!-- Add hashtag group modal -->
 
 <div id="delete_hashtag_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-<div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3>
-        Eliminar mensaje automático
-    </h3>
-</div>
-<div class="modal-body">
-    <input type="hidden" id="deleting_hashtag_id" value="">
-    <p>
-        Está seguro de que desea eliminar el bloque de publicación seleccionado?
-    </p>
-</div>
-<div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
-    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_hashtag_confirmed">Sí, eliminar</button>
-</div>
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>
+            Eliminar sufijo
+        </h3>
+    </div>
+    <div class="modal-body">
+        <input type="hidden" id="deleting_hashtag_id" value="">
+        <p>
+            Está seguro de que desea eliminar el sufijo seleccionado?
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_hashtag_confirmed">Sí, eliminar</button>
+    </div>
 </div> <!-- delete hashtag modal -->
-
-<div id="send_now_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-<div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3>
-        Enviar ahora
-    </h3>
-</div>
-<div class="modal-body">
-    <input type="hidden" id="sending_now_tweet_id" value="">
-    <p>
-        El siguiente mensaje se publicará de manera inmediata:
-    </p>
-    <p><blockquote><span class="" id="sending_now_tweet_text"></span></blockquote></p>
-</div>
-<div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
-    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="send_now_confirmed">Enviar</button>
-</div>
-</div> <!-- send_now_post modal -->
-
 
 <div id="add_channels_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-header">
@@ -239,13 +216,13 @@
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
         <h3>
-            Eliminar grupo de tweets programados
+            Eliminar grupo de sufijos
         </h3>
     </div>
     <div class="modal-body">
         <input type="hidden" id="deleting_hashtag_group_id" value="">
         <p>
-            Está seguro de que desea eliminar el grupo de tweets programados seleccionado?
+            Está seguro de que desea eliminar el grupo de sufijos seleccionado?
         </p>
     </div>
     <div class="modal-footer">
@@ -259,14 +236,7 @@
 {% block page_scripts %}
 
     <script type="text/javascript" src="{{ STATIC_URL }}js/hashtags/settings.js"></script>
-    <!--
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/script.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/hashtags.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/replacements.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/filters.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/timeblocks.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/blocked_users.js"></script>
-    -->
+
 {% endblock %}
 
 {% block modal_header %}

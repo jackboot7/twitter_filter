@@ -72,7 +72,9 @@ var
                     );
 
                     $('#delete_trigger_' + elem.id).click(function () {
-                        delete_trigger(elem.id);
+                        if (confirm("Está seguro de que desea eliminar el disparador seleccionado?")) {
+                            delete_trigger(elem.id);
+                        }
                     });
                 });
 
