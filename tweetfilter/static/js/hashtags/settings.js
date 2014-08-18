@@ -41,7 +41,7 @@ var
             return false;
         }
 
-        if($('#start_timepicker').val() >= $('#end_timepicker').val()) {
+        if($('#add_hashtag_start_timepicker').val() >= $('#add_hashtag_end_timepicker').val()) {
             alert("El tiempo de inicio debe ser menor al tiempo de fin");
             return false;
         }
