@@ -930,6 +930,23 @@ class TriggerGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
         return self.render_json_response(json_list)
 
 
+class TriggerGroupListChannelView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Shows a all trigger groups linked to a particular channel
+    """
+    model = Channel
+
+    def get_ajax(self, request, *args, **kwargs):
+        json_list = []
+        group_list = self.get_object().groups.filter(content_type="Trigger")
+
+        for group in group_list:
+            group_dict = model_to_dict(group)
+            json_list.append(group_dict)
+
+        return self.render_json_response(json_list)
+
+
 class SetItemGroupChannelsView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, UpdateView):
     """

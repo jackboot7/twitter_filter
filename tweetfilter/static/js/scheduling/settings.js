@@ -50,7 +50,6 @@ var
 
         show_add_scheduled_tweet_form();
 
-        //alert(JSON.stringify(scheduled_post));
         $('#scheduled_tweet_modal_title').text("Editar tweet programado");
         $('#editing_scheduled_tweet_id').val(scheduled_post.id);
 

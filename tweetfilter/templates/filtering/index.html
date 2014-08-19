@@ -199,7 +199,7 @@
         <!-- Fin horarios de publicación -->
 
         <div class="rounded_box fill_gray" id="blacklist_box"  style="display:none">
-            <h4>Usuarios bloqueados</h4>
+            <h4>Grupos de usuarios bloqueados</h4>
             <div class="scrollable" id="blocked_user_list_div">
                 <table class="table" id="blocked_user_list_table">
                     <thead>
@@ -244,30 +244,27 @@
     </div>
 
     <div class="span6" id="right_column">
-        <div class="rounded_box fill_green" id="triggers_box" style="display:none">
-            <h4>Disparadores</h4>
+        <div class="rounded_box fill_green" id="trigger_groups_box" style="display:none">
+            <h4>Grupos de disparadores</h4>
 
-            <div class="scrollable" id="trigger_list_div">
-                <table class="table" id="trigger_list_table">
+            <div class="scrollable" id="trigger_group_list_div">
+                <table class="table" id="trigger_group_list_table">
                     <thead>
                         <tr>
-                            <th>Texto</th>
-                            <!--<th>Mention</th>
-                            <th>DM</th>-->
-                            <th>Eliminar</th>
+                            <th>Grupo</th>
+                            <th id="unlink_trigger_header">Eliminar asociación</th>
                         </tr>
                     </thead>
-                    <tbody id="trigger_list_tbody">
+                    <tbody id="trigger_group_list_tbody">
                     </tbody>
                 </table>
             </div>
-            <span id="no_triggers_message">No hay disparadores asociados al canal</span> <br><br>
+            
+            <br><br>
 
-            <table><tr>
-                <td><input type="text" id="add_trigger_text"></td>
-                <td class="button_td"> &nbsp;<a id="add_trigger_btn" class="btn btn-primary btn-small">Agregar disparador</a></td>
-            </tr></table>
+            <a id="add_trigger_group_btn" class="btn btn-primary btn-small">Agregar grupo</a>
 
+            <!--
             <div id="delete_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -286,11 +283,11 @@
                     <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_trigger_confirmed">Sí, eliminar</button>
                 </div>
             </div>
-        </div> <!-- end rounded box -->
-
+        </div> 
+        -->
 
         <div class="rounded_box fill_yellow" id="replacements_box" style="display:none">
-            <h4>Supresores</h4>
+            <h4>Grupos de supresores</h4>
 
             <div class="scrollable" id="replacement_list_div">
                 <table class="table" id="replacement_list_table">
@@ -339,7 +336,7 @@
 
 
         <div class="rounded_box fill_red" id="filters_box" style="display:none">
-            <h4>Retenedores</h4>
+            <h4>Grupos de retenedores</h4>
 
             <div class="scrollable" id="filter_list_div">
                 <table class="table" id="filter_list_table">
@@ -394,25 +391,75 @@
     <!-- Filters -->
     <div class="span6">
     </div>
-
-
-
 </div> <!-- end row-fluid -->
 <br>
-    <br>
+<br>
 <a href="/">Volver al inicio</a>
-    <br>
-    <br>
-    <br>
+<br>
+<br>
+<br>
+
+<div id="view_trigger_group_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <input type="hidden" id="viewing_trigger_group_id" value="">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="trigger_group_modal_title">
+            Grupo de disparadores: <span id="viewing_trigger_group_name"></span>
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div class="span11">
+            &nbsp;
+            <br>
+        </div>
+    
+        <div class="span8">
+            <div class="rounded_box fill_green">
+                <h4>Disparadores</h4>
+
+                <div class="scrollable" id="trigger_list_div">
+                    <table class="table" id="trigger_list_table" style="display:none">
+                        <thead>
+                            <tr>
+                                <th>Texto</th>
+                                <th id="delete_trigger_header">Eliminar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trigger_list_tbody">
+                        </tbody>
+                    </table>
+                </div>
+                <span id="no_triggers_message">El grupo no contiene disparadores</span> <br><br>
+
+                <table id="add_trigger_btn_table">
+                    <tr>
+                        <td><input type="text" id="add_trigger_text"></td>
+                        <td class="button_td"> &nbsp;<a id="add_trigger_btn" class="btn btn-primary btn-small">Agregar</a></td>
+                    </tr>
+                </table>
+            </div> <!-- end rounded box -->
+        </div> <!-- end span -->
+    
+    </div>
+    <div class="modal-footer">
+        <!--
+        <button class="btn btn-primary" aria-hidden="true" id="save_trigger_group_btn">Guardar</button>
+        -->
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cerrar</button>
+    </div>
+</div> <!-- Add trigger group modal -->
 {% endblock %} <!-- endblock section_body -->
 
 {% block page_scripts %}
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/script.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/channel_trigger_settings.js"></script>
+    <!--
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/triggers.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/replacements.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/filters.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/timeblocks.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/blocked_users.js"></script>
+    -->
 {% endblock %}
 
 {% block modal_header %}

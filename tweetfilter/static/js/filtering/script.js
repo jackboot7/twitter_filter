@@ -39,7 +39,7 @@ var
             }
 
             if($('#activate_blacklist_check').is(":checked")){
-                $('#blacklist_box').fadeIn();
+                $('#blacklist_group_box').fadeIn();
 
                 if (!$('#left_column').is(":visible")){
                     $('#left_column').fadeIn();
@@ -53,21 +53,21 @@ var
             }
 
             if($('#activate_filters_check').is(":checked")){
-                $('#filters_box').fadeIn();
+                $('#filter_groups_box').fadeIn();
             }else{
-                $('#filters_box').hide();
+                $('#filter_groups_box').hide();
             }
 
             if($('#activate_replacements_check').is(":checked")){
-                $('#replacements_box').fadeIn();
+                $('#replacement_groups_box').fadeIn();
             }else{
-                $('#replacements_box').hide();
+                $('#replacement_groups_box').hide();
             }
 
             if($('#activate_triggers_check').is(":checked")){
-                $('#triggers_box').fadeIn();
+                $('#trigger_groups_box').fadeIn();
             }else{
-                $('#triggers_box').hide();
+                $('#trigger_groups_box').hide();
             }
         });
     };
