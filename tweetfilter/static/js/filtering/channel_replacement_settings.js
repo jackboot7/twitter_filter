@@ -1,55 +1,92 @@
 var
-    load_replacement_table = function () {
+    
+    manage_linked_groups = function (group) {
+               
+        $.get("/filtering/channel/list_groups/" + $("#current_channel").val(), {
+            'content_type': "Replacement"
+        }, function (data) {
+            $("#link_replacement_groups_select").multiselect("uncheckAll");        
+            $("#link_replacement_groups_select").multiselect("widget").find(":checkbox").each(function(){
+                var widget = this;
+                $.each(data, function (index, value) {
+                    if (widget.value == value) {
+                        widget.click();
+                    }
+                });
+            });
+            $("#link_replacement_groups_select").multiselect("refresh");
+        });
+    },
+
+    unlink_replacement_group = function(group_id) {
+        $.post("/filtering/channel/unlink_group/" + $('#current_channel').val(), {
+            'group_id': group_id
+        }, function (data) {
+            load_trigger_group_table();
+        });
+    },
+
+    link_replacement_groups = function () {
+        var checked_groups = $("#replacement_groups_select").val();
+
+        $.post("/filtering/channel/set_groups/" + $('#current_channel').val(), {
+            'groups': JSON.stringify(checked_groups),
+            'content_type': "Replacement"
+        }, function (data) {
+            load_replacement_group_table();
+        });
+    },
+
+    delete_replacement = function (replacement_id) {
+        $.post("/filtering/replacement/delete/" + replacement_id, function (data) {
+            if(data.result === "ok") {
+                load_replacement_table(true);
+            }
+        });
+    },
+
+    load_replacement_table = function (exclusive) {
         "use strict";
 
-        $.get("/filtering/replacement/list/"+$('#current_channel').val(), function (data) {
+        var delete_btn = "";
+
+        $.get("/filtering/replacement/list/" + $('#viewing_replacement_group_id').val(), function (data) {
             $('#replacement_list_tbody').empty();
 
             if (data.length > 0) {
                 $('#no_replacements_message').hide();
                 $('#replacement_list_table').show();
-                //alert(JSON.stringify(data));
+
                 $.each(data, function (idx, elem) {
+                    if (exclusive) {
+                        delete_btn = 
+                            "<a id='delete_replacement_" + elem.id +"' class='no_decoration' " +
+                            "title='Haga click para eliminar supresor'>" +
+                            "<span class='badge badge-important' contenteditable='false'>x</span></a>";
+                        $('#delete_replacement_header').show();
+                        $('#add_replacement_btn_table').show();
+                    } else {
+                        delete_btn = "";                        
+                        $('#delete_replacement_header').hide();
+                        $('#add_replacement_btn_table').hide();
+                    }
 
                     $('#replacement_list_tbody').append(
                         "<tr>" +
                             "<td>" + elem.text + "</td>" +
                             "<td>" + elem.replace_with + "</td>" +
-                            /*
-                            "<td><div class='offset2'>" + "<input id='replacement_mention_check_" + elem.id +
-                            "' type='checkbox'></div></td>" +
-                            "<td><div class='offset2'><input id='replacement_dm_check_" + elem.id +
-                            "' type='checkbox'></div></td>" +
-                            */
-                            "<td><div class='offset2'><a id='delete_replacement_" + elem.id +"' class='delete_replacement' " +
-                            "title='Haga click para eliminar el supresor' href='#delete_replacement_confirm_modal' data-toggle='modal'>" +
-                            "<span class='badge badge-important' contenteditable='false'>x</span></a>" + "</div></td>" +
-                            "</tr>"
+                            "<td>" + delete_btn + "</td>" +
+                        "</tr>"
                     );
 
-                    /*
-                    $('#replacement_mention_check_' + elem.id).attr('checked', elem.enabled_mentions);
-                    $('#replacement_dm_check_' + elem.id).attr('checked', elem.enabled_dm);
-
-                    $('#replacement_mention_check_' + elem.id).change(function () {
-                        $.post("/filtering/replacement/switch_mention/" + elem.id, function () {
-
+                    if (exclusive) {
+                        $('#delete_replacement_' + elem.id).click(function () {
+                            if (confirm("Está seguro de que desea eliminar el supresor seleccionado?")) {
+                                delete_replacement(elem.id);
+                            }
                         });
-                    });
-
-                    $('#replacement_dm_check_' + elem.id).change(function () {
-                        $.post("/filtering/replacement/switch_dm/" + elem.id, function () {
-
-                        });
-                    });
-                    // */
-
-                    $('#delete_replacement_' + elem.id).click(function () {
-                        $('#deleting_replacement_text').text(elem.text);
-                        $('#deleting_replacement_id').val(elem.id);
-                    });
+                    }
                 });
-
                 $('#replacement_list_div').slimscroll();
             }else{
                 $('#replacement_list_table').hide();
@@ -58,50 +95,93 @@ var
         });
     },
 
-    replacement_add_error = function (text) {
-        "use strict";
-
-        $('#alert_warning_body').text(text);
-        $('#alert_warning').show();
-    },
-
     submit_new_replacement = function () {
         "use strict";
 
-        var replacement_text = $.trim($('#add_replacement_text').val()),
-            replace_with = $.trim($('#add_replacement_replace_with').val());
-
+        var replacement_text = $.trim($('#add_replacement_text').val());
         if(replacement_text.length > 0) {
             $.post("/filtering/replacement/add/", {
                 'replacement_text': replacement_text,
-                'replacement_replace_with': replace_with,
-                'replacement_channel': $('#current_channel').val()
+                'group_id': $('#viewing_replacement_group_id').val()
             }, function (data) {
                 if(data.result === "ok") {
                     $('#add_replacement_text').val("");
-                    $('#add_replacement_replace_with').val("");
-                    load_replacement_table();
+                    load_replacement_table(true);
                 }else if(data.result === "duplicate"){
                     alert("La palabra introducida ya existe en la lista");
                 }else{
-                    replacement_add_error(data.result);
+                    alert(data.result);
                 }
             });
         }
+    },
+
+    view_replacement_group = function (group_id, group_name, exclusive) {
+        "use strict";
+
+        $('#viewing_replacement_group_name').html(group_name);
+        $('#viewing_replacement_group_id').val(group_id);
+                
+        load_replacement_table(exclusive);
+    },
+
+    load_replacement_group_table = function () {
+        "use strict";
+
+        $.get("/filtering/replacement_group/channel/"+$('#current_channel').val(), function (data) {
+            $('#replacement_group_list_tbody').empty();
+
+            if (data.length == 1) {
+                $('#unlink_replacement_header').hide();
+            } else {
+                $('#unlink_replacement_header').show();
+            }
+
+            $('#replacement_group_list_table').show();
+
+            $.each(data, function (idx, elem) {
+                var unlink_button = "";
+                if (!elem.channel_exclusive)  {
+                    unlink_button = 
+                        "<a id='delete_replacement_group_" + elem.id +"' class='no_decoration' " +
+                        "title='Haga click para desvincular el grupo'>" +
+                        "<span class='badge badge-important' contenteditable='false'>x</span></a>";
+                }
+
+                $('#replacement_group_list_tbody').append(
+                    "<tr>" +
+                        "<td><a href='#view_replacement_group_modal' data-toggle='modal' id='view_replacement_group_" + elem.id + "'>" + elem.name + "</a></td>" +
+                        "<td>" + unlink_button + "</td>" +
+                    "</tr>"
+                );
+
+                $("#view_replacement_group_" + elem.id).click(function () {
+                    view_replacement_group(elem.id, elem.name, elem.channel_exclusive);
+                });
+
+                if (!elem.channel_exclusive) {
+                    $('#delete_replacement_group_' + elem.id).click(function () {
+                        if (confirm("Está seguro de que desea desvincular este canal del grupo seleccionado?")) {
+                            unlink_replacement_group(elem.id);
+                        }
+                    });
+                }
+            });
+
+            $('#replacement_group_list_div').slimscroll();
+        });
     };
 
 $(document).ready(function () {
     "use strict";
 
-    $('#replacement_list_table').hide();
-    $('#no_replacements_message').hide();
+    load_replacement_group_table();
 
-    load_replacement_table();
-
+    
     $('#delete_replacement_confirmed').click(function () {
         $.post("/filtering/replacement/delete/" + $('#deleting_replacement_id').val(), function (data) {
             if(data.result === "ok") {
-                load_replacement_table();
+                load_replacement_table(true);
             }
         });
     });
@@ -112,13 +192,23 @@ $(document).ready(function () {
 
     $('#add_replacement_text').keypress(function (e) {
         if (e.which === 13) {
-            $('#add_replacement_replace_with').focus();
-        }
-    });
-
-    $('#add_replacement_replace_with').keypress(function (e) {
-        if (e.which === 13) {
             submit_new_replacement();
         }
     });
+
+    $("#replacement_groups_select").multiselect({
+       selectedText: "# de # seleccionados",
+       checkAllText: "Todos",
+       uncheckAllText: "Ninguno",
+       noneSelectedText: "Seleccionar grupos"
+    });
+
+    $('#link_replacement_groups_btn').click(function () {
+        manage_linked_groups();
+    });
+
+    $('#save_replacement_groups_btn').click(function () {
+        link_replacement_groups();
+    });
+    
 });

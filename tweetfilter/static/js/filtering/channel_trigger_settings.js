@@ -6,7 +6,7 @@ var
             'content_type': "Trigger"
         }, function (data) {
             $("#link_trigger_groups_select").multiselect("uncheckAll");        
-            $("#link_trigge_groups_select").multiselect("widget").find(":checkbox").each(function(){
+            $("#link_trigger_groups_select").multiselect("widget").find(":checkbox").each(function(){
                 var widget = this;
                 $.each(data, function (index, value) {
                     if (widget.value == value) {
