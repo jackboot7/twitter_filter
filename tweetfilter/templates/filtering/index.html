@@ -262,29 +262,8 @@
             
             <br><br>
 
-            <a id="add_trigger_group_btn" class="btn btn-primary btn-small">Agregar grupo</a>
-
-            <!--
-            <div id="delete_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h3 id="myModalLabel">
-                        Eliminar Disparador
-                    </h3>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="deleting_trigger_id" value="">
-                    <p>
-                        Está seguro de que desea eliminar el disparador &quot;<span id="deleting_trigger_text"></span>&quot; ?
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
-                    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_trigger_confirmed">Sí, eliminar</button>
-                </div>
-            </div>
+            <a id="link_trigger_groups_btn" href="#link_trigger_groups_modal" class="btn btn-primary btn-small" data-toggle='modal'>Asociar grupos</a>
         </div> 
-        -->
 
         <div class="rounded_box fill_yellow" id="replacements_box" style="display:none">
             <h4>Grupos de supresores</h4>
@@ -313,25 +292,6 @@
                     <td class="button_td" rowspan="2"> &nbsp;<a id="add_replacement_btn" class="btn btn-primary btn-small">Agregar supresor</a></td>
                 </tr>
             </table>
-
-            <div id="delete_replacement_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h3 id="myreplacementModalLabel">
-                        Eliminar Supresor
-                    </h3>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="deleting_replacement_id" value="">
-                    <p>
-                        Está seguro de que desea eliminar el supresor para la frase &quot;<span id="deleting_replacement_text"></span>&quot; ?
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
-                    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_replacement_confirmed">Sí, eliminar</button>
-                </div>
-            </div>
         </div> <!-- end rounded box -->
 
 
@@ -359,25 +319,6 @@
                 <td><input type="text" id="add_filter_text"></td>
                 <td class="button_td">&nbsp;<a id="add_filter_btn" class="btn btn-primary btn-small">Agregar filtro</a></td>
             </tr></table>
-
-            <div id="delete_filter_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h3 id="FilterModalLabel">
-                        Eliminar Filtro
-                    </h3>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="deleting_filter_id" value="">
-                    <p>
-                        Está seguro de que desea eliminar el filtro &quot;<span id="deleting_filter_text"></span>&quot; ?
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
-                    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_filter_confirmed">Sí, eliminar</button>
-                </div>
-            </div>
         </div> <!-- end column (span6) -->
     </div> <!-- end column -->
 
@@ -404,15 +345,10 @@
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
         <h3 id="trigger_group_modal_title">
-            Grupo de disparadores: <span id="viewing_trigger_group_name"></span>
+            <span id="viewing_trigger_group_name"></span>
         </h3>
     </div>
     <div class="modal-body">
-        <div class="span11">
-            &nbsp;
-            <br>
-        </div>
-    
         <div class="span8">
             <div class="rounded_box fill_green">
                 <h4>Disparadores</h4>
@@ -442,12 +378,47 @@
     
     </div>
     <div class="modal-footer">
-        <!--
-        <button class="btn btn-primary" aria-hidden="true" id="save_trigger_group_btn">Guardar</button>
-        -->
+        
         <button class="btn" data-dismiss="modal" aria-hidden="true">Cerrar</button>
     </div>
-</div> <!-- Add trigger group modal -->
+</div> <!-- View trigger group modal -->
+
+<div id="link_trigger_groups_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="add_channels_modal_title">
+            Grupos de disparadores asociados al canal
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div class="span11">
+            <p>Seleccione uno o más grupos de disparadores para asociarlos al canal</p>
+            
+        </div>
+        <!-- 
+        <div class="span11">
+            &nbsp;
+            <br>
+        </div>
+        -->
+        <div class="span11">
+            {% if trigger_groups %}
+            <select id="trigger_groups_select" name="trigger_groups_select" multiple="multiple">
+                {% for group in trigger_groups %}
+                <option value="{{ group.id }}">{{ group.name }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+                <span>No hay grupos de disparadores registrados</span>
+            {% endif %}
+        </div> <!-- end span -->
+    
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_trigger_groups_btn">Guardar</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+    </div>
+</div> <!-- link trigger groups -->
 {% endblock %} <!-- endblock section_body -->
 
 {% block page_scripts %}

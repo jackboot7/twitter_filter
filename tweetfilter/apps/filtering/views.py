@@ -85,6 +85,16 @@ class FilteringDetailView(LoginRequiredMixin, DetailView):
     template_name = "filtering/index.html"
     context_object_name = "channel"
 
+    def get_context_data(self, **kwargs):
+        groups_queryset = ItemGroup.objects.filter(channel_exclusive=False)
+        context = super(FilteringDetailView, self).get_context_data(**kwargs)
+        context['trigger_groups'] = groups_queryset.filter(content_type="Trigger")
+        context['replacement_groups'] = groups_queryset.filter(content_type="Replacement")
+        context['filter_groups'] = groups_queryset.filter(content_type="Filter")
+        context['blocked_user_groups'] = groups_queryset.filter(content_type="BlockedUser")
+
+        return context
+
 
 #==========================
 # Filtering Config
@@ -966,8 +976,73 @@ class SetItemGroupChannelsView(CsrfExemptMixin, JSONResponseMixin,
             obj.save()
             response_data = {'result': "ok"}
         except Exception as e:
-            logger.exception("Error in SwitchStatusView")
+            logger.exception("Error in SetItemGroupChannelsView")
             response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ChannelUnlinkGroupView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Removes the association between a channel and an ItemGroup
+    """
+    model = Channel
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            obj.groups.remove(request.POST['group_id'])
+            
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            logger.exception("Error in ChannelUnlinkGroupView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class SetChannelGroupsView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Associates a list of groups to the channel
+    """
+    model = Channel
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            linked_groups = obj.groups.filter(content_type=request.POST['content_type']).exclude(channel_exclusive=True)
+            new_groups = json.loads(request.POST['groups'])
+
+            obj.groups.remove(*linked_groups)
+            obj.groups.add(*new_groups)
+            
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            logger.exception("Error in SetChannelGroupsView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ListChannelGroupsView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Given an item group, returns all channels associated with it
+    """
+    model = Channel
+
+    def get_ajax(self, request,  *args, **kwargs):
+        obj = self.get_object()
+        response_data = []
+        
+        for group in obj.groups.filter(content_type=request.GET['content_type']):
+            response_data.append(group.id)
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")

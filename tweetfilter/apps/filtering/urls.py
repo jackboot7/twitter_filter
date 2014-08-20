@@ -79,4 +79,8 @@ urlpatterns = patterns('apps.filtering.views',
     url(r'^blocked_user_group/delete/(?P<pk>\w+)', ItemGroupDeleteView.as_view()),
     url(r'^blocked_user_group/set_channels/(?P<pk>\w+)', SetItemGroupChannelsView.as_view()),
     url(r'^blocked_user_group/list_channels/(?P<pk>\w+)', ItemGroupChannelListView.as_view()),
+
+    url(r'^channel/set_groups/(?P<pk>\w+)', SetChannelGroupsView.as_view()),
+    url(r'^channel/list_groups/(?P<pk>\w+)', ListChannelGroupsView.as_view()),
+    url(r'^channel/unlink_group/(?P<pk>\w+)', ChannelUnlinkGroupView.as_view()),
 )
