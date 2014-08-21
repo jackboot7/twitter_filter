@@ -198,48 +198,25 @@
         </div>
         <!-- Fin horarios de publicación -->
 
-        <div class="rounded_box fill_gray" id="blacklist_box"  style="display:none">
+        <div class="rounded_box fill_gray" id="blocked_user_groups_box"  style="display:none">
             <h4>Grupos de usuarios bloqueados</h4>
-            <div class="scrollable" id="blocked_user_list_div">
-                <table class="table" id="blocked_user_list_table">
+            <div class="scrollable" id="blocked_user_group_list_div">
+                <table class="table" id="blocked_user_group_list_table">
                     <thead>
                     <tr>
-                        <th>Nombre de usuario</th>
-                        <!--<th>Acción</th>-->
-                        <th>Eliminar</th>
+                        <th>Nombre</th>
+                        <th id="unlink_blocked_user_header">Desvincular</th>
                     </tr>
                     </thead>
-                    <tbody id="blocked_user_list_tbody">
+                    <tbody id="blocked_user_group_list_tbody">
                     </tbody>
                 </table>
             </div>
 
-            <span id="no_blocked_users_message">No hay usuarios bloqueados en el canal</span> <br><br>
+            <br>
 
-            <table><tr>
-                <span class="help-block">Introduzca el nombre de un usuario que desee bloquear (sin la @)</span>
-                <td><input type="text" id="add_blocked_user_name" maxlength="15"></td>
-                <td class="button_td"> &nbsp;<a id="add_blocked_user_btn" class="btn btn-danger btn-small">Bloquear usuario</a></td>
-            </tr></table>
-
-            <div id="delete_blocked_user_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h3 id="my_blocked_userModalLabel">
-                        Desbloquear usuario
-                    </h3>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="deleting_blocked_user_id" value="">
-                    <p>
-                        Está seguro de que desea eliminar el usuario &quot;<span id="deleting_blocked_user_name"></span>&quot;?
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
-                    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_blocked_user_confirmed">Sí, eliminar</button>
-                </div>
-            </div>
+            <a id="link_blocked_user_groups_btn" href="#link_blocked_user_groups_modal" class="btn btn-primary btn-small" data-toggle='modal'>Asociar grupos</a>
+            
         </div>
     </div>
 
@@ -251,8 +228,8 @@
                 <table class="table" id="trigger_group_list_table">
                     <thead>
                         <tr>
-                            <th>Grupo</th>
-                            <th id="unlink_trigger_header">Eliminar asociación</th>
+                            <th>Nombre</th>
+                            <th id="unlink_trigger_header">Desvincular</th>
                         </tr>
                     </thead>
                     <tbody id="trigger_group_list_tbody">
@@ -260,65 +237,54 @@
                 </table>
             </div>
             
-            <br><br>
+            <br>
 
             <a id="link_trigger_groups_btn" href="#link_trigger_groups_modal" class="btn btn-primary btn-small" data-toggle='modal'>Asociar grupos</a>
         </div> 
 
-        <div class="rounded_box fill_yellow" id="replacements_box" style="display:none">
+        <div class="rounded_box fill_yellow" id="replacement_groups_box" style="display:none">
             <h4>Grupos de supresores</h4>
 
-            <div class="scrollable" id="replacement_list_div">
-                <table class="table" id="replacement_list_table">
+            <div class="scrollable" id="replacement_group_list_div">
+                <table class="table" id="replacement_group_list_table">
                     <thead>
                     <tr>
-                        <th>Texto</th>
-                        <th>Reemplazar por</th>
-                        <!--<th>Mention</th>
-                        <th>DM</th>-->
-                        <th>Eliminar</th>
+                        <th>Nombre</th>
+                        <th id="unlink_replacement_header">Desvincular</th>
                     </tr>
                     </thead>
-                    <tbody id="replacement_list_tbody">
+                    <tbody id="replacement_group_list_tbody">
                     </tbody>
                 </table>
             </div>
-            <span id="no_replacements_message">No hay supresores asociados al canal</span> <br><br>
+            
+            <br>
 
-            <table>
-                <tr>
-                    <td><input placeholder="sustituir" class="input-small" type="text" id="add_replacement_text">&nbsp;</td>
-                    <td><input placeholder="por" class="input-small" type="text" id="add_replacement_replace_with"></td>
-                    <td class="button_td" rowspan="2"> &nbsp;<a id="add_replacement_btn" class="btn btn-primary btn-small">Agregar supresor</a></td>
-                </tr>
-            </table>
+            <a id="link_replacement_groups_btn" href="#link_replacement_groups_modal" class="btn btn-primary btn-small" data-toggle='modal'>Asociar grupos</a>
+
         </div> <!-- end rounded box -->
 
 
-        <div class="rounded_box fill_red" id="filters_box" style="display:none">
+        <div class="rounded_box fill_red" id="filter_groups_box" style="display:none">
             <h4>Grupos de retenedores</h4>
 
-            <div class="scrollable" id="filter_list_div">
-                <table class="table" id="filter_list_table">
+            <div class="scrollable" id="filter_group_list_div">
+                <table class="table" id="filter_group_list_table">
                     <thead>
                     <tr>
-                        <th>Texto</th>
-                        <!--<th>Mention</th>
-                        <th>DM</th>-->
-                        <th>Eliminar</th>
+                        <th>Nombre</th>
+                        <th id="unlink_filter_header">Desvincular</th>
                     </tr>
                     </thead>
-                    <tbody id="filter_list_tbody">
+                    <tbody id="filter_group_list_tbody">
                     </tbody>
                 </table>
             </div>
 
-            <span id="no_filters_message">No hay retenedores asociados al canal</span> <br><br>
+            <br>
 
-            <table><tr>
-                <td><input type="text" id="add_filter_text"></td>
-                <td class="button_td">&nbsp;<a id="add_filter_btn" class="btn btn-primary btn-small">Agregar filtro</a></td>
-            </tr></table>
+            <a id="link_filter_groups_btn" href="#link_filter_groups_modal" class="btn btn-primary btn-small" data-toggle='modal'>Asociar grupos</a>
+
         </div> <!-- end column (span6) -->
     </div> <!-- end column -->
 
@@ -383,6 +349,139 @@
     </div>
 </div> <!-- View trigger group modal -->
 
+
+<div id="view_replacement_group_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <input type="hidden" id="viewing_replacement_group_id" value="">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="replacement_group_modal_title">
+            <span id="viewing_replacement_group_name"></span>
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div class="span8">
+            <div class="rounded_box fill_yellow">
+                <h4>Supresores</h4>
+
+                <div class="scrollable" id="replacement_list_div">
+                    <table class="table" id="replacement_list_table" style="display:none">
+                        <thead>
+                            <tr>
+                                <th>Texto</th>
+                                <th>Remplazar por</th>
+                                <th id="delete_replacement_header">Eliminar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="replacement_list_tbody">
+                        </tbody>
+                    </table>
+                </div>
+                <span id="no_replacements_message">El grupo no contiene supresores</span> <br><br>
+
+                <table id="add_replacement_btn_table">
+                    <tr>
+                        <td><input placeholder="sustituir" class="input-small" type="text" id="add_replacement_text"></td>
+                        <td><input placeholder="por" class="input-small" type="text" id="add_replacement_replace_with"></td>
+                        <td class="button_td" rowspan="2"><a id="add_replacement_btn" class="btn btn-primary btn-small">Agregar supresor</a></td>
+                    </tr>
+                </table>
+            </div> <!-- end rounded box -->
+        </div> <!-- end span -->
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cerrar</button>
+    </div>
+</div> <!-- View replacement group modal -->
+
+
+<div id="view_filter_group_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <input type="hidden" id="viewing_filter_group_id" value="">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="filter_group_modal_title">
+            <span id="viewing_filter_group_name"></span>
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div class="span8">
+            <div class="rounded_box fill_red">
+                <h4>Retenedores</h4>
+
+                <div class="scrollable" id="filter_list_div">
+                    <table class="table" id="filter_list_table" style="display:none">
+                        <thead>
+                            <tr>
+                                <th>Texto</th>
+                                <th id="delete_filter_header">Eliminar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="filter_list_tbody">
+                        </tbody>
+                    </table>
+                </div>
+                <span id="no_filters_message">El grupo no contiene retenedores</span> <br><br>
+
+                <table id="add_filter_btn_table">
+                    <tr>
+                        <td><input type="text" id="add_filter_text"></td>
+                        <td class="button_td"> &nbsp;<a id="add_filter_btn" class="btn btn-primary btn-small">Agregar</a></td>
+                    </tr>
+                </table>
+            </div> <!-- end rounded box -->
+        </div> <!-- end span -->
+    
+    </div>
+    <div class="modal-footer">
+        
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cerrar</button>
+    </div>
+</div> <!-- View filter group modal -->
+
+
+<div id="view_blocked_user_group_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <input type="hidden" id="viewing_blocked_user_group_id" value="">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="blocked_user_group_modal_title">
+            <span id="viewing_blocked_user_group_name"></span>
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div class="span8">
+            <div class="rounded_box fill_gray">
+                <h4>Usuarios bloqueados</h4>
+
+                <div class="scrollable" id="blocked_user_list_div">
+                    <table class="table" id="blocked_user_list_table" style="display:none">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th id="delete_blocked_user_header">Desbloquear</th>
+                            </tr>
+                        </thead>
+                        <tbody id="blocked_user_list_tbody">
+                        </tbody>
+                    </table>
+                </div>
+                <span id="no_blocked_users_message">El grupo no contiene usuarios bloqueados</span> <br>
+
+                <table id="add_blocked_user_btn_table">
+                    <tr>
+                        <td><input type="text" id="add_blocked_user_name" maxlength="15"></td>
+                        <td class="button_td"> &nbsp;<a id="add_blocked_user_btn" class="btn btn-danger btn-small">Bloquear usuario</a></td>
+                    </tr>
+                </table>
+            </div> <!-- end rounded box -->
+        </div> <!-- end span -->
+    
+    </div>
+    <div class="modal-footer">
+        
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cerrar</button>
+    </div>
+</div> <!-- View blocked_user group modal -->
+
+
 <div id="link_trigger_groups_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -393,14 +492,8 @@
     <div class="modal-body">
         <div class="span11">
             <p>Seleccione uno o más grupos de disparadores para asociarlos al canal</p>
-            
         </div>
-        <!-- 
-        <div class="span11">
-            &nbsp;
-            <br>
-        </div>
-        -->
+        
         <div class="span11">
             {% if trigger_groups %}
             <select id="trigger_groups_select" name="trigger_groups_select" multiple="multiple">
@@ -419,18 +512,121 @@
         <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
     </div>
 </div> <!-- link trigger groups -->
+
+
+<div id="link_replacement_groups_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>
+            Grupos de supresores asociados al canal
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div class="span11">
+            <p>Seleccione uno o más grupos de supresores para asociarlos al canal</p>
+            
+        </div>
+        
+        <div class="span11">
+            {% if replacement_groups %}
+            <select id="replacement_groups_select" name="replacement_groups_select" multiple="multiple">
+                {% for group in replacement_groups %}
+                <option value="{{ group.id }}">{{ group.name }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+                <span>No hay grupos de supresores registrados</span>
+            {% endif %}
+        </div> <!-- end span -->
+    
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_replacement_groups_btn">Guardar</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+    </div>
+</div> <!-- link replacement groups -->
+
+
+<div id="link_filter_groups_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>
+            Grupos de retenedores asociados al canal
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div class="span11">
+            <p>Seleccione uno o más grupos de retenedores para asociarlos al canal</p>
+            
+        </div>
+        
+        <div class="span11">
+            {% if filter_groups %}
+            <select id="filter_groups_select" name="filter_groups_select" multiple="multiple">
+                {% for group in filter_groups %}
+                <option value="{{ group.id }}">{{ group.name }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+                <span>No hay grupos de retenedores registrados</span>
+            {% endif %}
+        </div> <!-- end span -->
+    
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_filter_groups_btn">Guardar</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+    </div>
+</div> <!-- link filter groups -->
+
+
+<div id="link_blocked_user_groups_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>
+            Grupos de usuarios bloqueados asociados
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div class="span11">
+            <p>Seleccione uno o más grupos de retenedores para asociarlos al canal</p>
+            
+        </div>
+        
+        <div class="span11">
+            {% if filter_groups %}
+            <select id="blocked_user_groups_select" name="blocked_user_groups_select" multiple="multiple">
+                {% for group in blocked_user_groups %}
+                <option value="{{ group.id }}">{{ group.name }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+                <span>No hay grupos de usuarios bloqueados registrados</span>
+            {% endif %}
+        </div> <!-- end span -->
+    
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_blocked_user_groups_btn">Guardar</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+    </div>
+</div> <!-- link blocked_user groups -->
+
 {% endblock %} <!-- endblock section_body -->
 
 {% block page_scripts %}
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/script.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/channel_trigger_settings.js"></script>
-    <!--
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/triggers.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/replacements.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/filters.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/timeblocks.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/blocked_users.js"></script>
-    -->
+<script type="text/javascript" src="{{ STATIC_URL }}js/filtering/script.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/filtering/channel_trigger_settings.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/filtering/channel_filter_settings.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/filtering/channel_replacement_settings.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/filtering/channel_blocked_user_settings.js"></script>
+<!--
+<script type="text/javascript" src="{{ STATIC_URL }}js/filtering/triggers.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/filtering/replacements.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/filtering/filters.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/filtering/timeblocks.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/filtering/blocked_users.js"></script>
+-->
 {% endblock %}
 
 {% block modal_header %}

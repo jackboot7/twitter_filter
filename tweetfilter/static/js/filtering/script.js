@@ -39,13 +39,13 @@ var
             }
 
             if($('#activate_blacklist_check').is(":checked")){
-                $('#blacklist_group_box').fadeIn();
+                $('#blocked_user_groups_box').fadeIn();
 
                 if (!$('#left_column').is(":visible")){
                     $('#left_column').fadeIn();
                 }
             }else{
-                $('#blacklist_box').hide();
+                $('#blocked_user_groups_box').hide();
 
                 if (!$('#activate_timeblocks_check').is(":checked")){
                     $('#left_column').hide();

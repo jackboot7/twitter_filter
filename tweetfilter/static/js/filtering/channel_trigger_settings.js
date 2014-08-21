@@ -1,12 +1,11 @@
 var
     
-    manage_linked_groups = function (group) {
-               
+    manage_linked_trigger_groups = function () {
         $.get("/filtering/channel/list_groups/" + $("#current_channel").val(), {
             'content_type': "Trigger"
         }, function (data) {
-            $("#link_trigger_groups_select").multiselect("uncheckAll");        
-            $("#link_trigger_groups_select").multiselect("widget").find(":checkbox").each(function(){
+            $("#trigger_groups_select").multiselect("uncheckAll");        
+            $("#trigger_groups_select").multiselect("widget").find(":checkbox").each(function(){
                 var widget = this;
                 $.each(data, function (index, value) {
                     if (widget.value == value) {
@@ -14,7 +13,8 @@ var
                     }
                 });
             });
-            $("#link_trigger_groups_select").multiselect("refresh");
+
+            $("#trigger_groups_select").multiselect("refresh");
         });
     },
 
@@ -63,12 +63,8 @@ var
                             "<a id='delete_trigger_" + elem.id +"' class='no_decoration' " +
                             "title='Haga click para eliminar disparador'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>";
-                        $('#delete_trigger_header').show();
-                        $('#add_trigger_btn_table').show();
                     } else {
                         delete_btn = "";                        
-                        $('#delete_trigger_header').hide();
-                        $('#add_trigger_btn_table').hide();
                     }
 
                     $('#trigger_list_tbody').append(
@@ -122,6 +118,14 @@ var
         $('#viewing_trigger_group_name').html(group_name);
         $('#viewing_trigger_group_id').val(group_id);
                 
+        if (exclusive) {
+            $('#delete_trigger_header').show();
+            $('#add_trigger_btn_table').show();
+        } else {
+            $('#delete_trigger_header').hide();
+            $('#add_trigger_btn_table').hide();
+        }
+        
         load_trigger_table(exclusive);
     },
 
@@ -212,7 +216,7 @@ $(document).ready(function () {
     });
 
     $('#link_trigger_groups_btn').click(function () {
-        manage_linked_groups();
+        manage_linked_trigger_groups();
     });
 
     $('#save_trigger_groups_btn').click(function () {

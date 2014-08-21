@@ -82,7 +82,7 @@ class FilteringDetailView(LoginRequiredMixin, DetailView):
     Renders the channel interface for filtering settings
     """
     model = Channel
-    template_name = "filtering/index.html"
+    template_name = "filtering/channel_index.html"
     context_object_name = "channel"
 
     def get_context_data(self, **kwargs):
@@ -1019,7 +1019,9 @@ class SetChannelGroupsView(CsrfExemptMixin, JSONResponseMixin,
             new_groups = json.loads(request.POST['groups'])
 
             obj.groups.remove(*linked_groups)
-            obj.groups.add(*new_groups)
+            
+            if new_groups:
+                obj.groups.add(*new_groups)
             
             obj.save()
             response_data = {'result': "ok"}
@@ -1157,6 +1159,23 @@ class ReplacementGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
         return self.render_json_response(json_list)
 
 
+class ReplacementGroupListChannelView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Shows a all replacement groups linked to a particular channel
+    """
+    model = Channel
+
+    def get_ajax(self, request, *args, **kwargs):
+        json_list = []
+        group_list = self.get_object().groups.filter(content_type="Replacement")
+
+        for group in group_list:
+            group_dict = model_to_dict(group)
+            json_list.append(group_dict)
+
+        return self.render_json_response(json_list)
+
+
 class FilterGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
     """
@@ -1233,6 +1252,23 @@ class FilterGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
         return self.render_json_response(json_list)
 
 
+class FilterGroupListChannelView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Shows a all filter groups linked to a particular channel
+    """
+    model = Channel
+
+    def get_ajax(self, request, *args, **kwargs):
+        json_list = []
+        group_list = self.get_object().groups.filter(content_type="Filter")
+
+        for group in group_list:
+            group_dict = model_to_dict(group)
+            json_list.append(group_dict)
+
+        return self.render_json_response(json_list)
+
+
 class BlockedUserGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, View):
     """
@@ -1304,6 +1340,23 @@ class BlockedUserGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
             for chan in group.channel_set.all():
                 group_dict['channels'].append(chan.screen_name)
             
+            json_list.append(group_dict)
+
+        return self.render_json_response(json_list)
+
+
+class BlockedUserGroupListChannelView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Shows all blacklist groups linked to a particular channel
+    """
+    model = Channel
+
+    def get_ajax(self, request, *args, **kwargs):
+        json_list = []
+        group_list = self.get_object().groups.filter(content_type="BlockedUser")
+
+        for group in group_list:
+            group_dict = model_to_dict(group)
             json_list.append(group_dict)
 
         return self.render_json_response(json_list)

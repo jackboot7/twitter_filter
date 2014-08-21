@@ -1,12 +1,12 @@
 var
     
-    manage_linked_groups = function (group) {
+    manage_linked_replacement_groups = function () {
                
         $.get("/filtering/channel/list_groups/" + $("#current_channel").val(), {
             'content_type': "Replacement"
         }, function (data) {
-            $("#link_replacement_groups_select").multiselect("uncheckAll");        
-            $("#link_replacement_groups_select").multiselect("widget").find(":checkbox").each(function(){
+            $("#replacement_groups_select").multiselect("uncheckAll");        
+            $("#replacement_groups_select").multiselect("widget").find(":checkbox").each(function(){
                 var widget = this;
                 $.each(data, function (index, value) {
                     if (widget.value == value) {
@@ -14,7 +14,7 @@ var
                     }
                 });
             });
-            $("#link_replacement_groups_select").multiselect("refresh");
+            $("#replacement_groups_select").multiselect("refresh");
         });
     },
 
@@ -22,7 +22,7 @@ var
         $.post("/filtering/channel/unlink_group/" + $('#current_channel').val(), {
             'group_id': group_id
         }, function (data) {
-            load_trigger_group_table();
+            load_replacement_group_table();
         });
     },
 
@@ -63,12 +63,8 @@ var
                             "<a id='delete_replacement_" + elem.id +"' class='no_decoration' " +
                             "title='Haga click para eliminar supresor'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>";
-                        $('#delete_replacement_header').show();
-                        $('#add_replacement_btn_table').show();
                     } else {
                         delete_btn = "";                        
-                        $('#delete_replacement_header').hide();
-                        $('#add_replacement_btn_table').hide();
                     }
 
                     $('#replacement_list_tbody').append(
@@ -99,9 +95,12 @@ var
         "use strict";
 
         var replacement_text = $.trim($('#add_replacement_text').val());
+        var replace_with = $.trim($('#add_replacement_replace_with').val());
+
         if(replacement_text.length > 0) {
             $.post("/filtering/replacement/add/", {
                 'replacement_text': replacement_text,
+                'replacement_replace_with': replace_with,
                 'group_id': $('#viewing_replacement_group_id').val()
             }, function (data) {
                 if(data.result === "ok") {
@@ -121,7 +120,15 @@ var
 
         $('#viewing_replacement_group_name').html(group_name);
         $('#viewing_replacement_group_id').val(group_id);
-                
+        
+        if (exclusive) {
+            $('#delete_replacement_header').show();
+            $('#add_replacement_btn_table').show();
+        } else {
+            $('#delete_replacement_header').hide();
+            $('#add_replacement_btn_table').hide();
+        }
+                        
         load_replacement_table(exclusive);
     },
 
@@ -204,7 +211,7 @@ $(document).ready(function () {
     });
 
     $('#link_replacement_groups_btn').click(function () {
-        manage_linked_groups();
+        manage_linked_replacement_groups();
     });
 
     $('#save_replacement_groups_btn').click(function () {
