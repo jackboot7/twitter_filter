@@ -413,7 +413,7 @@ $(document).ready(function () {
     });
 
     $('#close_scheduled_tweet_form').click(function () {
-        hide_add_scheduled_tweet_form();
+        clear_add_scheduled_tweet_form();
     });
 
     $('#save_scheduled_tweet_btn').click(function () {

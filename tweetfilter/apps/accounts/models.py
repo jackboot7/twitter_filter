@@ -185,7 +185,7 @@ class Channel(models.Model):
         replacements = ItemGroup(class_type="Replacement", channel_exclusive=True, name="Supresores del canal")
         blocked_users = ItemGroup(class_type="BlockedUser", channel_exclusive=True, name="Usuarios bloqueados del canal")
         scheduled_tweets = ItemGroup(class_type="ScheduledTweet", channel_exclusive=True, name="Tweets programados del canal")
-        hashtags = ItemGroup(class_type="HashtagAdvertisement", channel_exclusive=True, name="Sufijos del canal")
+        hashtags = ItemGroup(class_type="Hashtag", channel_exclusive=True, name="Sufijos del canal")
         triggers.save()
         filters.save()
         replacements.save()

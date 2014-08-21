@@ -34,10 +34,20 @@ class ScheduledPostsHomeView(LoginRequiredMixin, ListView):
         return context
 
 
-class ScheduledPostsDetailView(LoginRequiredMixin, DetailView):
-    model = ItemGroup
-    template_name = "scheduling/index.html"
-    context_object_name = "group"
+class SchedulingDetailView(LoginRequiredMixin, DetailView):
+    """
+    Renders the interface for scheduling settings from a particular channel
+    """
+    model = Channel
+    template_name = "scheduling/channel_index.html"
+    context_object_name = "channel"
+
+    def get_context_data(self, **kwargs):
+        groups_queryset = ItemGroup.objects.filter(channel_exclusive=False)
+        context = super(SchedulingDetailView, self).get_context_data(**kwargs)
+        context['scheduled_tweet_groups'] = groups_queryset.filter(content_type="ScheduledTweet")
+
+        return context
 
 
 #==========================
@@ -326,6 +336,23 @@ class ScheduledTweetGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView
         return self.render_json_response(json_list)
 
 
+class ScheduledTweetGroupListChannelView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Shows a all scheduled tweet groups linked to a particular channel
+    """
+    model = Channel
+
+    def get_ajax(self, request, *args, **kwargs):
+        json_list = []
+        group_list = self.get_object().groups.filter(content_type="ScheduledTweet")
+
+        for group in group_list:
+            group_dict = model_to_dict(group)
+            json_list.append(group_dict)
+
+        return self.render_json_response(json_list)
+
+
 class SetItemGroupChannelsView(CsrfExemptMixin, JSONResponseMixin,
     AjaxResponseMixin, UpdateView):
     """
@@ -383,3 +410,71 @@ class ItemGroupDeleteView(CsrfExemptMixin, JSONResponseMixin,
 
         return HttpResponse(json.dumps(response_data),
             content_type="application/json")
+
+
+class ChannelUnlinkGroupView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Removes the association between a channel and an ItemGroup
+    """
+    model = Channel
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            obj.groups.remove(request.POST['group_id'])
+            
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            logger.exception("Error in ChannelUnlinkGroupView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class SetChannelGroupsView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    """
+    Associates a list of groups to the channel
+    """
+    model = Channel
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            linked_groups = obj.groups.filter(content_type=request.POST['content_type']).exclude(channel_exclusive=True)
+            new_groups = json.loads(request.POST['groups'])
+
+            obj.groups.remove(*linked_groups)
+            
+            if new_groups:
+                obj.groups.add(*new_groups)
+            
+            obj.save()
+            response_data = {'result': "ok"}
+        except Exception as e:
+            logger.exception("Error in SetChannelGroupsView")
+            response_data = {'result': "fail"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ListChannelGroupsView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Given an item group, returns all channels associated with it
+    """
+    model = Channel
+
+    def get_ajax(self, request,  *args, **kwargs):
+        obj = self.get_object()
+        response_data = []
+        
+        for group in obj.groups.filter(content_type=request.GET['content_type']):
+            response_data.append(group.id)
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
