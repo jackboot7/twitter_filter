@@ -166,6 +166,13 @@ class Channel(models.Model):
             channel_log_exception.delay(message, self.screen_name)
             return False
 
+    def get_triggers(self):
+        trigger_list = []
+        groups = self.get_trigger_groups()
+
+        for group in groups:
+            pass            
+
     def get_trigger_groups(self):
         """ returns a list of this channel's trigger groups """
         return self.get_groups("Trigger")

@@ -193,7 +193,7 @@ var
                     var text = (elem.text.length > 16)? elem.text.substr(0,16) + "..." : elem.text;
                     $('#hashtag_list_tbody').append(
                         "<tr>" +
-                            "<td><a id='edit_hashtag_" + elem.id + "' href='#add_hashtag_modal' data-toggle='modal'>" + text + "</a></td>" +
+                            "<td><a id='edit_hashtag_" + elem.id + "' data-toggle='modal' class='no_decoration'>" + text + "</a></td>" +
                             "<td>" + elem.quantity + "</td>" +
                             "<td><span id='hashtag_count_span_" + elem.id + "'>"+ elem.count + "</span></td>" +
                             "<td><a id='reset_hashtag_" + elem.id + "' class='reset_hashtag' " +
