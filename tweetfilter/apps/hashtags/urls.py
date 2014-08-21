@@ -1,13 +1,14 @@
 from django.conf.urls import *
 
 from apps.hashtags.views import *
-
+ 
 
 urlpatterns = patterns('apps.hashtags.views',
 
     url(r'^hashtag_group/add/', HashtagGroupCreateView.as_view()),
     url(r'^hashtag_group/update/(?P<pk>\w+)', HashtagGroupUpdateView.as_view(), name="edit_hashtag_group"),
     url(r'^hashtag_group/list/', HashtagGroupListView.as_view()),
+    url(r'^hashtag_group/channel/(?P<pk>\w+)', HashtagGroupListChannelView.as_view()),
     url(r'^hashtag_group/delete/(?P<pk>\w+)', ItemGroupDeleteView.as_view()),
     url(r'^hashtag_group/set_channels/(?P<pk>\w+)', SetItemGroupChannelsView.as_view()),
     url(r'^hashtag_group/list_channels/(?P<pk>\w+)', ItemGroupChannelListView.as_view()),

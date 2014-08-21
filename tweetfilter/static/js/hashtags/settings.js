@@ -361,7 +361,6 @@ var
                 }
             }
         });
-
     },
 
     validate_add_hashtag_group_form = function () {

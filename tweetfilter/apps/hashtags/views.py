@@ -32,9 +32,15 @@ class HashtagsHomeView(LoginRequiredMixin, ListView):
 
 
 class HashtagsDetailView(LoginRequiredMixin, DetailView):
-    model = ItemGroup
-    template_name = "hashtags/index.html"
-    context_object_name = "group"
+    model = Channel
+    template_name = "hashtags/channel_index.html"
+    context_object_name = "channel"
+
+    def get_context_data(self, **kwargs):
+        groups_queryset = ItemGroup.objects.filter(channel_exclusive=False)
+        context = super(HashtagsDetailView, self).get_context_data(**kwargs)
+        context['hashtag_groups'] = groups_queryset.filter(content_type="Hashtag")
+        return context
 
 
 class CheckStatusView(JSONResponseMixin, AjaxResponseMixin, DetailView):
@@ -396,3 +402,18 @@ class ListChannelGroupsView(JSONResponseMixin, AjaxResponseMixin, DetailView):
             content_type="application/json")
 
 
+class HashtagGroupListChannelView(JSONResponseMixin, AjaxResponseMixin, DetailView):
+    """
+    Shows a all hashtag groups linked to a particular channel
+    """
+    model = Channel
+
+    def get_ajax(self, request, *args, **kwargs):
+        json_list = []
+        group_list = self.get_object().groups.filter(content_type="Hashtag")
+
+        for group in group_list:
+            group_dict = model_to_dict(group)
+            json_list.append(group_dict)
+
+        return self.render_json_response(json_list)

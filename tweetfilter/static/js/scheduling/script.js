@@ -1,4 +1,3 @@
-
 var
 
     send_scheduled_tweet = function (tweet_id) {
