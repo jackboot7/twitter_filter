@@ -83,22 +83,26 @@ class SwitchStatusView(CsrfExemptMixin, JSONResponseMixin,
         try:
             if obj.scheduling_enabled:
                 # disable
+                """
                 scheduled_tweets = ScheduledTweet.objects.filter(channel=obj.screen_name)
                 for tweet in scheduled_tweets:
                     if tweet.status == ScheduledTweet.STATUS_ENABLED:
                         pt = tweet.periodic_task
                         pt.enabled = False
                         pt.save()
+                """
                 obj.scheduling_enabled = False
                 obj.save()
             else:
                 # enable
+                """
                 scheduled_tweets = ScheduledTweet.objects.filter(channel=obj.screen_name)
                 for tweet in scheduled_tweets:
                     if tweet.status == ScheduledTweet.STATUS_ENABLED:
                         pt = tweet.periodic_task
                         pt.enabled = True
                         pt.save()
+                """
                 obj.scheduling_enabled = True
                 obj.save()
             response_data = {'result': "ok"}

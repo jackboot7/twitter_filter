@@ -414,57 +414,10 @@ $(document).ready(function () {
         minuteText: 'Minutos'
     });
 
-
-    /*
-
     $('#switch_scheduling_btn').click(function () {
         $.post("/scheduling/switch_status/" + $('#current_channel').val(), function (data) {
             update_scheduling_status();
         });
     });
 
-    $('#scheduled_tweet_timepicker').timepicker({
-        hourText: 'Hora',
-        minuteText: 'Minutos'
-    });
-
-    $('#scheduled_tweet_text').bind("keyup change input", function () {
-        count_characters();
-    });
-
-    $('#send_now_confirmed').click(function () {
-        $.post("/scheduling/send/" + $('#sending_now_tweet_id').val(),
-            function (data) {
-                if(data.result === "ok") {
-                    $('#alert_success_body').text("El tweet fue enviado con éxito");
-                    $('#alert_success').show();
-                }else{
-                    $('#alert_warning_body').text(data.error_msg);
-                    $('#alert_warning').show();
-                }
-            });
-    });
-
-    $('#delete_scheduled_tweet_confirmed').click(function () {
-        $.post("/scheduling/scheduled_tweet/delete/" + $('#deleting_scheduled_tweet_id').val(),
-            function (data) {
-            if(data.result === "ok") {
-                load_scheduled_tweet_table();
-            }
-        });
-    });
-
-    $('#save_scheduled_tweet_btn').click(function () {
-        if(validate_add_scheduled_tweet_form()){
-            submit_scheduled_tweet();
-        }else{
-            return false;
-        }
-    });
-
-    $('#add_scheduled_tweet_btn').click(function () {
-        $('#scheduled_tweet_modal_title').text("Añadir tweet programado");
-        clear_add_scheduled_tweet_form();
-    });
-    */
 });
