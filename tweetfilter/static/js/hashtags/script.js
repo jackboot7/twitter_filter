@@ -230,9 +230,11 @@ var
     load_hashtag_table = function (exclusive) {
         "use strict";
 
-        var delete_btn = "";
-        var edit_link = "";
-        var static_url = $('#static_url_path').val();
+        var 
+            delete_btn = "",
+            edit_link = "",
+            reset_btn = "",
+            static_url = $('#static_url_path').val();
 
         $.get("/hashtags/hashtag/list/" + $('#viewing_hashtag_group_id').val(), function (data) {
             $('#hashtag_list_tbody').empty();
@@ -243,16 +245,21 @@ var
 
                 $.each(data, function (idx, elem) {
                     var text = (elem.text.length > 16)? elem.text.substr(0,16) + "..." : elem.text;
-
+ 
                     if (exclusive) {
                         delete_btn = 
                             "<a id='delete_hashtag_" + elem.id +"' class='delete_hashtag' " +
                             "title='Haga click para eliminar el sufijo' href='#delete_hashtag_confirm_modal' data-toggle='modal'>" +
                             "<span class='badge badge-important' contenteditable='false'>x</span></a>";
                         edit_link = "<a id='edit_hashtag_" + elem.id + "' href='#' data-toggle='modal'>" + text + "</a>";
+                        reset_btn = 
+                            "<td><a id='reset_hashtag_" + elem.id + "' class='reset_hashtag' " +
+                            "title='Haga click para reiniciar el contador' href='#reset_hashtag_confirm_modal' data-toggle='modal'>"+
+                            "<img src='" + static_url + "img/refresh_20.png'></a></td>"
                     } else {
                         delete_btn = "";
                         edit_link = text;
+                        reset_btn = "";
                     }
 
                     $('#hashtag_list_tbody').append(
@@ -260,6 +267,7 @@ var
                             "<td>" + edit_link + "</td>" +
                             "<td>" + elem.quantity + "</td>" +
                             "<td><span id='hashtag_count_span_" + elem.id + "'>"+ elem.count + "</span></td>" +
+                            reset_btn +
                             "<td>" + delete_btn + "</td>" +
                             "</tr>"
                     );
@@ -272,6 +280,12 @@ var
                         $('#delete_hashtag_' + elem.id).click(function () {
                         if (confirm("Está seguro de que desea eliminar el sufijo seleccionado?")) {
                                 delete_hashtag(elem.id);
+                            }
+                        });
+
+                        $('#reset_hashtag_' + elem.id).click(function () {
+                            if (confirm("Está seguro de que desea reiniciar el contador de ocurrencias del sufijo seleccionado?")) {
+                                reset_hashtag(elem.id);
                             }
                         });
                     }
