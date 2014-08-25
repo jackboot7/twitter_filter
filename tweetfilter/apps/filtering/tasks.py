@@ -306,7 +306,8 @@ def triggers_filter(tweet):
             tweet.status = Tweet.STATUS_TRIGGERED
             return tweet
 
-        triggers = channel.get_triggers()
+        triggers = channel.get_group_items("Trigger")
+
         try:
             for tr in triggers:
                 if tr.occurs_in(tweet.strip_channel_mention()):
@@ -338,7 +339,7 @@ def is_user_allowed(tweet):
             if not channel.blacklist_enabled:
                 return tweet
 
-            blocked_users = BlockedUser.objects.filter(channel=tweet.mention_to)
+            blocked_users = channel.get_group_items("BlockedUser")
             for user in blocked_users:
                 if user.screen_name.lower() == from_user.lower():
                     # user is blocked
@@ -362,12 +363,13 @@ def banned_words_filter(tweet):
     """ Checks if there's any banned word in tweet content. If so, FilterNotPassed exception is raised """
     if tweet is not None and tweet.status == Tweet.STATUS_TRIGGERED:
         channel = Channel.objects.filter(screen_name=tweet.mention_to)[0]
+        
         # if feature is disabled, pass the tweet
         if not channel.filters_enabled:
             tweet.status = Tweet.STATUS_APPROVED
             return tweet
 
-        filters = channel.get_filters()
+        filters = channel.get_group_items("Filter")
         try:
             for filter in filters:
                 if filter.occurs_in(tweet.strip_channel_mention()):
@@ -412,7 +414,7 @@ def retweet(tweet, txt=None, applying_hashtag=None):
 
             # Apply replacements
             if channel.replacements_enabled:
-                reps = Replacement.objects.filter(channel=tweet.mention_to)
+                reps = channel.get_group_items("Replacement")
 
                 for rep in reps:
                     txt = rep.replace_in(txt)
@@ -422,7 +424,8 @@ def retweet(tweet, txt=None, applying_hashtag=None):
             # Apply hashtags
             if channel.hashtags_enabled and applying_hashtag is None:
                 hashtag_list = []
-                hashtags = HashtagAdvertisement.objects.filter(channel=channel.screen_name)
+                hashtags = channel.get_group_items("Hashtag")
+                
                 for hashtag in hashtags:
                     if hashtag.applies_now() and len(hashtag.text) + 1 <= 140 - len(txt) \
                     and hashtag.count < hashtag.quantity:

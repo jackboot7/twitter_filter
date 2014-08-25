@@ -27,6 +27,18 @@ class ItemGroup(models.Model):
     def get_channels(self):
         return self.channel_set.all()
 
+    def get_items(self):
+        links = [rel.get_accessor_name() for rel in self._meta.get_all_related_objects()]
+        object_group = []
+        
+        for link in links:
+            objects = getattr(self, link).all()
+            for obj in objects:
+                object_group.append(obj)
+
+        return object_group
+
+
 
 class Channel(models.Model):
     """
@@ -166,12 +178,14 @@ class Channel(models.Model):
             channel_log_exception.delay(message, self.screen_name)
             return False
 
-    def get_triggers(self):
-        trigger_list = []
-        groups = self.get_trigger_groups()
+    def get_group_items(self, content_type):
+        items = []
+        groups = self.get_groups(content_type)
 
         for group in groups:
-            pass            
+            items.extend(group.get_items())
+            
+        return items
 
     def get_trigger_groups(self):
         """ returns a list of this channel's trigger groups """
