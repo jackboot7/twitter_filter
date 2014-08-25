@@ -63,7 +63,7 @@ var
             }else{
                 $('#replacement_groups_box').hide();
             }
-
+ 
             if($('#activate_triggers_check').is(":checked")){
                 $('#trigger_groups_box').fadeIn();
             }else{
@@ -85,68 +85,31 @@ $(document).ready(function () {
 
     $("#activate_timeblocks_check").change(function () {
         $.post("/filtering/switch_scheduledblocks/" + $('#current_channel').val(), function (data) {
-            if ($('#activate_timeblocks_check').is(":checked")){
-                $('#timeblocks_box').fadeIn();
-
-                if (!$('#left_column').is(":visible")) {
-                    $('#left_column').show();
-                }
-            }else{
-                $('#timeblocks_box').fadeOut();
-
-                if (!$('#activate_blacklist_check').is(":checked")) {
-                    $('#left_column').hide();
-                }
-            }
+            update_retweets_status();
         });
     });
 
     $("#activate_blacklist_check").change(function () {
         $.post("/filtering/switch_blacklist/" + $('#current_channel').val(), function (data) {
-            if ($('#activate_blacklist_check').is(":checked")){
-                $('#blacklist_box').fadeIn();
-
-                if (!$('#left_column').is(":visible")) {
-                    $('#left_column').show();
-                }
-            }else{
-                $('#blacklist_box').fadeOut();
-
-                if (!$('#activate_timeblocks_check').is(":checked")) {
-                    $('#left_column').hide();
-                }
-            }
+            update_retweets_status();
         });
     });
 
     $("#activate_triggers_check").change(function () {
         $.post("/filtering/switch_triggers/" + $('#current_channel').val(), function (data) {
-            if ($('#activate_triggers_check').is(":checked")){
-                $('#triggers_box').fadeIn();
-            }else{
-                $('#triggers_box').fadeOut();
-            }
+            update_retweets_status();
         });
     });
 
     $("#activate_replacements_check").change(function () {
         $.post("/filtering/switch_replacements/" + $('#current_channel').val(), function (data) {
-            if($('#activate_replacements_check').is(":checked")){
-                $('#replacements_box').fadeIn();
-            }else{
-                $('#replacements_box').fadeOut();
-            }
-
+            update_retweets_status();
         });
     });
 
     $("#activate_filters_check").change(function () {
         $.post("/filtering/switch_filters/" + $('#current_channel').val(), function (data) {
-            if($('#activate_filters_check').is(":checked")){
-                $('#filters_box').fadeIn();
-            }else{
-                $('#filters_box').fadeOut();
-            }
+            update_retweets_status();
         });
     });
 
