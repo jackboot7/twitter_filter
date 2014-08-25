@@ -11,10 +11,12 @@ var
                 btn.attr('title', "Haga click para desactivar");
                 label.text("Activo");
                 label.removeClass('label-important').addClass('label-success');
+                $("#retweets_status").val("active");
             }else{
                 btn.attr('title', "Haga click para activar");
                 label.text("Desactivado");
                 label.removeClass('label-success').addClass('label-important');
+                $("#retweets_status").val("inactive");
             }
 
             $('#activate_timeblocks_check').attr('checked', data.scheduled_blocks);
@@ -78,7 +80,7 @@ $(document).ready(function () {
     update_retweets_status();
 
     $('#switch_retweets_btn').click(function () {
-        var action = ($(this).is(":checked"))? "activar" : "desactivar";
+        var action = ($("#retweets_status").val() == "inactive")? "activar" : "desactivar";
         if (confirm("Está seguro de que desea " + action + " los retweets automáticos?")) {
             $.post("/filtering/switch_status/" + $('#current_channel').val(), function (data) {
                 update_retweets_status();

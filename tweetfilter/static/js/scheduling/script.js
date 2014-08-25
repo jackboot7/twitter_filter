@@ -136,10 +136,12 @@ var
                 btn.attr('title', "Haga click para desactivar");
                 label.text("Activo");
                 label.removeClass('label-important').addClass('label-success');
+                $("#scheduling_status").val("active");
             }else{
                 btn.attr('title', "Haga click para activar");
                 label.text("Desactivado");
                 label.removeClass('label-success').addClass('label-important');
+                $("#scheduling_status").val("inactive");
             }
         });
     },
@@ -414,7 +416,7 @@ $(document).ready(function () {
     });
 
     $('#switch_scheduling_btn').click(function () {
-        var action = ($(this).is(":checked"))? "activar" : "desactivar";
+        var action = ($("#scheduling_status").val() == "inactive")? "activar" : "desactivar";
         if (confirm("Está seguro de que desea " + action + " los tweets programados?")) {
             $.post("/scheduling/switch_status/" + $('#current_channel').val(), function (data) {
             update_scheduling_status();

@@ -93,12 +93,7 @@ class FilteringDetailView(LoginRequiredMixin, DetailView):
         context['replacement_groups'] = groups_queryset.filter(content_type="Replacement")
         context['filter_groups'] = groups_queryset.filter(content_type="Filter")
         context['blocked_user_groups'] = groups_queryset.filter(content_type="BlockedUser")
-
-        print "all triggers:"
-        print "-------------"
-        trigs = self.get_object().get_group_items("Trigger")
-        for t in trigs:
-            print t.text
+        
         return context
 
 

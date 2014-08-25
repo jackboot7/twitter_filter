@@ -154,10 +154,12 @@ var
                 btn.attr('title', "Haga click para desactivar");
                 label.text("Activo");
                 label.removeClass('label-important').addClass('label-success');
+                $("#hashtags_status").val("active");
             }else{
                 btn.attr('title', "Haga click para activar");
                 label.text("Desactivado");
                 label.removeClass('label-success').addClass('label-important');
+                $("#hashtags_status").val("inactive");
             }
         });
     },
@@ -432,7 +434,7 @@ $(document).ready(function () {
     });
 
     $('#switch_hashtags_btn').click(function () {
-        var action = ($(this).is(":checked"))? "activar" : "desactivar";
+        var action = ($("#hashtags_status").val() == "inactive")? "activar" : "desactivar";
         if (confirm("Está seguro de que desea " + action + " los sufijos?")) {
             $.post("/hashtags/switch_status/" + $('#current_channel').val(), function (data) {
                 update_hashtags_status();

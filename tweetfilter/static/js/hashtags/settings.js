@@ -16,16 +16,6 @@ var
             return false;
         }
 
-        /*
-        if(!(/^[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]{1,139}$/g).test($.trim($('#add_hashtag_text').val()))){
-            alert("El texto no debe contener '#' ni otros caracteres especiales");
-            return false;
-        }else if(!(/[a-zA-Z]/g).test($.trim($('#add_hashtag_text').val()))){
-            alert("El texto debe contener al menos una letra");
-            return false;
-        }
-        */
-
         if(!/^[0-9]+$/.test($.trim($('#add_hashtag_qty').val()))){
             alert("Debe ingresar un número entero como cantidad");
             return false;
