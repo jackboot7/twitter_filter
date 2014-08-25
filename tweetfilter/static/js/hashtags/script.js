@@ -418,9 +418,14 @@ $(document).ready(function () {
     });
 
     $('#switch_hashtags_btn').click(function () {
-        $.post("/hashtags/switch_status/" + $('#current_channel').val(), function (data) {
+        var action = ($(this).is(":checked"))? "activar" : "desactivar";
+        if (confirm("Está seguro de que desea " + action + " los sufijos?")) {
+            $.post("/hashtags/switch_status/" + $('#current_channel').val(), function (data) {
+                update_hashtags_status();
+            });
+        } else {
             update_hashtags_status();
-        });
+        }
     });
 
 });

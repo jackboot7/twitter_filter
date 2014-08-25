@@ -414,9 +414,14 @@ $(document).ready(function () {
     });
 
     $('#switch_scheduling_btn').click(function () {
-        $.post("/scheduling/switch_status/" + $('#current_channel').val(), function (data) {
+        var action = ($(this).is(":checked"))? "activar" : "desactivar";
+        if (confirm("Está seguro de que desea " + action + " los tweets programados?")) {
+            $.post("/scheduling/switch_status/" + $('#current_channel').val(), function (data) {
             update_scheduling_status();
         });
+        } else {
+            update_scheduling_status();
+        }
     });
 
 });
