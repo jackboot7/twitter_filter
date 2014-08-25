@@ -78,44 +78,79 @@ $(document).ready(function () {
     update_retweets_status();
 
     $('#switch_retweets_btn').click(function () {
-        $.post("/filtering/switch_status/" + $('#current_channel').val(), function (data) {
+        var action = ($(this).is(":checked"))? "activar" : "desactivar";
+        if (confirm("Está seguro de que desea " + action + " los retweets automáticos?")) {
+            $.post("/filtering/switch_status/" + $('#current_channel').val(), function (data) {
+                update_retweets_status();
+            });
+        } else {
             update_retweets_status();
-        });
+        }
     });
 
     $("#activate_timeblocks_check").change(function () {
-        $.post("/filtering/switch_scheduledblocks/" + $('#current_channel').val(), function (data) {
+        var action = ($(this).is(":checked"))? "activar" : "desactivar";
+        if (confirm("Está seguro de que desea " + action + " la restricción de horarios?")) {
+            $.post("/filtering/switch_scheduledblocks/" + $('#current_channel').val(), function (data) {
+                update_retweets_status();
+            });
+        } else {
             update_retweets_status();
-        });
+        }
     });
 
     $("#activate_blacklist_check").change(function () {
-        $.post("/filtering/switch_blacklist/" + $('#current_channel').val(), function (data) {
+        var action = ($(this).is(":checked"))? "activar" : "desactivar";
+        if (confirm("Está seguro de que desea " + action + " el bloqueo de usuarios?")) {
+            $.post("/filtering/switch_blacklist/" + $('#current_channel').val(), function (data) {
+                update_retweets_status();
+            });
+        } else {
             update_retweets_status();
-        });
+        }
     });
 
     $("#activate_triggers_check").change(function () {
-        $.post("/filtering/switch_triggers/" + $('#current_channel').val(), function (data) {
+        var action = ($(this).is(":checked"))? "activar" : "desactivar";
+        if (confirm("Está seguro de que desea " + action + " la detección de disparadores?")) {
+            $.post("/filtering/switch_triggers/" + $('#current_channel').val(), function (data) {
+                update_retweets_status();
+            });
+        } else {
             update_retweets_status();
-        });
+        }
     });
 
     $("#activate_replacements_check").change(function () {
-        $.post("/filtering/switch_replacements/" + $('#current_channel').val(), function (data) {
+        var action = ($(this).is(":checked"))? "activar" : "desactivar";
+        if (confirm("Está seguro de que desea " + action + " los supresores?")) {
+            $.post("/filtering/switch_replacements/" + $('#current_channel').val(), function (data) {
+                update_retweets_status();
+            });
+        } else {
             update_retweets_status();
-        });
+        }
     });
 
     $("#activate_filters_check").change(function () {
-        $.post("/filtering/switch_filters/" + $('#current_channel').val(), function (data) {
+        var action = ($(this).is(":checked"))? "activar" : "desactivar";
+        if (confirm("Está seguro de que desea " + action + " los retenedores?")) {
+            $.post("/filtering/switch_filters/" + $('#current_channel').val(), function (data) {
+                update_retweets_status();
+            });
+        } else {
             update_retweets_status();
-        });
+        }
     });
 
     $("#activate_prevent_update_limit_check").change(function () {
-        $.post("/filtering/switch_update_limit/" + $('#current_channel').val(), function (data) {
-            // dar feedback?
-        });
+        var action = ($(this).is(":checked"))? "activar" : "desactivar";
+        if (confirm("Está seguro de que desea " + action + " la prevención de update limit?")) {
+            $.post("/filtering/switch_update_limit/" + $('#current_channel').val(), function (data) {
+                // dar feedback?
+            });
+        } else {
+            update_retweets_status();
+        }
     });
 });
