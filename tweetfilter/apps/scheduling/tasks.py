@@ -5,7 +5,7 @@ from apps.twitter.api import Twitter
 
 @task(queue="tweets", ignore_result=True)
 def schedule_tweet(group_id, text):
-    group = ItemGroup.objects.get(group_id)
+    group = ItemGroup.objects.get(id=group_id)
     for channel in group.channel_set.all():
         if channel.scheduling_enabled:
             twitter = Twitter(
