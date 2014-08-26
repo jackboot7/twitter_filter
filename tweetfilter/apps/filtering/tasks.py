@@ -265,7 +265,7 @@ def store_tweet(data, channel_id):
             tweet.source = 'DM'
             tweet.mention_to = data['recipient_screen_name']
             tweet.type = Tweet.TYPE_DM
-            tweet.save()
+            #tweet.save()
             channel_log_info.delay(tweet.__unicode__(), channel_id)
         elif 'text' in data:
             for mention in data['entities']['user_mentions']:
@@ -278,14 +278,14 @@ def store_tweet(data, channel_id):
                     tweet.source = data['source']
                     tweet.mention_to = channel_id
                     tweet.type = Tweet.TYPE_MENTION
-                    tweet.save()
+                    #tweet.save()
                     channel_log_info.delay(tweet.__unicode__(), channel_id)
         else:
             return None
 
         if cache.get('%s_limit_waiting' % tweet.mention_to) is not None:
             tweet.status = Tweet.STATUS_NOT_SENT
-            tweet.save()
+            #tweet.save()
             msg = "#%s marked as NOT SENT (waiting for update limit to pass)" % tweet.tweet_id
             channel_log_info.delay(msg, tweet.mention_to)
             return None
@@ -317,7 +317,7 @@ def triggers_filter(tweet):
                     return tweet
             else:
                 tweet.status = Tweet.STATUS_NOT_TRIGGERED
-                tweet.save()
+                #tweet.save()
                 msg = "Marked #%s as NOT TRIGGERED" % tweet.tweet_id
                 raise FilterNotPassed(msg, channel.screen_name)
         except FilterNotPassed:
@@ -344,7 +344,7 @@ def is_user_allowed(tweet):
                 if user.screen_name.lower() == from_user.lower():
                     # user is blocked
                     tweet.status = Tweet.STATUS_BLOCKED
-                    tweet.save()
+                    #tweet.save()
                     msg = "#%s marked as BLOCKED (user @%s is blacklisted)" % (tweet.tweet_id,
                                                                                user.screen_name)
                     raise FilterNotPassed(msg, channel.screen_name)
@@ -374,7 +374,7 @@ def banned_words_filter(tweet):
             for filter in filters:
                 if filter.occurs_in(tweet.strip_channel_mention()):
                     tweet.status = Tweet.STATUS_BLOCKED
-                    tweet.save()
+                    #tweet.save()
                     msg = "#%s marked as BLOCKED (found word '%s')" % (tweet.tweet_id, filter.text)
                     raise FilterNotPassed(msg, channel.screen_name)
             else:
@@ -453,7 +453,7 @@ def retweet(tweet, txt=None, applying_hashtag=None):
                         channel_log_info.delay(msg, channel.screen_name)
                     else:
                         tweet.status = Tweet.STATUS_NOT_SENT
-                        tweet.save()
+                        #tweet.save()
                         msg = "#%s marked as NOT SENT (Too many messages in queue)" % tweet.tweet_id
                         channel_log_info.delay(msg, channel.screen_name)
                 else:
@@ -491,7 +491,7 @@ def update_status(channel_id, tweet, txt, hashtag=None):
         else:
             tweet.status = Tweet.STATUS_NOT_SENT
             tweet.retweeted_text = txt
-            tweet.save()
+            #tweet.save()
 
             reason = "channel was disabled" if update_limit is None else "update limit: waiting %s seconds" % update_limit
             msg = "#%s marked as NOT SENT (%s)" % (tweet.tweet_id, reason)
