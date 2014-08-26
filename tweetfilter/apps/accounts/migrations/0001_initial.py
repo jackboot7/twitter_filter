@@ -8,6 +8,15 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Adding model 'ItemGroup'
+        db.create_table(u'accounts_itemgroup', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('content_type', self.gf('django.db.models.fields.CharField')(max_length=64)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=64)),
+            ('channel_exclusive', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'accounts', ['ItemGroup'])
+
         # Adding model 'Channel'
         db.create_table(u'accounts_channel', (
             ('screen_name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=16, primary_key=True)),
@@ -17,63 +26,70 @@ class Migration(SchemaMigration):
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True, blank=True)),
             ('streaming_task', self.gf('picklefield.fields.PickledObjectField')()),
             ('allow_messages', self.gf('django.db.models.fields.SmallIntegerField')(default=0)),
+            ('retweets_enabled', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('retweet_mentions', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('retweet_dm', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('triggers_enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('replacements_enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('filters_enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('scheduleblocks_enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('blacklist_enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('prevent_update_limit', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('scheduling_enabled', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('hashtags_enabled', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal(u'accounts', ['Channel'])
 
-        # Adding model 'FilteringConfig'
-        db.create_table(u'accounts_filteringconfig', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('channel', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['accounts.Channel'], unique=True)),
-            ('retweets_enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('retweet_mentions', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('retweet_dm', self.gf('django.db.models.fields.BooleanField')(default=True)),
+        # Adding M2M table for field groups on 'Channel'
+        m2m_table_name = db.shorten_name(u'accounts_channel_groups')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('channel', models.ForeignKey(orm[u'accounts.channel'], null=False)),
+            ('itemgroup', models.ForeignKey(orm[u'accounts.itemgroup'], null=False))
         ))
-        db.send_create_signal(u'accounts', ['FilteringConfig'])
-
-        # Adding model 'SchedulingConfig'
-        db.create_table(u'accounts_schedulingconfig', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('channel', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['accounts.Channel'], unique=True)),
-            ('scheduling_enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
-        ))
-        db.send_create_signal(u'accounts', ['SchedulingConfig'])
+        db.create_unique(m2m_table_name, ['channel_id', 'itemgroup_id'])
 
 
     def backwards(self, orm):
+        # Deleting model 'ItemGroup'
+        db.delete_table(u'accounts_itemgroup')
+
         # Deleting model 'Channel'
         db.delete_table(u'accounts_channel')
 
-        # Deleting model 'FilteringConfig'
-        db.delete_table(u'accounts_filteringconfig')
-
-        # Deleting model 'SchedulingConfig'
-        db.delete_table(u'accounts_schedulingconfig')
+        # Removing M2M table for field groups on 'Channel'
+        db.delete_table(db.shorten_name(u'accounts_channel_groups'))
 
 
     models = {
         u'accounts.channel': {
             'Meta': {'object_name': 'Channel'},
             'allow_messages': ('django.db.models.fields.SmallIntegerField', [], {'default': '0'}),
+            'blacklist_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'filters_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['accounts.ItemGroup']", 'symmetrical': 'False'}),
+            'hashtags_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'oauth_secret': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'oauth_token': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
+            'prevent_update_limit': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'replacements_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'retweet_dm': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'retweet_mentions': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'retweets_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'scheduleblocks_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'scheduling_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'screen_name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '16', 'primary_key': 'True'}),
             'status': ('django.db.models.fields.SmallIntegerField', [], {'default': '1'}),
             'streaming_task': ('picklefield.fields.PickledObjectField', [], {}),
+            'triggers_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'blank': 'True'})
         },
-        u'accounts.filteringconfig': {
-            'Meta': {'object_name': 'FilteringConfig'},
-            'channel': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['accounts.Channel']", 'unique': 'True'}),
+        u'accounts.itemgroup': {
+            'Meta': {'object_name': 'ItemGroup'},
+            'channel_exclusive': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'content_type': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'retweet_dm': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'retweet_mentions': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'retweets_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
-        },
-        u'accounts.schedulingconfig': {
-            'Meta': {'object_name': 'SchedulingConfig'},
-            'channel': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['accounts.Channel']", 'unique': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'scheduling_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '64'})
         },
         u'auth.group': {
             'Meta': {'object_name': 'Group'},

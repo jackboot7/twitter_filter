@@ -59,7 +59,7 @@
 }
 
 .scrollable {
-    max-height: 250px;
+    max-height: 245px;
 }
 
 #left_column {
@@ -67,4 +67,8 @@
 }
 #right_column {
     margin-left: 0px;
+}
+
+.link_channels_btn {
+    margin-left: 38px;
 }

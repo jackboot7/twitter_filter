@@ -33,7 +33,7 @@
 
                 {% for channel in channel_list %}
                 
-                <tr  id='channel_row_{{ channel.screen_name }}'>
+                <tr id='channel_row_{{ channel.screen_name }}'>
                     <td><a href="{% url 'edit_channel' channel.screen_name %}"/>{{ channel.screen_name }}</a></td>
 
                     <td> {% if channel.retweets_enabled %} Sí {% else %} No {% endif %} </td>

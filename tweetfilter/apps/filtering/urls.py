@@ -6,7 +6,8 @@ from apps.filtering.views import *
 
 urlpatterns = patterns('apps.filtering.views',
 
-    url(r'edit/(?P<pk>\w+)', FilteringDetailView.as_view(), name='edit_channel'),    # module main view
+    url(r'edit/(?P<pk>\w+)', FilteringDetailView.as_view(), name='edit_channel'),
+    url(r'^$', TriggersHomeView.as_view()), # Main module settings
 
     url(r'check_status/(?P<pk>\w+)', CheckStatusView.as_view()),
     url(r'switch_status/(?P<pk>\w+)', SwitchStatusView.as_view()),
@@ -26,8 +27,8 @@ urlpatterns = patterns('apps.filtering.views',
     url(r'^trigger/list/(?P<pk>\w+)', TriggerListView.as_view()),
     url(r'^trigger/delete/(?P<pk>\w+)', TriggerDeleteView.as_view()),
     url(r'^trigger/add', TriggerCreateView.as_view()),
-    url(r'^trigger/switch_dm/(?P<pk>\w+)', SwitchTriggerDMView.as_view()),
-    url(r'^trigger/switch_mention/(?P<pk>\w+)', SwitchTriggerMentionView.as_view()),
+    #url(r'^trigger/switch_dm/(?P<pk>\w+)', SwitchTriggerDMView.as_view()),
+    #url(r'^trigger/switch_mention/(?P<pk>\w+)', SwitchTriggerMentionView.as_view()),
 
     url(r'^replacement/list/(?P<pk>\w+)', ReplacementListView.as_view()),
     url(r'^replacement/delete/(?P<pk>\w+)', ReplacementDeleteView.as_view()),
@@ -44,4 +45,45 @@ urlpatterns = patterns('apps.filtering.views',
     url(r'^blocked_user/list/(?P<pk>\w+)', BlockedUserListView.as_view()),
     url(r'^blocked_user/delete/(?P<pk>\w+)', BlockedUserDeleteView.as_view()),
     url(r'^blocked_user/add', BlockedUserCreateView.as_view()),
+
+    ##################
+    url(r'^trigger_group/$', TriggersHomeView.as_view(), name='triggers_home'),    # module main view
+    url(r'^trigger_group/add/', TriggerGroupCreateView.as_view()),
+    url(r'^trigger_group/update/(?P<pk>\w+)', TriggerGroupUpdateView.as_view(), name="edit_trigger_group"),
+    url(r'^trigger_group/list/', TriggerGroupListView.as_view()),
+    url(r'^trigger_group/channel/(?P<pk>\w+)', TriggerGroupListChannelView.as_view()),
+    url(r'^trigger_group/delete/(?P<pk>\w+)', ItemGroupDeleteView.as_view()),
+    url(r'^trigger_group/set_channels/(?P<pk>\w+)', SetItemGroupChannelsView.as_view()),
+    url(r'^trigger_group/list_channels/(?P<pk>\w+)', ItemGroupChannelListView.as_view()),
+    
+    url(r'^replacement_group/$', ReplacementsHomeView.as_view(), name='replacements_home'),
+    url(r'^replacement_group/add/', ReplacementGroupCreateView.as_view()),
+    url(r'^replacement_group/update/(?P<pk>\w+)', ReplacementGroupUpdateView.as_view(), name="edit_replacement_group"),
+    url(r'^replacement_group/list/', ReplacementGroupListView.as_view()),
+    url(r'^replacement_group/channel/(?P<pk>\w+)', ReplacementGroupListChannelView.as_view()),
+    url(r'^replacement_group/delete/(?P<pk>\w+)', ItemGroupDeleteView.as_view()),
+    url(r'^replacement_group/set_channels/(?P<pk>\w+)', SetItemGroupChannelsView.as_view()),
+    url(r'^replacement_group/list_channels/(?P<pk>\w+)', ItemGroupChannelListView.as_view()),
+
+    url(r'^filter_group/$', FiltersHomeView.as_view(), name='filters_home'),
+    url(r'^filter_group/add/', FilterGroupCreateView.as_view()),
+    url(r'^filter_group/update/(?P<pk>\w+)', FilterGroupUpdateView.as_view(), name="edit_filter_group"),
+    url(r'^filter_group/list/', FilterGroupListView.as_view()),
+    url(r'^filter_group/channel/(?P<pk>\w+)', FilterGroupListChannelView.as_view()),
+    url(r'^filter_group/delete/(?P<pk>\w+)', ItemGroupDeleteView.as_view()),
+    url(r'^filter_group/set_channels/(?P<pk>\w+)', SetItemGroupChannelsView.as_view()),
+    url(r'^filter_group/list_channels/(?P<pk>\w+)', ItemGroupChannelListView.as_view()),
+
+    url(r'^blocked_user_group/$', BlockedUsersHomeView.as_view(), name='blocked_users_home'),
+    url(r'^blocked_user_group/add/', BlockedUserGroupCreateView.as_view()),
+    url(r'^blocked_user_group/update/(?P<pk>\w+)', BlockedUserGroupUpdateView.as_view(), name="edit_blocked_user_group"),
+    url(r'^blocked_user_group/list/', BlockedUserGroupListView.as_view()),
+    url(r'^blocked_user_group/channel/(?P<pk>\w+)', BlockedUserGroupListChannelView.as_view()),
+    url(r'^blocked_user_group/delete/(?P<pk>\w+)', ItemGroupDeleteView.as_view()),
+    url(r'^blocked_user_group/set_channels/(?P<pk>\w+)', SetItemGroupChannelsView.as_view()),
+    url(r'^blocked_user_group/list_channels/(?P<pk>\w+)', ItemGroupChannelListView.as_view()),
+
+    url(r'^channel/set_groups/(?P<pk>\w+)', SetChannelGroupsView.as_view()),
+    url(r'^channel/list_groups/(?P<pk>\w+)', ListChannelGroupsView.as_view()),
+    url(r'^channel/unlink_group/(?P<pk>\w+)', ChannelUnlinkGroupView.as_view()),
 )

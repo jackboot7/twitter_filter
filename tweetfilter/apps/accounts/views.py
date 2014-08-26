@@ -59,6 +59,7 @@ class AuthCallbackView(View):
             chan.oauth_secret = final_secret
             chan.user = request.user
             chan.save()
+            chan.init_default_groups()
             url_name = "channel_added"
         else:
             url_name = "channel_not_added"

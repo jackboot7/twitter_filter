@@ -13,7 +13,7 @@ class Migration(SchemaMigration):
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('text', self.gf('django.db.models.fields.CharField')(max_length=140)),
             ('screen_name', self.gf('django.db.models.fields.CharField')(max_length=16)),
-            ('tweet_id', self.gf('django.db.models.fields.CharField')(unique=True, max_length=32)),
+            ('tweet_id', self.gf('django.db.models.fields.CharField')(max_length=32)),
             ('source', self.gf('django.db.models.fields.CharField')(max_length=128)),
             ('date_time', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('hashtags', self.gf('django.db.models.fields.CharField')(max_length=140, blank=True)),
@@ -44,7 +44,7 @@ class Migration(SchemaMigration):
             'source': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'status': ('django.db.models.fields.SmallIntegerField', [], {'default': '0', 'max_length': '16'}),
             'text': ('django.db.models.fields.CharField', [], {'max_length': '140'}),
-            'tweet_id': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '32'}),
+            'tweet_id': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
             'type': ('django.db.models.fields.SmallIntegerField', [], {'max_length': '2'})
         }
     }

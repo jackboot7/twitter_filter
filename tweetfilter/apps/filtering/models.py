@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-
 import re
 
 from unidecode import unidecode
-from apps.accounts.models import Channel
 from django.db import models
 
+from apps.accounts.models import Channel, ItemGroup
 from apps.control.models import ScheduleBlock
 from apps.twitter.models import Tweet
+
 
 class BlockedUser(models.Model):
     """
@@ -18,12 +18,12 @@ class BlockedUser(models.Model):
     block_date = models.DateTimeField(auto_now=True)
     block_duration = models.IntegerField(null=True, blank=True)  #days
     reason = models.CharField(max_length=64, blank=True)
-    channel = models.ForeignKey(Channel)
+    group = models.ForeignKey(ItemGroup, null=True, blank=True)
 
 
 class AllowedUser(models.Model):
     screen_name = models.CharField(max_length=16)
-    channel = models.ForeignKey(Channel)
+    group = models.ForeignKey(ItemGroup, null=True, blank=True)
 
 
 class ChannelScheduleBlock(ScheduleBlock):
@@ -98,8 +98,8 @@ class Trigger(Keyword):
         # other actions are implementable
     )
 
-    action = models.IntegerField(choices=ACTION_CHOICES, default=ACTION_RETWEET)
-    channel = models.ForeignKey(Channel)
+    action = models.IntegerField(choices=ACTION_CHOICES, default=ACTION_RETWEET)    
+    group = models.ForeignKey(ItemGroup, null=True, blank=True)
 
 
 class Filter(Keyword):
@@ -116,7 +116,7 @@ class Filter(Keyword):
         )
 
     action = models.SmallIntegerField(choices=ACTION_CHOICES, default=ACTION_BLOCK_TWEET)
-    channel = models.ForeignKey(Channel)
+    group = models.ForeignKey(ItemGroup, null=True, blank=True)
 
 
 class Replacement(Keyword):
@@ -124,7 +124,7 @@ class Replacement(Keyword):
     Represents a word that is going to be deleted from the original text
     or replaced with an equivalent expression
     """
-    channel = models.ForeignKey(Channel)
+    group = models.ForeignKey(ItemGroup, null=True, blank=True)
     replace_with = models.CharField(max_length=32)
 
     def replace_in(self, string):
