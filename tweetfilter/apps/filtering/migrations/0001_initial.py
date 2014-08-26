@@ -15,7 +15,7 @@ class Migration(SchemaMigration):
             ('block_date', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('block_duration', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
             ('reason', self.gf('django.db.models.fields.CharField')(max_length=64, blank=True)),
-            ('channel', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['accounts.Channel'])),
+            ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['accounts.ItemGroup'], null=True, blank=True)),
         ))
         db.send_create_signal(u'filtering', ['BlockedUser'])
 
@@ -23,7 +23,7 @@ class Migration(SchemaMigration):
         db.create_table(u'filtering_alloweduser', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('screen_name', self.gf('django.db.models.fields.CharField')(max_length=16)),
-            ('channel', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['accounts.Channel'])),
+            ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['accounts.ItemGroup'], null=True, blank=True)),
         ))
         db.send_create_signal(u'filtering', ['AllowedUser'])
 
@@ -40,6 +40,8 @@ class Migration(SchemaMigration):
         db.create_table(u'filtering_keyword', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('text', self.gf('django.db.models.fields.CharField')(max_length=32)),
+            ('enabled_mentions', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('enabled_dm', self.gf('django.db.models.fields.BooleanField')(default=True)),
         ))
         db.send_create_signal(u'filtering', ['Keyword'])
 
@@ -47,9 +49,7 @@ class Migration(SchemaMigration):
         db.create_table(u'filtering_trigger', (
             (u'keyword_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['filtering.Keyword'], unique=True, primary_key=True)),
             ('action', self.gf('django.db.models.fields.IntegerField')(default=1)),
-            ('channel', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['accounts.Channel'])),
-            ('enabled_mentions', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('enabled_dm', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['accounts.ItemGroup'], null=True, blank=True)),
         ))
         db.send_create_signal(u'filtering', ['Trigger'])
 
@@ -57,16 +57,14 @@ class Migration(SchemaMigration):
         db.create_table(u'filtering_filter', (
             (u'keyword_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['filtering.Keyword'], unique=True, primary_key=True)),
             ('action', self.gf('django.db.models.fields.SmallIntegerField')(default=1)),
-            ('channel', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['accounts.Channel'])),
-            ('enabled_mentions', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('enabled_dm', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['accounts.ItemGroup'], null=True, blank=True)),
         ))
         db.send_create_signal(u'filtering', ['Filter'])
 
         # Adding model 'Replacement'
         db.create_table(u'filtering_replacement', (
             (u'keyword_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['filtering.Keyword'], unique=True, primary_key=True)),
-            ('channel', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['accounts.Channel'])),
+            ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['accounts.ItemGroup'], null=True, blank=True)),
             ('replace_with', self.gf('django.db.models.fields.CharField')(max_length=32)),
         ))
         db.send_create_signal(u'filtering', ['Replacement'])
@@ -99,12 +97,31 @@ class Migration(SchemaMigration):
         u'accounts.channel': {
             'Meta': {'object_name': 'Channel'},
             'allow_messages': ('django.db.models.fields.SmallIntegerField', [], {'default': '0'}),
+            'blacklist_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'filters_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['accounts.ItemGroup']", 'symmetrical': 'False'}),
+            'hashtags_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'oauth_secret': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'oauth_token': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
+            'prevent_update_limit': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'replacements_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'retweet_dm': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'retweet_mentions': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'retweets_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'scheduleblocks_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'scheduling_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'screen_name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '16', 'primary_key': 'True'}),
             'status': ('django.db.models.fields.SmallIntegerField', [], {'default': '1'}),
             'streaming_task': ('picklefield.fields.PickledObjectField', [], {}),
+            'triggers_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'blank': 'True'})
+        },
+        u'accounts.itemgroup': {
+            'Meta': {'object_name': 'ItemGroup'},
+            'channel_exclusive': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'content_type': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '64'})
         },
         u'auth.group': {
             'Meta': {'object_name': 'Group'},
@@ -157,7 +174,7 @@ class Migration(SchemaMigration):
         },
         u'filtering.alloweduser': {
             'Meta': {'object_name': 'AllowedUser'},
-            'channel': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['accounts.Channel']"}),
+            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['accounts.ItemGroup']", 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'screen_name': ('django.db.models.fields.CharField', [], {'max_length': '16'})
         },
@@ -165,7 +182,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'BlockedUser'},
             'block_date': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'block_duration': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'channel': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['accounts.Channel']"}),
+            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['accounts.ItemGroup']", 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'reason': ('django.db.models.fields.CharField', [], {'max_length': '64', 'blank': 'True'}),
             'screen_name': ('django.db.models.fields.CharField', [], {'max_length': '16'})
@@ -180,28 +197,26 @@ class Migration(SchemaMigration):
         u'filtering.filter': {
             'Meta': {'object_name': 'Filter', '_ormbases': [u'filtering.Keyword']},
             'action': ('django.db.models.fields.SmallIntegerField', [], {'default': '1'}),
-            'channel': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['accounts.Channel']"}),
-            'enabled_dm': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'enabled_mentions': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['accounts.ItemGroup']", 'null': 'True', 'blank': 'True'}),
             u'keyword_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['filtering.Keyword']", 'unique': 'True', 'primary_key': 'True'})
         },
         u'filtering.keyword': {
             'Meta': {'object_name': 'Keyword'},
+            'enabled_dm': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'enabled_mentions': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'text': ('django.db.models.fields.CharField', [], {'max_length': '32'})
         },
         u'filtering.replacement': {
             'Meta': {'object_name': 'Replacement', '_ormbases': [u'filtering.Keyword']},
-            'channel': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['accounts.Channel']"}),
+            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['accounts.ItemGroup']", 'null': 'True', 'blank': 'True'}),
             u'keyword_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['filtering.Keyword']", 'unique': 'True', 'primary_key': 'True'}),
             'replace_with': ('django.db.models.fields.CharField', [], {'max_length': '32'})
         },
         u'filtering.trigger': {
             'Meta': {'object_name': 'Trigger', '_ormbases': [u'filtering.Keyword']},
             'action': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
-            'channel': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['accounts.Channel']"}),
-            'enabled_dm': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'enabled_mentions': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['accounts.ItemGroup']", 'null': 'True', 'blank': 'True'}),
             u'keyword_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['filtering.Keyword']", 'unique': 'True', 'primary_key': 'True'})
         }
     }

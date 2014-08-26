@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block section_title %}
+    Retweet Automático
+{% endblock %}
+
+{% block section_body %}
+
+<ul class="nav nav-tabs" id="channel_nav">
+    {% block nav_bar %}
+        
+        <li id="filtering_triggers_tab" class="filtering_tab">
+            <a href="/filtering/trigger_group/">Disparadores</a>
+        </li>
+        <li id="filtering_replacements_tab" class="filtering_tab active">
+            <a href="">Supresores</a>
+        </li>
+        <li id="filtering_filters_tab" class="filtering_tab">
+            <a href="/filtering/filter_group/">Retenedores</a>
+        </li>
+        <li id="filtering_filters_tab" class="filtering_tab">
+            <a href="/filtering/blocked_user_group/">Usuarios bloqueados</a>
+        </li>
+    {% endblock %} <!-- endblock nav_bar -->
+</ul>
+
+<!--
+<div class="row-fluid">
+    <div class="span5 rounded_box fill_white">
+        <fieldset>
+            <legend>Configuración</legend>
+           
+        </fieldset>
+    </div>
+</div>
+-->
+
+<div class="row-fluid">
+    <div class="span8 rounded_box fill_white">
+        <div class="span8">
+        <h4>Grupos de supresores</h4>
+        
+        <table class="table" id="replacement_group_list_table">
+            <thead>
+            <tr>
+                <th>
+                    Nombre
+                </th>
+                <th>
+                    Asociar canales
+                </th>
+                <th>
+                    Eliminar
+                </th>
+            </tr>
+            </thead>
+            <tbody id="replacement_group_list_tbody">
+                
+            </tbody>
+        </table>
+        
+        <span id="no_replacement_groups_message">No hay grupos de supresores</span> <br><br>
+        
+        
+        <a id="add_replacement_group_btn" href="#add_replacement_group_modal" class="btn btn-primary btn-small" data-toggle='modal'>Crear grupo</a>
+    </div>
+</div>
+
+<div id="add_replacement_group_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <input type="hidden" id="editing_replacement_group_id" value="">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="replacement_group_modal_title">
+            Crear grupo de supresores
+        </h3>
+    </div>
+    <div class="modal-body">
+        
+        <div class="span11">
+            <!--<h5></h5>-->
+            <table>
+                <tr>
+                    <td><label>Nombre del grupo:&nbsp;</label></td>
+                    <td><input id="add_replacement_group_name" type="text" class="span10" maxlength="64"></td>
+                </tr>
+            </table>
+        </div>
+        <div class="span11">
+            &nbsp;
+            <br>
+        </div>
+    
+        <div class="span8">
+            <div class="rounded_box fill_yellow" id="replacements_box" style="display:none">
+                <h4>Supresores</h4>
+
+                <div class="scrollable" id="replacement_list_div">
+                    <table class="table" id="replacement_list_table">
+                        <thead>
+                        <tr>
+                            <th>Texto</th>
+                            <th>Reemplazar por</th>
+                            <!--<th>Mention</th>
+                            <th>DM</th>-->
+                            <th>Eliminar</th>
+                        </tr>
+                        </thead>
+                        <tbody id="replacement_list_tbody">
+                        </tbody>
+                    </table>
+                </div>
+                <span id="no_replacements_message">No hay supresores asociados al canal</span> <br><br>
+
+                <table>
+                    <tr>
+                        <td><input placeholder="sustituir" class="input-small" type="text" id="add_replacement_text">&nbsp;</td>
+                        <td><input placeholder="por" class="input-small" type="text" id="add_replacement_replace_with"></td>
+                        <td class="button_td" rowspan="2"> &nbsp;<a id="add_replacement_btn" class="btn btn-primary btn-small">Agregar</a></td>
+                    </tr>
+                </table>
+            </div>
+        </div> <!-- end span -->
+    
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" aria-hidden="true" id="save_replacement_group_btn">Guardar</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+    </div>
+</div> <!-- Add trigger group modal -->
+
+
+<div id="add_channels_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="add_channels_modal_title">
+            Asociar grupo a varios canales
+        </h3>
+    </div>
+    <div class="modal-body">
+        
+        <div class="span11">
+            <p>Seleccione uno o más canales para asociarlos a este grupo</p>
+            
+        </div>
+        <!-- 
+        <div class="span11">
+            &nbsp;
+            <br>
+        </div>
+        -->
+        <div class="span11">
+            {% if channel_list %}
+            <select id="link_channels_select" name="link_channels_select" multiple="multiple">
+                {% for channel in channel_list %}
+                <option value="{{ channel.screen_name }}">{{ channel.screen_name }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+                <span>No hay canales registrados</span>
+            {% endif %}
+        </div> <!-- end span -->
+    
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_channels_btn">Guardar</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+    </div>
+</div> <!-- link channels group modal -->
+
+<div id="delete_replacement_group_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>
+            Eliminar grupo de supresores
+        </h3>
+    </div>
+    <div class="modal-body">
+        <input type="hidden" id="deleting_trigger_group_id" value="">
+        <p>
+            Está seguro de que desea eliminar el grupo de supresores seleccionado?
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="delete_replacement_group_confirmed">Sí, eliminar</button>
+    </div>
+</div> <!-- delete replacement group modal -->
+
+{% endblock %} <!-- endblock section_body -->
+
+{% block page_scripts %}
+
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/replacement_settings.js"></script>
+    <!--
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/script.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/triggers.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/replacements.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/filters.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/timeblocks.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/filtering/blocked_users.js"></script>
+    -->
+{% endblock %}
+
+{% block modal_header %}
+    <!-- hola -->
+{% endblock %}
+
+{% block modal_body %}
+{% endblock %}
+
+{% block right_column %}
+{% endblock %}

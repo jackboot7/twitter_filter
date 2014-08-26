@@ -1,21 +1,17 @@
 # -*- coding:utf8 -*-
-
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.views.decorators.cache import cache_page
-from views import HomeView
 
+from views import HomeView
 from apps.accounts.forms import LoginForm
+
 
 admin.autodiscover()
 
-"""
-HomeView uses cache_page decorator to cache results for 15 minutes
-"""
 
 urlpatterns = patterns('',
     url(r'^$', HomeView.as_view(), name="home"),
-#    url(r'^$', cache_page(60 * 15)(HomeView.as_view()), name="home"),
     url(r'^success$', HomeView.as_view(channel_added="true"), name='channel_added'),
     url(r'^error$', HomeView.as_view(channel_added="error"), name='channel_not_added'),
     url(r'^accounts/', include('apps.accounts.urls')),

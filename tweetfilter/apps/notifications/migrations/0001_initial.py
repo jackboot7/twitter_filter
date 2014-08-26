@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from south.utils import datetime_utils as datetime
+import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
@@ -15,6 +15,7 @@ class Migration(SchemaMigration):
             ('channel', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['accounts.Channel'], null=True, blank=True)),
             ('description', self.gf('django.db.models.fields.TextField')(max_length=140)),
             ('url', self.gf('django.db.models.fields.URLField')(max_length=200, null=True, blank=True)),
+            ('time', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, null=True, blank=True)),
             ('read', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal(u'notifications', ['Notification'])
@@ -31,20 +32,29 @@ class Migration(SchemaMigration):
             'allow_messages': ('django.db.models.fields.SmallIntegerField', [], {'default': '0'}),
             'blacklist_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'filters_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'hashtags_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['accounts.ItemGroup']", 'symmetrical': 'False'}),
+            'hashtags_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'oauth_secret': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'oauth_token': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
+            'prevent_update_limit': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'replacements_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'retweet_dm': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'retweet_mentions': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'retweets_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'retweets_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'scheduleblocks_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'scheduling_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'scheduling_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'screen_name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '16', 'primary_key': 'True'}),
             'status': ('django.db.models.fields.SmallIntegerField', [], {'default': '1'}),
             'streaming_task': ('picklefield.fields.PickledObjectField', [], {}),
             'triggers_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'blank': 'True'})
+        },
+        u'accounts.itemgroup': {
+            'Meta': {'object_name': 'ItemGroup'},
+            'channel_exclusive': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'content_type': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '64'})
         },
         u'auth.group': {
             'Meta': {'object_name': 'Group'},
@@ -89,6 +99,7 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'read': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'recipient': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
+            'time': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'blank': 'True'}),
             'url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'})
         }
     }

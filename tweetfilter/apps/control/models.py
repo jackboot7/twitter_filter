@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
-from time import strptime
+import pytz
 import datetime
+from time import strptime
+
 from django.db import models
 from django.core.cache import cache
-import pytz
-from apps.notifications.models import Notification
+from django.contrib.contenttypes.models import ContentType
+
 from apps.twitter.models import Tweet
+from apps.notifications.models import Notification
 
 
 class Schedule(models.Model):
