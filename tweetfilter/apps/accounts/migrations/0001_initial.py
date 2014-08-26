@@ -8,22 +8,57 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'Notification'
-        db.create_table(u'notifications_notification', (
+        # Adding model 'ItemGroup'
+        db.create_table(u'accounts_itemgroup', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('recipient', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('channel', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['accounts.Channel'], null=True, blank=True)),
-            ('description', self.gf('django.db.models.fields.TextField')(max_length=140)),
-            ('url', self.gf('django.db.models.fields.URLField')(max_length=200, null=True, blank=True)),
-            ('time', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, null=True, blank=True)),
-            ('read', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('content_type', self.gf('django.db.models.fields.CharField')(max_length=64)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=64)),
+            ('channel_exclusive', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
-        db.send_create_signal(u'notifications', ['Notification'])
+        db.send_create_signal(u'accounts', ['ItemGroup'])
+
+        # Adding model 'Channel'
+        db.create_table(u'accounts_channel', (
+            ('screen_name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=16, primary_key=True)),
+            ('oauth_token', self.gf('django.db.models.fields.CharField')(max_length=128)),
+            ('oauth_secret', self.gf('django.db.models.fields.CharField')(max_length=128)),
+            ('status', self.gf('django.db.models.fields.SmallIntegerField')(default=1)),
+            ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True, blank=True)),
+            ('streaming_task', self.gf('picklefield.fields.PickledObjectField')()),
+            ('allow_messages', self.gf('django.db.models.fields.SmallIntegerField')(default=0)),
+            ('retweets_enabled', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('retweet_mentions', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('retweet_dm', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('triggers_enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('replacements_enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('filters_enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('scheduleblocks_enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('blacklist_enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('prevent_update_limit', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('scheduling_enabled', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('hashtags_enabled', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'accounts', ['Channel'])
+
+        # Adding M2M table for field groups on 'Channel'
+        m2m_table_name = db.shorten_name(u'accounts_channel_groups')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('channel', models.ForeignKey(orm[u'accounts.channel'], null=False)),
+            ('itemgroup', models.ForeignKey(orm[u'accounts.itemgroup'], null=False))
+        ))
+        db.create_unique(m2m_table_name, ['channel_id', 'itemgroup_id'])
 
 
     def backwards(self, orm):
-        # Deleting model 'Notification'
-        db.delete_table(u'notifications_notification')
+        # Deleting model 'ItemGroup'
+        db.delete_table(u'accounts_itemgroup')
+
+        # Deleting model 'Channel'
+        db.delete_table(u'accounts_channel')
+
+        # Removing M2M table for field groups on 'Channel'
+        db.delete_table(db.shorten_name(u'accounts_channel_groups'))
 
 
     models = {
@@ -91,17 +126,7 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        u'notifications.notification': {
-            'Meta': {'object_name': 'Notification'},
-            'channel': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['accounts.Channel']", 'null': 'True', 'blank': 'True'}),
-            'description': ('django.db.models.fields.TextField', [], {'max_length': '140'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'read': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'recipient': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
-            'time': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'blank': 'True'}),
-            'url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'})
         }
     }
 
-    complete_apps = ['notifications']
+    complete_apps = ['accounts']
