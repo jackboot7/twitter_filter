@@ -26,7 +26,7 @@ class HashtagsHomeView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(HashtagsHomeView, self).get_context_data(**kwargs)
-        context['hashtag_groups'] = self.get_queryset().filter(content_type="Hashtag")
+        context['hashtag_groups'] = self.get_queryset().filter(user_id=self.request.user.id).filter(content_type="Hashtag")
         context['channel_list'] = Channel.objects.filter(user_id=self.request.user.id)
         return context
 
@@ -37,7 +37,7 @@ class HashtagsDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "channel"
 
     def get_context_data(self, **kwargs):
-        groups_queryset = ItemGroup.objects.filter(channel_exclusive=False)
+        groups_queryset = ItemGroup.objects.filter(user_id=self.request.user.id).filter(channel_exclusive=False)
         context = super(HashtagsDetailView, self).get_context_data(**kwargs)
         context['hashtag_groups'] = groups_queryset.filter(content_type="Hashtag")
         return context
@@ -209,7 +209,7 @@ class HashtagGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         try:
-            hashtag_groups = ItemGroup.objects.filter(content_type="Hashtag")
+            hashtag_groups = ItemGroup.objects.filter(user_id=self.request.user.id).filter(content_type="Hashtag")
             for group in hashtag_groups:
                 if group.name == request.POST['hashtag_group_name']:
                     response_data = {'result': "duplicate"}
@@ -218,6 +218,7 @@ class HashtagGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
                 new_group = ItemGroup()
                 new_group.content_type = "Hashtag"
                 new_group.name = request.POST['hashtag_group_name']
+                new_group.user = request.user
                 new_group.save()
                 response_data = {'result': "ok", 'group_obj': model_to_dict(new_group)}
         except Exception, e:
@@ -238,7 +239,7 @@ class HashtagGroupUpdateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
         try:
-            hashtag_groups = ItemGroup.objects.filter(content_type="Hashtag").exclude(id=obj.id)
+            hashtag_groups = ItemGroup.objects.filter(user_id=self.request.user.id).filter(content_type="Hashtag").exclude(id=obj.id)
             for group in hashtag_groups:
                 if group.name == request.POST['hashtag_group_name']:
                     response_data = {'result': "duplicate"}
@@ -262,7 +263,7 @@ class HashtagGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
 
     def get_ajax(self, request, *args, **kwargs):
         json_list = []
-        group_list = self.get_queryset()
+        group_list = self.get_queryset().filter(user_id=self.request.user.id)
 
         for group in group_list:
             group_dict = model_to_dict(group)

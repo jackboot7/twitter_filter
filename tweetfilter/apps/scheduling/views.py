@@ -29,7 +29,7 @@ class ScheduledPostsHomeView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(ScheduledPostsHomeView, self).get_context_data(**kwargs)
-        context['scheduled_tweet_groups'] = self.get_queryset().filter(content_type="ScheduledTweet")
+        context['scheduled_tweet_groups'] = self.get_queryset().filter(user_id=self.request.user.id).filter(content_type="ScheduledTweet")
         context['channel_list'] = Channel.objects.filter(user_id=self.request.user.id)
         return context
 
@@ -43,7 +43,7 @@ class SchedulingDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "channel"
 
     def get_context_data(self, **kwargs):
-        groups_queryset = ItemGroup.objects.filter(channel_exclusive=False)
+        groups_queryset = ItemGroup.objects.filter(user_id=self.request.user.id).filter(channel_exclusive=False)
         context = super(SchedulingDetailView, self).get_context_data(**kwargs)
         context['scheduled_tweet_groups'] = groups_queryset.filter(content_type="ScheduledTweet")
 
@@ -273,7 +273,7 @@ class ScheduledTweetGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         try:
-            scheduled_tweet_groups = ItemGroup.objects.filter(content_type="ScheduledTweet")
+            scheduled_tweet_groups = ItemGroup.objects.filter(user_id=self.request.user.id).filter(content_type="ScheduledTweet")
             for group in scheduled_tweet_groups:
                 if group.name == request.POST['scheduled_tweet_group_name']:
                     response_data = {'result': "duplicate"}
@@ -282,6 +282,7 @@ class ScheduledTweetGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
                 new_group = ItemGroup()
                 new_group.content_type = "ScheduledTweet"
                 new_group.name = request.POST['scheduled_tweet_group_name']
+                new_group.user = request.user
                 new_group.save()
                 response_data = {'result': "ok", 'group_obj': model_to_dict(new_group)}
         except Exception, e:
@@ -302,7 +303,7 @@ class ScheduledTweetGroupUpdateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
         try:
-            scheduled_tweet_groups = ItemGroup.objects.filter(content_type="ScheduledTweet").exclude(id=obj.id)
+            scheduled_tweet_groups = ItemGroup.objects.filter(user_id=self.request.user.id).filter(content_type="ScheduledTweet").exclude(id=obj.id)
             for group in scheduled_tweet_groups:
                 if group.name == request.POST['scheduled_tweet_group_name']:
                     response_data = {'result': "duplicate"}
@@ -326,7 +327,7 @@ class ScheduledTweetGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView
 
     def get_ajax(self, request, *args, **kwargs):
         json_list = []
-        group_list = self.get_queryset()
+        group_list = self.get_queryset().filter(user_id=self.request.user.id)
 
         for group in group_list:
             group_dict = model_to_dict(group)

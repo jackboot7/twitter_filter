@@ -17,6 +17,7 @@ class ItemGroup(models.Model):
     content_type = models.CharField(max_length=64)
     name = models.CharField(max_length=64)
     channel_exclusive = models.BooleanField(default=False)
+    user = models.ForeignKey(User, blank=True, null=True)
 
     def __init__(self, *args, **kwargs):
         class_type = kwargs.pop('class_type', None)
@@ -25,9 +26,15 @@ class ItemGroup(models.Model):
             self.content_type = class_type
 
     def get_channels(self):
+        """
+        Return all channels linked to this group
+        """
         return self.channel_set.all()
 
     def get_items(self):
+        """
+        Returns all items contained in this group
+        """
         links = [rel.get_accessor_name() for rel in self._meta.get_all_related_objects()]
         object_group = []
         

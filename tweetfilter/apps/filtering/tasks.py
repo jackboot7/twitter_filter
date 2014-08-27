@@ -427,13 +427,13 @@ def retweet(tweet, txt=None, applying_hashtag=None):
                 hashtags = channel.get_group_items("Hashtag")
                 
                 for hashtag in hashtags:
-                    if hashtag.applies_now() and len(hashtag.text) + 1 <= 140 - len(txt) \
+                    if hashtag.applies_now() and len(hashtag.text) + 1 <= (140 - len(txt)) \
                     and hashtag.count < hashtag.quantity:
                         hashtag_list.append(hashtag)
-
+                
                 if len(hashtag_list) > 0:
                     applying_hashtag = hashtag_list[randint(0, len(hashtag_list) - 1)]
-                    txt = "%s #%s" % (txt, applying_hashtag.text)
+                    txt = "%s %s" % (txt, applying_hashtag.text)
 
         # acquire lock
         if cache.add("retweet_lock_%s" % channel.screen_name, "true", LOCK_EXPIRE):
