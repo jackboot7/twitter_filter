@@ -331,7 +331,7 @@ var
         $('#sunday_check').attr('checked', true);
     },
 
-    count_characters = function () {
+    count_characters = function () { 
         "use strict";
 
         var count = 140 - parseInt($('#scheduled_tweet_text').val().length, 10);
@@ -425,5 +425,9 @@ $(document).ready(function () {
             update_scheduling_status();
         }
     });
+
+    $('#scheduled_tweet_text').bind("keyup change input", function () {
+        count_characters();
+    });   
 
 });
