@@ -144,6 +144,7 @@ class ScheduledTweetListView(CsrfExemptMixin, JSONResponseMixin,
 
             json_list.append({
                 'id': scheduled_tweet.id,
+                'status': scheduled_tweet.status,
                 'text': scheduled_tweet.text,
                 'text_excerpt': scheduled_tweet.get_excerpt(),
                 'date_time': ("%s (%s)") % (scheduled_tweet.time.strftime("%H:%M"), dias),
@@ -229,6 +230,36 @@ class ScheduledTweetDeleteView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         self.delete(request)
+        response_data = {'result': "ok"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ScheduledTweetDisableView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = ScheduledTweet
+    success_url = "/"
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        obj.status = ScheduledTweet.STATUS_DISABLED
+        obj.save()
+        response_data = {'result': "ok"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class ScheduledTweetEnableView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = ScheduledTweet
+    success_url = "/"
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        obj.status = ScheduledTweet.STATUS_ENABLED
+        obj.save()
         response_data = {'result': "ok"}
 
         return HttpResponse(json.dumps(response_data),

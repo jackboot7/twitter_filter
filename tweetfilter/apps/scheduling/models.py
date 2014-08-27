@@ -35,8 +35,7 @@ class ScheduledTweet(Schedule):
                 task="apps.scheduling.tasks.schedule_tweet",
                 crontab=cron,
                 queue="scheduling",
-                kwargs=json.dumps({'group_id': self.group.id,
-                                   'text': self.text}))
+                kwargs=json.dumps({'scheduled_tweet_id': self.id}))
             ptask.save()
             self.periodic_task = ptask
             super(ScheduledTweet, self).save(*args, **kwargs)

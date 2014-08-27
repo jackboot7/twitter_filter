@@ -117,6 +117,19 @@
             <div> <!-- class="modal-body" -->
                 <div class="span8">
                     <table>
+                        <tr id="scheduled_tweet_status_row">
+                            <td>
+                                Status:
+                            </td>
+                            <td> 
+                                <a class="no_decoration" id="disable_scheduled_tweet_btn" title="Haga click para desactivar el tweet automático"><span class="label label-success">Activo</span></a>
+                                <a class="no_decoration" id="enable_scheduled_tweet_btn" title="Haga click para activar el tweet automático"><span class="label label-important">Inactivo</span></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
                         <tr>
                             <td class="td_right_padding"><label>Mensaje: </label>
                                 <span class="float_right" id="tweet_char_count"></span></td><td><textarea id="scheduled_tweet_text"></textarea></td>
@@ -127,7 +140,14 @@
                                 <!--<select class="input-mini" id="start_minute_select"></select>-->
                                 <input type="text" class="input-mini" id="scheduled_tweet_timepicker">
                             </td>
+                            <!--
+                            <td>
+                                <a id="disable_scheduled_tweet_btn" title="Haga click para desactivar el tweet automático"><img href="{{ STATIC_URL }}img/pause_icon.png"></a>
+                                <a id="enable_scheduled_tweet_btn" title="Haga click para activar el tweet automático"><img href="{{ STATIC_URL }}img/play_icon.png"></a>
+                            </td>
+                            -->
                         </tr>
+                        
                     </table>
                     <br>
 
@@ -180,7 +200,7 @@
 
                 <br><br>
 
-                <a id="add_scheduled_tweet_btn" href="#" class="btn btn-primary btn-small" >Agregar tweet programado</a>
+                <a id="add_scheduled_tweet_btn" class="btn btn-primary btn-small" >Agregar tweet programado</a>
             </div> <!-- end rounded box -->
         </div> <!-- end span -->
     </div>
@@ -221,50 +241,6 @@
         <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
     </div>
 </div> <!-- link scheduled tweet groups -->
-
-
-<div id="add_scheduled_tweet_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <input type="hidden" id="editing_scheduled_tweet_id">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="scheduled_tweet_modal_title">
-            Añadir tweet programado
-        </h3>
-    </div>
-    <div class="modal-body">
-        <div class="span8">
-            <table>
-                <tr>
-                    <td class="td_right_padding"><label>Mensaje: </label>
-                        <span class="float_right" id="tweet_char_count"></span></td><td><textarea id="scheduled_tweet_text"></textarea></td>
-                </tr>
-                <tr>
-                    <td><label>Hora de publicación: </label></td>
-                    <td><!--<select class="input-mini" id="start_hour_select"></select>-->
-                        <!--<select class="input-mini" id="start_minute_select"></select>-->
-                        <input type="text" class="input-mini" id="scheduled_tweet_timepicker">
-                    </td>
-                </tr>
-            </table>
-            <br>
-
-        </div>
-
-        <div class="span4" id="weekdays_select_div">
-            <label class="checkbox"><input type="checkbox" id="monday_check"> Lunes</label>
-            <label class="checkbox"><input type="checkbox" id="tuesday_check"> Martes</label>
-            <label class="checkbox"><input type="checkbox" id="wednesday_check"> Miércoles</label>
-            <label class="checkbox"><input type="checkbox" id="thursday_check"> Jueves</label>
-            <label class="checkbox"><input type="checkbox" id="friday_check"> Viernes</label>
-            <label class="checkbox"><input type="checkbox" id="saturday_check"> Sábado</label>
-            <label class="checkbox"><input type="checkbox" id="sunday_check"> Domingo</label>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="save_scheduled_tweet_btn">Guardar</button>
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
-    </div>
-</div> <!-- Add scheduled_tweet modal -->
 
 
 <div id="send_now_confirm_modal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
