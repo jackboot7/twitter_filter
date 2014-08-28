@@ -107,7 +107,7 @@ var
         $('#hashtag_modal_title').text("Editar hashtag");
         $('#editing_hashtag_id').val(hashtag.id);
         $('#add_hashtag_text').val(hashtag.text);
-        $('#add_hashtag_qty').val(hashtag.quantity);
+        $('#add_hashtag_qty').val(hashtag.limit);
 
         $('#add_hashtag_start_timepicker').val(hashtag.start);
         $('#add_hashtag_end_timepicker').val(hashtag.end);
@@ -227,7 +227,7 @@ var
                     $('#hashtag_list_tbody').append(
                         "<tr>" +
                             "<td><a id='edit_hashtag_" + elem.id + "' data-toggle='modal' class='no_decoration'>" + text + "</a></td>" +
-                            "<td>" + elem.quantity + "</td>" +
+                            "<td>" + elem.limit + "</td>" +
                             "<td><span id='hashtag_count_span_" + elem.id + "'>"+ elem.count + "</span></td>" +
                             "<td><a id='reset_hashtag_" + elem.id + "' class='reset_hashtag' " +
                             "title='Haga click para reiniciar el contador' href='#reset_hashtag_confirm_modal' data-toggle='modal'>"+

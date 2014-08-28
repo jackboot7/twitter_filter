@@ -99,10 +99,11 @@ class HashtagListView(CsrfExemptMixin, JSONResponseMixin,
         json_list = []
 
         for hashtag in objs:
-            dict = model_to_dict(hashtag)
-            dict['start'] = hashtag.start.strftime("%H:%M")
-            dict['end'] = hashtag.end.strftime("%H:%M")
-            json_list.append(dict)
+            dic = model_to_dict(hashtag)
+            dic['start'] = hashtag.start.strftime("%H:%M")
+            dic['end'] = hashtag.end.strftime("%H:%M")
+            dic['count'] = hashtag.get_total_count()
+            json_list.append(dic)
 
         return self.render_json_response(json_list)
 
@@ -160,7 +161,7 @@ class HashtagUpdateView(CsrfExemptMixin, JSONResponseMixin,
         obj = self.get_object()
         try:
             obj.text = request.POST['text']
-            obj.quantity = request.POST['qty']
+            obj.limit = request.POST['qty']
             obj.start = datetime.datetime.strptime(request.POST['start'], "%H:%M").time()
             obj.end = datetime.datetime.strptime(request.POST['end'], "%H:%M").time()
             obj.monday = True if request.POST['monday'] == "1" else False

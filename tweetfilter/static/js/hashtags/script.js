@@ -128,7 +128,7 @@ var
         $('#hashtag_modal_title').text("Editar hashtag");
         $('#editing_hashtag_id').val(hashtag.id);
         $('#add_hashtag_text').val(hashtag.text);
-        $('#add_hashtag_qty').val(hashtag.quantity);
+        $('#add_hashtag_qty').val(hashtag.limit);
 
         $('#add_hashtag_start_timepicker').val(hashtag.start);
         $('#add_hashtag_end_timepicker').val(hashtag.end);
@@ -311,7 +311,7 @@ var
                     $('#hashtag_list_tbody').append(
                         "<tr>" +
                             "<td>" + edit_link + "</td>" +
-                            "<td>" + elem.quantity + "</td>" +
+                            "<td>" + elem.limit + "</td>" +
                             "<td><span id='hashtag_count_span_" + elem.id + "'>"+ elem.count + "</span></td>" +
                             reset_btn +
                             "<td>" + delete_btn + "</td>" +
