@@ -418,3 +418,33 @@ class HashtagGroupListChannelView(JSONResponseMixin, AjaxResponseMixin, DetailVi
             json_list.append(group_dict)
 
         return self.render_json_response(json_list)
+
+
+class HashtagDisableView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = HashtagAdvertisement
+    success_url = "/"
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        obj.status = HashtagAdvertisement.STATUS_DISABLED
+        obj.save()
+        response_data = {'result': "ok"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class HashtagEnableView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = HashtagAdvertisement
+    success_url = "/"
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        obj.status = HashtagAdvertisement.STATUS_ENABLED
+        obj.save()
+        response_data = {'result': "ok"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
