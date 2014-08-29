@@ -46,19 +46,21 @@
         </h3>
     </div>
     <div class="modal-body">
-        <div class="span11">
-            <!--<h5></h5>-->
-            <table>
-                <tr>
-                    <td><label>Nombre del grupo:&nbsp;</label></td>
-                    <td><input id="add_hashtag_group_name" type="text" class="span10" maxlength="64"></td>
-                </tr>
-            </table>
-        </div>
+        <div id="hashtag_group_name_input">
+            <div class="span11">
+                <!--<h5></h5>-->
+                <table>
+                    <tr>
+                        <td><label>Nombre del grupo:&nbsp;</label></td>
+                        <td><input id="add_hashtag_group_name" type="text" class="span10" maxlength="64"></td>
+                    </tr>
+                </table>
+            </div>
 
-        <div class="span11">
-            &nbsp;
-            <br>
+            <div class="span11">
+                &nbsp;
+                <br>
+            </div>
         </div>
         
         <div id="add_hashtag_modal"> <!-- nuevo sufijo -->
@@ -73,7 +75,7 @@
                     <table>
                         <tr id="hashtag_status_row">
                             <td>
-                                Status:
+                                <label>Status:</label>
                             </td>
                             <td> 
                                 <a class="no_decoration" id="disable_hashtag_btn" title="Haga click para desactivar el sufijo"><span class="label label-success">Activo</span></a>
@@ -92,19 +94,32 @@
                             <td><label>Límite diario:&nbsp;</label></td>
                             <td><input id="add_hashtag_qty" type="text" class="span4" value="0"></td>
                         </tr>
+                    </table>
+                    <h5>Horario</h5>
+                    <table>                        
                         <tr>
-                            <td>&nbsp;</td><td>&nbsp;</td>
-                        </tr>
-                        <tr>
-                            <td><label>Hora de inicio: </label></td>
+                            <td><label>Desde: </label></td>
                             <td>
                                 <input type="text" class="input-mini" id="add_hashtag_start_timepicker">
                             </td>
-                        </tr>
-                        <tr>
-                            <td><label>Hora de fin: </label></td>
+                            <td>&nbsp;&nbsp;</td>
+                            <td><label>Hasta: </label></td>
                             <td>
-                                    <input type="text" class="input-mini" id="add_hashtag_end_timepicker">
+                                <input type="text" class="input-mini" id="add_hashtag_end_timepicker">
+                            </td>
+                        </tr>
+                    </table>
+                    <h5>Fechas</h5>
+                    <table>
+                        <tr>
+                            <td><label>Desde: </label></td>
+                            <td>
+                                <input type="text" class="input-small" id="add_hashtag_start_datepicker">
+                            </td>
+                            <td>&nbsp;&nbsp;</td>
+                            <td><label>Hasta: </label></td>
+                            <td>
+                                <input type="text" class="input-small" id="add_hashtag_end_datepicker">
                             </td>
                         </tr>
                     </table>

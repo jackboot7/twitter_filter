@@ -53,8 +53,15 @@ var
         }
 
         if($('#add_hashtag_start_timepicker').val() >= $('#add_hashtag_end_timepicker').val()) {
-            alert("El tiempo de inicio debe ser menor al tiempo de fin");
+            alert("La hora de inicio debe ser menor a la hora de fin");
             return false;
+        }
+
+        if ($('#add_hashtag_start_datepicker').val() != "" && $('#add_hashtag_end_datepicker').val() != "") {
+            if ($('#add_hashtag_start_datepicker').val() > $('#add_hashtag_end_datepicker').val()) {
+                alert("La fecha de inicio debe ser menor o igual a la fecha de fin");
+                return false;
+            }
         }
 
         if (!($('#add_hashtag_monday_check').is(':checked') ||
@@ -124,10 +131,20 @@ var
         "use strict";
 
         var
-            start_date_arr = hashtag.start_date.split("-"),
-            end_date_arr = hashtag.end_date.split("-"),
-            start_date = start_date_arr[2] + "/" + start_date_arr[1] + "/" + start_date_arr[0],
+            start_date_arr,
+            end_date_arr,
+            start_date = "",
+            end_date = "";
+
+        if (hashtag.start_date) {
+            start_date_arr = hashtag.start_date.split("-");
+            start_date = start_date_arr[2] + "/" + start_date_arr[1] + "/" + start_date_arr[0];
+        }
+
+        if (hashtag.end_date) {
+            end_date_arr = hashtag.end_date.split("-");
             end_date = end_date_arr[2] + "/" + end_date_arr[1] + "/" + end_date_arr[0];
+        }
 
         show_add_hashtag_form();
 
@@ -424,6 +441,8 @@ var
 
         $('#add_hashtag_start_timepicker').val('');
         $('#add_hashtag_end_timepicker').val('');
+        $('#add_hashtag_start_datepicker').val('');
+        $('#add_hashtag_end_datepicker').val('');
         $('#add_hashtag_monday_check').attr('checked', true);
         $('#add_hashtag_tuesday_check').attr('checked', true);
         $('#add_hashtag_wednesday_check').attr('checked', true);

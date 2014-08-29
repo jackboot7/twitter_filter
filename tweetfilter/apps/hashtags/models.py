@@ -72,8 +72,15 @@ class HashtagAdvertisement(ScheduleBlock):
         """
         Return True if current time is inside hashtag time limits
         """
+        result = True
         now = datetime.now()
-        return self.start_date <= now.date() <= self.end_date and self.has_datetime(now)
+        
+        if self.start_date:
+            result = result and self.start_date <= now.date()
+        if self.end_date:
+            result = result and now.date() <= self.end_date
+        
+        return result and self.has_datetime(now)
 
 
 class HashtagAppliance(models.Model):

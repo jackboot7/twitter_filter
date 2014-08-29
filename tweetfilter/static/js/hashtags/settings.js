@@ -32,8 +32,15 @@ var
         }
 
         if($('#add_hashtag_start_timepicker').val() >= $('#add_hashtag_end_timepicker').val()) {
-            alert("El tiempo de inicio debe ser menor al tiempo de fin");
+            alert("La hora de inicio debe ser menor a la hora de fin");
             return false;
+        }
+
+        if ($('#add_hashtag_start_datepicker').val() != "" && $('#add_hashtag_end_datepicker').val() != "") {
+            if ($('#add_hashtag_start_datepicker').val() > $('#add_hashtag_end_datepicker').val()) {
+                alert("La fecha de inicio debe ser menor o igual a la fecha de fin");
+                return false;
+            }
         }
 
         if (!($('#add_hashtag_monday_check').is(':checked') ||
@@ -55,12 +62,14 @@ var
         $('#hashtag_table_div').hide();
         $('#add_hashtag_modal').show();
         $('#hashtag_group_modal_footer').hide();
+        $('#hashtag_group_name_input').hide();
     },
 
     hide_add_hashtag_form = function () {
         $('#add_hashtag_modal').hide();
         $('#hashtag_table_div').show();
         $('#hashtag_group_modal_footer').show();
+        $('#hashtag_group_name_input').show();
     },
 
     disable_hashtag_form = function () {
@@ -102,6 +111,22 @@ var
     edit_hashtag = function (hashtag) {
         "use strict";
 
+        var
+            start_date_arr,
+            end_date_arr,
+            start_date = "",
+            end_date = "";
+
+        if (hashtag.start_date) {
+            start_date_arr = hashtag.start_date.split("-");
+            start_date = start_date_arr[2] + "/" + start_date_arr[1] + "/" + start_date_arr[0];
+        }
+
+        if (hashtag.end_date) {
+            end_date_arr = hashtag.end_date.split("-");
+            end_date = end_date_arr[2] + "/" + end_date_arr[1] + "/" + end_date_arr[0];
+        }
+
         show_add_hashtag_form();
 
         $('#hashtag_modal_title').text("Editar hashtag");
@@ -111,6 +136,8 @@ var
 
         $('#add_hashtag_start_timepicker').val(hashtag.start);
         $('#add_hashtag_end_timepicker').val(hashtag.end);
+        $('#add_hashtag_start_datepicker').val(start_date);
+        $('#add_hashtag_end_datepicker').val(end_date);
         $('#add_hashtag_monday_check').attr('checked', hashtag.monday);
         $('#add_hashtag_tuesday_check').attr('checked', hashtag.tuesday);
         $('#add_hashtag_wednesday_check').attr('checked', hashtag.wednesday);
@@ -145,6 +172,8 @@ var
             'group_id': $('#editing_hashtag_group_id').val(),
             'start': $('#add_hashtag_start_timepicker').val(),
             'end': $('#add_hashtag_end_timepicker').val(),
+            'start_date': $('#add_hashtag_start_datepicker').val(),
+            'end_date': $('#add_hashtag_end_datepicker').val(),
             'monday': $('#add_hashtag_monday_check').is(':checked') ? 1 : 0,
             'tuesday': $('#add_hashtag_tuesday_check').is(':checked') ? 1 : 0,
             'wednesday': $('#add_hashtag_wednesday_check').is(':checked') ? 1 : 0,
@@ -174,6 +203,8 @@ var
         $('#add_hashtag_text').val('');
         $('#add_hashtag_qty').val('');
 
+        $('#add_hashtag_start_datepicker').val('');
+        $('#add_hashtag_end_datepicker').val('');
         $('#add_hashtag_start_timepicker').val('');
         $('#add_hashtag_end_timepicker').val('');
         $('#add_hashtag_monday_check').attr('checked', true);
@@ -421,6 +452,9 @@ $(document).ready(function () {
     $('#add_hashtag_modal').hide();
     $('#disable_hashtag_btn').hide();
     $('#enable_hashtag_btn').hide();
+
+    $('#add_hashtag_start_datepicker').datepicker();
+    $('#add_hashtag_end_datepicker').datepicker();
 
     $('#send_now_confirmed').click(function () {
         $.post("/hashtags/send/" + $('#sending_now_tweet_id').val(),
