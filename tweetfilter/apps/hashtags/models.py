@@ -27,6 +27,9 @@ class HashtagAdvertisement(ScheduleBlock):
     enabled = models.BooleanField(default=True)
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=STATUS_ENABLED)
 
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
+
     def get_appliances(self, channel_name=None):
         """
         Returns a list of succesful hashtag appliances, optionally filtered by channel
@@ -51,7 +54,6 @@ class HashtagAdvertisement(ScheduleBlock):
 
         count = appliances.filter(date_time__gte=today_start, date_time__lt=today_end).count()
 
-        print "today count = %s" % count
         return count
 
     def is_under_daily_limit(self):
@@ -65,6 +67,13 @@ class HashtagAdvertisement(ScheduleBlock):
         Returns total count of appliances
         """
         return self.get_appliances().count()
+
+    def applies_now(self):
+        """
+        Return True if current time is inside hashtag time limits
+        """
+        now = datetime.now()
+        return self.start_date <= now.date() <= self.end_date and self.has_datetime(now)
 
 
 class HashtagAppliance(models.Model):

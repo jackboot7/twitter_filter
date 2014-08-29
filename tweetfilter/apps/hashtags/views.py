@@ -164,6 +164,10 @@ class HashtagUpdateView(CsrfExemptMixin, JSONResponseMixin,
             obj.limit = request.POST['qty']
             obj.start = datetime.datetime.strptime(request.POST['start'], "%H:%M").time()
             obj.end = datetime.datetime.strptime(request.POST['end'], "%H:%M").time()
+
+            obj.start_date = datetime.datetime.strptime(request.POST['start_date'], "%d/%m/%Y").date()
+            obj.end_date = datetime.datetime.strptime(request.POST['end_date'], "%d/%m/%Y").date()
+
             obj.monday = True if request.POST['monday'] == "1" else False
             obj.tuesday = True if request.POST['tuesday'] == "1" else False
             obj.wednesday = True if request.POST['wednesday'] == "1" else False

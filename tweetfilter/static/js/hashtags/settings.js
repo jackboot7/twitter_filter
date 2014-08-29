@@ -17,7 +17,7 @@ var
         }
 
         if(!/^[0-9]+$/.test($.trim($('#add_hashtag_qty').val()))){
-            alert("Debe ingresar un número entero como cantidad");
+            alert("Debe ingresar un número entero como límite");
             return false;
         }
 

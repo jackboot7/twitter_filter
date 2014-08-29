@@ -38,7 +38,7 @@ var
         }
 
         if(!/^[0-9]+$/.test($.trim($('#add_hashtag_qty').val()))){
-            alert("Debe ingresar un número entero como cantidad");
+            alert("Debe ingresar un número entero como límite");
             return false;
         }
 
@@ -123,6 +123,12 @@ var
     edit_hashtag = function (hashtag) {
         "use strict";
 
+        var
+            start_date_arr = hashtag.start_date.split("-"),
+            end_date_arr = hashtag.end_date.split("-"),
+            start_date = start_date_arr[2] + "/" + start_date_arr[1] + "/" + start_date_arr[0],
+            end_date = end_date_arr[2] + "/" + end_date_arr[1] + "/" + end_date_arr[0];
+
         show_add_hashtag_form();
 
         $('#hashtag_modal_title').text("Editar hashtag");
@@ -132,6 +138,9 @@ var
 
         $('#add_hashtag_start_timepicker').val(hashtag.start);
         $('#add_hashtag_end_timepicker').val(hashtag.end);
+        $('#add_hashtag_start_datepicker').val(start_date);
+        $('#add_hashtag_end_datepicker').val(end_date);
+        
         $('#add_hashtag_monday_check').attr('checked', hashtag.monday);
         $('#add_hashtag_tuesday_check').attr('checked', hashtag.tuesday);
         $('#add_hashtag_wednesday_check').attr('checked', hashtag.wednesday);
@@ -371,6 +380,8 @@ var
             'group_id': $('#viewing_hashtag_group_id').val(),
             'start': $('#add_hashtag_start_timepicker').val(),
             'end': $('#add_hashtag_end_timepicker').val(),
+            'start_date': $('#add_hashtag_start_datepicker').val(),
+            'end_date': $('#add_hashtag_end_datepicker').val(),
             'monday': $('#add_hashtag_monday_check').is(':checked') ? 1 : 0,
             'tuesday': $('#add_hashtag_tuesday_check').is(':checked') ? 1 : 0,
             'wednesday': $('#add_hashtag_wednesday_check').is(':checked') ? 1 : 0,
@@ -480,6 +491,9 @@ $(document).ready(function () {
         hourText: 'Hora',
         minuteText: 'Minutos'
     });
+
+    $('#add_hashtag_start_datepicker').datepicker();
+    $('#add_hashtag_end_datepicker').datepicker();
 
     $('#switch_hashtags_btn').click(function () {
         var action = ($("#hashtags_status").val() == "inactive")? "activar" : "desactivar";
