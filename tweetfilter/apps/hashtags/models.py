@@ -82,6 +82,14 @@ class HashtagAdvertisement(ScheduleBlock):
         
         return result and self.has_datetime(now)
 
+    def calculate_expected_count(self):
+        if (self.start_date and self.end_date):
+            delta = self.end_date - self.start_date
+            days = delta.days
+            return days * self.limit
+        else:
+            return None
+
 
 class HashtagAppliance(models.Model):
     """

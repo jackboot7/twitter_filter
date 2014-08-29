@@ -108,6 +108,26 @@ var
         });
     },
 
+    calculate_estimated_appliances = function () {
+        "use strict";
+
+        var start, end;
+        var oneDay, firstDate, secondDate, diffDays;
+
+        if ($('#add_hashtag_start_datepicker').val() != "" && $('#add_hashtag_end_datepicker').val() != "" && $('#add_hashtag_qty').val() != "" && validate_add_hashtag_form()) {
+            start = $('#add_hashtag_start_datepicker').val().split("/")
+            end = $('#add_hashtag_end_datepicker').val().split("/")
+
+            oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
+            firstDate = new Date(start[2], start[1], start[0]);
+            secondDate = new Date(end[2], end[1], end[0]);
+
+            diffDays = Math.round(Math.abs((firstDate.getTime() - secondDate.getTime())/(oneDay))) + 1;
+            
+            return diffDays * parseInt($('#add_hashtag_qty').val());
+        }    
+    },
+
     edit_hashtag = function (hashtag) {
         "use strict";
 
