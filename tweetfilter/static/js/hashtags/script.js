@@ -32,6 +32,9 @@ var
     validate_add_hashtag_form = function () {
         "use strict";
 
+        var 
+            start_date, end_date;
+
         if($.trim($('#add_hashtag_text').val()) === ""){
             alert("Debe ingresar un texto para el sufijo");
             return false;
@@ -58,7 +61,10 @@ var
         }
 
         if ($('#add_hashtag_start_datepicker').val() != "" && $('#add_hashtag_end_datepicker').val() != "") {
-            if ($('#add_hashtag_start_datepicker').val() > $('#add_hashtag_end_datepicker').val()) {
+            start_date = $('#add_hashtag_start_datepicker').val().split("/");
+            end_date = $('#add_hashtag_end_datepicker').val().split("/");
+
+            if (new Date(start_date[2], start_date[1], start_date[0]) > new Date(end_date[2], end_date[1], end_date[0])) {
                 alert("La fecha de inicio debe ser menor o igual a la fecha de fin");
                 return false;
             }
@@ -316,7 +322,9 @@ var
                 $('#hashtag_list_table').show();
 
                 $.each(data, function (idx, elem) {
-                    var text = (elem.text.length > 16)? elem.text.substr(0,16) + "..." : elem.text;
+                    var 
+                        text = (elem.text.length > 16)? elem.text.substr(0,16) + "..." : elem.text,
+                        estimated = (elem.estimated != null)? elem.estimated : "-";
  
                     if (exclusive) {
                         delete_btn = 
@@ -339,6 +347,7 @@ var
                             "<td>" + edit_link + "</td>" +
                             "<td>" + elem.limit + "</td>" +
                             "<td><span id='hashtag_count_span_" + elem.id + "'>"+ elem.count + "</span></td>" +
+                            "<td>" + estimated + "</td>" +
                             reset_btn +
                             "<td>" + delete_btn + "</td>" +
                             "</tr>"
