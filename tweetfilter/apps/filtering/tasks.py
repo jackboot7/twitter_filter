@@ -11,6 +11,7 @@ from celery.signals import task_revoked, task_failure, celeryd_after_setup, cele
 from django.conf import settings
 from django.core.cache import cache
 from twython.streaming.api import TwythonStreamer
+from twython import TwythonStreamError
 
 from apps.accounts.models import Channel
 from apps.control.models import UpdateLimit
@@ -215,10 +216,10 @@ class ChannelStreamer(TwythonStreamer):
     def on_error(self, status_code, data):
         msg = "Error in streaming: %s: %s" % (status_code, data)
         channel_log_error.delay(msg, self.channel.screen_name)
-        self.disconnect()
-        self.channel.retweets_enabled = False
-        self.channel.save()
-        # should retry??
+        raise TwythonStreamError(data)
+        #self.disconnect()
+        #self.channel.retweets_enabled = False
+        #self.channel.save()        
 
     def disconnect(self):
         """Used to disconnect the streaming client manually"""
@@ -240,7 +241,7 @@ def stream_channel(chan_id):
             return True
         except Exception as e:
             cache.delete("streaming_lock_%s" % chan.screen_name)   # release lock
-            message = "Error starting streaming for %s. Will retry later: %s" % (chan_id, e)
+            message = "Streaming task failed for %s. Will retry later: %s" % (chan_id, e)
             channel_log_exception.delay(message, chan.screen_name)
             stream_channel.retry(exc=e, chan_id=chan_id)
             return False
