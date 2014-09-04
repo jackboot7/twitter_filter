@@ -17,7 +17,7 @@ from apps.accounts.models import Channel
 from apps.control.models import UpdateLimit
 from apps.control.tasks import DelayedTask
 from apps.filtering.models import BlockedUser, ChannelScheduleBlock, Replacement
-from apps.hashtags.models import HashtagAdvertisement
+from apps.hashtags.models import HashtagAdvertisement, HashtagAppliance
 from apps.twitter.api import ChannelAPI, Twitter
 from apps.twitter.models import Tweet
 
@@ -428,13 +428,13 @@ def retweet(tweet, txt=None, applying_hashtag=None):
                 hashtags = channel.get_group_items("Hashtag")
                 
                 for hashtag in hashtags:
-                    if hashtag.applies_now() and len(hashtag.text) + 1 <= 140 - len(txt) \
-                    and hashtag.count < hashtag.quantity:
+                    if hashtag.status == 1 and hashtag.applies_now() and len(hashtag.text) + 1 <= (140 - len(txt)) \
+                    and hashtag.is_under_daily_limit():
                         hashtag_list.append(hashtag)
-
-                if len(hashtag_list) > 0:
+                
+                if hashtag_list:
                     applying_hashtag = hashtag_list[randint(0, len(hashtag_list) - 1)]
-                    txt = "%s #%s" % (txt, applying_hashtag.text)
+                    txt = "%s %s" % (txt, applying_hashtag.text)
 
         # acquire lock
         if cache.add("retweet_lock_%s" % channel.screen_name, "true", LOCK_EXPIRE):
@@ -535,9 +535,9 @@ def update_status(channel_id, tweet, txt, hashtag=None):
         channel_log_exception.delay(msg, channel.screen_name)
     else:
         # if no exception was raised and hashtag was included, increase count.
-        if hashtag is not None:
-            hashtag.count += 1
-            hashtag.save()
+        if hashtag:
+            appliance = HashtagAppliance(hashtag=hashtag, channel=channel)
+            appliance.save()
 
 
 @worker_init.connect

@@ -101,37 +101,62 @@
             
             <h4 id="hashtag_modal_title">
                 Añadir sufijo
-                
             </h4>
             <div> <!-- class="modal-body" -->
-                <div class="span7">
+                <div class="span8">
                     <table>
+                        <tr id="hashtag_status_row">
+                            <td>
+                                <label>Status:</label>
+                            </td>
+                            <td> 
+                                <a class="no_decoration" id="disable_hashtag_btn" title="Haga click para desactivar el sufijo"><span class="label label-success">Activo</span></a>
+                                <a class="no_decoration" id="enable_hashtag_btn" title="Haga click para activar el sufijo"><span class="label label-important">Inactivo</span></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
                         <tr>
                             <td><label>Texto:&nbsp;</label></td>
                             <td><input id="add_hashtag_text" type="text" class="span10" maxlength="140"></td>
                         </tr>
                         <tr>
-                            <td><label>Cantidad:&nbsp;</label></td>
+                            <td><label>Límite diario:&nbsp;</label></td>
                             <td><input id="add_hashtag_qty" type="text" class="span4" value="0"></td>
                         </tr>
+                    </table>
+                    <h5>Horario</h5>
+                    <table>                        
                         <tr>
-                            <td>&nbsp;</td><td>&nbsp;</td>
-                        </tr>
-                        <tr>
-                            <td><label>Hora de inicio: </label></td>
+                            <td><label>Desde: </label></td>
                             <td>
                                 <input type="text" class="input-mini" id="add_hashtag_start_timepicker">
                             </td>
-                        </tr>
-                        <tr>
-                            <td><label>Hora de fin: </label></td>
+                            <td>&nbsp;&nbsp;</td>
+                            <td><label>Hasta: </label></td>
                             <td>
-                                    <input type="text" class="input-mini" id="add_hashtag_end_timepicker">
+                                <input type="text" class="input-mini" id="add_hashtag_end_timepicker">
+                            </td>
+                        </tr>
+                    </table>
+                    <h5>Fechas</h5>
+                    <table>
+                        <tr>
+                            <td><label>Desde: </label></td>
+                            <td>
+                                <input type="text" class="input-small" id="add_hashtag_start_datepicker">
+                            </td>
+                            <td>&nbsp;&nbsp;</td>
+                            <td><label>Hasta: </label></td>
+                            <td>
+                                <input type="text" class="input-small" id="add_hashtag_end_datepicker">
                             </td>
                         </tr>
                     </table>
                 </div>
-                <div class="span5">
+                <div class="span4">
 
                     <h5>Días de la semana</h5>
                     <label class="checkbox"><input type="checkbox" id="add_hashtag_monday_check"> Lunes</label>
@@ -154,7 +179,7 @@
             </div>
         </div> <!-- Add hashtag modal -->
 
-        <div class="span8" id="hashtag_table_div">
+        <div class="span11" id="hashtag_table_div">
             <div class="rounded_box fill_gray">
                 <h4>Sufijos</h4>
 
@@ -163,8 +188,10 @@
                         <thead>
                             <tr>
                                 <th>Texto</th>
-                                <th>Cantidad</th>
+                                <th>Límite</th>
                                 <th>Contador</th>
+                                <th>Pub. estimadas</th>
+                                <th>&nbsp;</th>
                             </tr>
                         </thead>
                         <tbody id="hashtag_list_tbody">

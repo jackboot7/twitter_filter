@@ -24,6 +24,8 @@ urlpatterns = patterns('apps.scheduling.views',
     url(r'^scheduled_tweet/send/(?P<pk>\w+)', ScheduledTweetSendView.as_view()),
     url(r'^scheduled_tweet/delete/(?P<pk>\w+)', ScheduledTweetDeleteView.as_view()),
     url(r'^scheduled_tweet/update/(?P<pk>\w+)', ScheduledTweetUpdateView.as_view()),
+    url(r'^scheduled_tweet/disable/(?P<pk>\w+)', ScheduledTweetDisableView.as_view()),
+    url(r'^scheduled_tweet/enable/(?P<pk>\w+)', ScheduledTweetEnableView.as_view()),
 
     url(r'^channel/set_groups/(?P<pk>\w+)', SetChannelGroupsView.as_view()),
     url(r'^channel/list_groups/(?P<pk>\w+)', ListChannelGroupsView.as_view()),

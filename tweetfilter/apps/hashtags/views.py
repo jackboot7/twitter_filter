@@ -26,7 +26,7 @@ class HashtagsHomeView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(HashtagsHomeView, self).get_context_data(**kwargs)
-        context['hashtag_groups'] = self.get_queryset().filter(content_type="Hashtag")
+        context['hashtag_groups'] = self.get_queryset().filter(user_id=self.request.user.id).filter(content_type="Hashtag")
         context['channel_list'] = Channel.objects.filter(user_id=self.request.user.id)
         return context
 
@@ -37,7 +37,7 @@ class HashtagsDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "channel"
 
     def get_context_data(self, **kwargs):
-        groups_queryset = ItemGroup.objects.filter(channel_exclusive=False)
+        groups_queryset = ItemGroup.objects.filter(user_id=self.request.user.id).filter(channel_exclusive=False)
         context = super(HashtagsDetailView, self).get_context_data(**kwargs)
         context['hashtag_groups'] = groups_queryset.filter(content_type="Hashtag")
         return context
@@ -99,10 +99,12 @@ class HashtagListView(CsrfExemptMixin, JSONResponseMixin,
         json_list = []
 
         for hashtag in objs:
-            dict = model_to_dict(hashtag)
-            dict['start'] = hashtag.start.strftime("%H:%M")
-            dict['end'] = hashtag.end.strftime("%H:%M")
-            json_list.append(dict)
+            dic = model_to_dict(hashtag)
+            dic['start'] = hashtag.start.strftime("%H:%M")
+            dic['end'] = hashtag.end.strftime("%H:%M")
+            dic['count'] = hashtag.get_total_count()
+            dic['estimated'] = hashtag.calculate_expected_count()
+            json_list.append(dic)
 
         return self.render_json_response(json_list)
 
@@ -122,6 +124,13 @@ class HashtagCreateView(CsrfExemptMixin, JSONResponseMixin,
             hashtag.quantity = request.POST['qty']
             hashtag.start = datetime.datetime.strptime(request.POST['start'], "%H:%M").time()
             hashtag.end = datetime.datetime.strptime(request.POST['end'], "%H:%M").time()
+            
+            if request.POST['start_date']:
+                obj.start_date = datetime.datetime.strptime(request.POST['start_date'], "%d/%m/%Y").date()
+            
+            if request.POST['end_date']:
+                obj.end_date = datetime.datetime.strptime(request.POST['end_date'], "%d/%m/%Y").date()
+                
             hashtag.monday = True if request.POST['monday'] == "1" else False
             hashtag.tuesday = True if request.POST['tuesday'] == "1" else False
             hashtag.wednesday = True if request.POST['wednesday'] == "1" else False
@@ -160,9 +169,16 @@ class HashtagUpdateView(CsrfExemptMixin, JSONResponseMixin,
         obj = self.get_object()
         try:
             obj.text = request.POST['text']
-            obj.quantity = request.POST['qty']
+            obj.limit = request.POST['qty']
             obj.start = datetime.datetime.strptime(request.POST['start'], "%H:%M").time()
             obj.end = datetime.datetime.strptime(request.POST['end'], "%H:%M").time()
+
+            if request.POST['start_date']:
+                obj.start_date = datetime.datetime.strptime(request.POST['start_date'], "%d/%m/%Y").date()
+            
+            if request.POST['end_date']:
+                obj.end_date = datetime.datetime.strptime(request.POST['end_date'], "%d/%m/%Y").date()
+
             obj.monday = True if request.POST['monday'] == "1" else False
             obj.tuesday = True if request.POST['tuesday'] == "1" else False
             obj.wednesday = True if request.POST['wednesday'] == "1" else False
@@ -209,7 +225,7 @@ class HashtagGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         try:
-            hashtag_groups = ItemGroup.objects.filter(content_type="Hashtag")
+            hashtag_groups = ItemGroup.objects.filter(user_id=self.request.user.id).filter(content_type="Hashtag")
             for group in hashtag_groups:
                 if group.name == request.POST['hashtag_group_name']:
                     response_data = {'result': "duplicate"}
@@ -218,6 +234,7 @@ class HashtagGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
                 new_group = ItemGroup()
                 new_group.content_type = "Hashtag"
                 new_group.name = request.POST['hashtag_group_name']
+                new_group.user = request.user
                 new_group.save()
                 response_data = {'result': "ok", 'group_obj': model_to_dict(new_group)}
         except Exception, e:
@@ -238,7 +255,7 @@ class HashtagGroupUpdateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
         try:
-            hashtag_groups = ItemGroup.objects.filter(content_type="Hashtag").exclude(id=obj.id)
+            hashtag_groups = ItemGroup.objects.filter(user_id=self.request.user.id).filter(content_type="Hashtag").exclude(id=obj.id)
             for group in hashtag_groups:
                 if group.name == request.POST['hashtag_group_name']:
                     response_data = {'result': "duplicate"}
@@ -262,7 +279,7 @@ class HashtagGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
 
     def get_ajax(self, request, *args, **kwargs):
         json_list = []
-        group_list = self.get_queryset()
+        group_list = self.get_queryset().filter(user_id=self.request.user.id)
 
         for group in group_list:
             group_dict = model_to_dict(group)
@@ -417,3 +434,33 @@ class HashtagGroupListChannelView(JSONResponseMixin, AjaxResponseMixin, DetailVi
             json_list.append(group_dict)
 
         return self.render_json_response(json_list)
+
+
+class HashtagDisableView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = HashtagAdvertisement
+    success_url = "/"
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        obj.status = HashtagAdvertisement.STATUS_DISABLED
+        obj.save()
+        response_data = {'result': "ok"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")
+
+
+class HashtagEnableView(CsrfExemptMixin, JSONResponseMixin,
+    AjaxResponseMixin, UpdateView):
+    model = HashtagAdvertisement
+    success_url = "/"
+
+    def post_ajax(self, request, *args, **kwargs):
+        obj = self.get_object()
+        obj.status = HashtagAdvertisement.STATUS_ENABLED
+        obj.save()
+        response_data = {'result': "ok"}
+
+        return HttpResponse(json.dumps(response_data),
+            content_type="application/json")

@@ -25,6 +25,9 @@ urlpatterns = patterns('apps.hashtags.views',
     url(r'^hashtag/delete/(?P<pk>\w+)', HashtagDeleteView.as_view()),
     url(r'^hashtag/reset/(?P<pk>\w+)', HashtagResetView.as_view()),
 
+    url(r'^hashtag/enable/(?P<pk>\w+)', HashtagEnableView.as_view()),
+    url(r'^hashtag/disable/(?P<pk>\w+)', HashtagDisableView.as_view()),
+
     url(r'^channel/set_groups/(?P<pk>\w+)', SetChannelGroupsView.as_view()),
     url(r'^channel/list_groups/(?P<pk>\w+)', ListChannelGroupsView.as_view()),
     url(r'^channel/unlink_group/(?P<pk>\w+)', ChannelUnlinkGroupView.as_view()),

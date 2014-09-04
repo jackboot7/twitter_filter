@@ -32,13 +32,16 @@ var
     validate_add_hashtag_form = function () {
         "use strict";
 
+        var 
+            start_date, end_date;
+
         if($.trim($('#add_hashtag_text').val()) === ""){
             alert("Debe ingresar un texto para el sufijo");
             return false;
         }
 
         if(!/^[0-9]+$/.test($.trim($('#add_hashtag_qty').val()))){
-            alert("Debe ingresar un número entero como cantidad");
+            alert("Debe ingresar un número entero como límite");
             return false;
         }
 
@@ -53,8 +56,18 @@ var
         }
 
         if($('#add_hashtag_start_timepicker').val() >= $('#add_hashtag_end_timepicker').val()) {
-            alert("El tiempo de inicio debe ser menor al tiempo de fin");
+            alert("La hora de inicio debe ser menor a la hora de fin");
             return false;
+        }
+
+        if ($('#add_hashtag_start_datepicker').val() != "" && $('#add_hashtag_end_datepicker').val() != "") {
+            start_date = $('#add_hashtag_start_datepicker').val().split("/");
+            end_date = $('#add_hashtag_end_datepicker').val().split("/");
+
+            if (new Date(start_date[2], start_date[1], start_date[0]) > new Date(end_date[2], end_date[1], end_date[0])) {
+                alert("La fecha de inicio debe ser menor o igual a la fecha de fin");
+                return false;
+            }
         }
 
         if (!($('#add_hashtag_monday_check').is(':checked') ||
@@ -84,18 +97,73 @@ var
         $('#hashtag_group_modal_footer').show();
     },
 
+    disable_hashtag_form = function () {
+        "use strict";
+
+        // disable fields?
+        $("#disable_hashtag_btn").hide();
+        $("#enable_hashtag_btn").show();
+    },
+
+    enable_hashtag_form = function () {
+        "use strict";
+
+        // enable fields?
+        $("#enable_hashtag_btn").hide();
+        $("#disable_hashtag_btn").show();
+    },
+
+    enable_hashtag = function () {
+        "use strict";
+
+        $.post("/hashtags/hashtag/enable/" + $("#editing_hashtag_id").val(), function (data) {
+            if(data.result === "ok") {
+                enable_hashtag_form();
+            }
+        });
+    },
+
+    disable_hashtag = function () {
+        "use strict";
+
+        $.post("/hashtags/hashtag/disable/" + $("#editing_hashtag_id").val(), function (data) {
+            if(data.result === "ok") {
+                disable_hashtag_form();
+            }
+        });
+    },
+
     edit_hashtag = function (hashtag) {
         "use strict";
+
+        var
+            start_date_arr,
+            end_date_arr,
+            start_date = "",
+            end_date = "";
+
+        if (hashtag.start_date) {
+            start_date_arr = hashtag.start_date.split("-");
+            start_date = start_date_arr[2] + "/" + start_date_arr[1] + "/" + start_date_arr[0];
+        }
+
+        if (hashtag.end_date) {
+            end_date_arr = hashtag.end_date.split("-");
+            end_date = end_date_arr[2] + "/" + end_date_arr[1] + "/" + end_date_arr[0];
+        }
 
         show_add_hashtag_form();
 
         $('#hashtag_modal_title').text("Editar hashtag");
         $('#editing_hashtag_id').val(hashtag.id);
         $('#add_hashtag_text').val(hashtag.text);
-        $('#add_hashtag_qty').val(hashtag.quantity);
+        $('#add_hashtag_qty').val(hashtag.limit);
 
         $('#add_hashtag_start_timepicker').val(hashtag.start);
         $('#add_hashtag_end_timepicker').val(hashtag.end);
+        $('#add_hashtag_start_datepicker').val(start_date);
+        $('#add_hashtag_end_datepicker').val(end_date);
+        
         $('#add_hashtag_monday_check').attr('checked', hashtag.monday);
         $('#add_hashtag_tuesday_check').attr('checked', hashtag.tuesday);
         $('#add_hashtag_wednesday_check').attr('checked', hashtag.wednesday);
@@ -103,6 +171,14 @@ var
         $('#add_hashtag_friday_check').attr('checked', hashtag.friday);
         $('#add_hashtag_saturday_check').attr('checked', hashtag.saturday);
         $('#add_hashtag_sunday_check').attr('checked', hashtag.sunday);
+
+        if (hashtag.status == 1) {   // scheduled tweet is enabled
+            enable_hashtag_form();
+        } else {
+            disable_hashtag_form();
+        }
+
+        $('#hashtag_status_row').show();
     },
 
     manage_linked_hashtag_groups = function () {
@@ -246,7 +322,9 @@ var
                 $('#hashtag_list_table').show();
 
                 $.each(data, function (idx, elem) {
-                    var text = (elem.text.length > 16)? elem.text.substr(0,16) + "..." : elem.text;
+                    var 
+                        text = (elem.text.length > 16)? elem.text.substr(0,16) + "..." : elem.text,
+                        estimated = (elem.estimated != null)? elem.estimated : "-";
  
                     if (exclusive) {
                         delete_btn = 
@@ -267,8 +345,9 @@ var
                     $('#hashtag_list_tbody').append(
                         "<tr>" +
                             "<td>" + edit_link + "</td>" +
-                            "<td>" + elem.quantity + "</td>" +
+                            "<td>" + elem.limit + "</td>" +
                             "<td><span id='hashtag_count_span_" + elem.id + "'>"+ elem.count + "</span></td>" +
+                            "<td>" + estimated + "</td>" +
                             reset_btn +
                             "<td>" + delete_btn + "</td>" +
                             "</tr>"
@@ -327,6 +406,8 @@ var
             'group_id': $('#viewing_hashtag_group_id').val(),
             'start': $('#add_hashtag_start_timepicker').val(),
             'end': $('#add_hashtag_end_timepicker').val(),
+            'start_date': $('#add_hashtag_start_datepicker').val(),
+            'end_date': $('#add_hashtag_end_datepicker').val(),
             'monday': $('#add_hashtag_monday_check').is(':checked') ? 1 : 0,
             'tuesday': $('#add_hashtag_tuesday_check').is(':checked') ? 1 : 0,
             'wednesday': $('#add_hashtag_wednesday_check').is(':checked') ? 1 : 0,
@@ -369,6 +450,8 @@ var
 
         $('#add_hashtag_start_timepicker').val('');
         $('#add_hashtag_end_timepicker').val('');
+        $('#add_hashtag_start_datepicker').val('');
+        $('#add_hashtag_end_datepicker').val('');
         $('#add_hashtag_monday_check').attr('checked', true);
         $('#add_hashtag_tuesday_check').attr('checked', true);
         $('#add_hashtag_wednesday_check').attr('checked', true);
@@ -385,6 +468,8 @@ $(document).ready(function () {
     $('#hashtag_list').hide();
     $('#no_hashtags_message').hide();
     $('#weekdays_select_div').show();
+    $('#disable_hashtag_btn').hide();
+    $('#enable_hashtag_btn').hide();
 
     update_hashtags_status();
     clear_add_hashtag_form();
@@ -407,11 +492,13 @@ $(document).ready(function () {
 
     $('#add_hashtag_btn').click(function () {
         $('#hashtag_modal_title').text("Agregar sufijo");
+        $('#hashtag_status_row').hide();
         show_add_hashtag_form();
     });
 
     $('#close_hashtag_form').click(function () {
         clear_add_hashtag_form();
+        load_hashtag_table(true);
     });
 
     $('#save_hashtag_btn').click(function () {
@@ -433,6 +520,9 @@ $(document).ready(function () {
         minuteText: 'Minutos'
     });
 
+    $('#add_hashtag_start_datepicker').datepicker();
+    $('#add_hashtag_end_datepicker').datepicker();
+
     $('#switch_hashtags_btn').click(function () {
         var action = ($("#hashtags_status").val() == "inactive")? "activar" : "desactivar";
         if (confirm("Está seguro de que desea " + action + " los sufijos?")) {
@@ -441,6 +531,18 @@ $(document).ready(function () {
             });
         } else {
             update_hashtags_status();
+        }
+    });
+
+    $('#disable_hashtag_btn').click(function () {
+        if (confirm("Está seguro de que desea desactivar este sufijo?")) {
+            disable_hashtag();
+        }
+    });
+
+    $('#enable_hashtag_btn').click(function () {
+        if (confirm("Está seguro de que desea activar este sufijo?")) {
+            enable_hashtag();
         }
     });
 

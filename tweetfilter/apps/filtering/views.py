@@ -30,7 +30,7 @@ class TriggersHomeView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(TriggersHomeView, self).get_context_data(**kwargs)
-        context['trigger_groups'] = self.get_queryset().filter(content_type="Trigger")
+        context['trigger_groups'] = self.get_queryset().filter(user_id=self.request.user.id).filter(content_type="Trigger")
         context['channel_list'] = Channel.objects.filter(user_id=self.request.user.id)
 
         return context
@@ -45,7 +45,7 @@ class ReplacementsHomeView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(ReplacementsHomeView, self).get_context_data(**kwargs)
-        context['replacement_groups'] = self.get_queryset().filter(content_type="Replacement")
+        context['replacement_groups'] = self.get_queryset().filter(user_id=self.request.user.id).filter(content_type="Replacement")
         context['channel_list'] = Channel.objects.filter(user_id=self.request.user.id)
         return context
 
@@ -59,7 +59,7 @@ class FiltersHomeView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(FiltersHomeView, self).get_context_data(**kwargs)
-        context['filter_groups'] = self.get_queryset().filter(content_type="Filter")
+        context['filter_groups'] = self.get_queryset().filter(user_id=self.request.user.id).filter(content_type="Filter")
         context['channel_list'] = Channel.objects.filter(user_id=self.request.user.id)
         return context
 
@@ -73,7 +73,7 @@ class BlockedUsersHomeView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(BlockedUsersHomeView, self).get_context_data(**kwargs)
-        context['blocked_user_groups'] = self.get_queryset().filter(content_type="BlockedUser")
+        context['blocked_user_groups'] = self.get_queryset().filter(user_id=self.request.user.id).filter(content_type="BlockedUser")
         context['channel_list'] = Channel.objects.filter(user_id=self.request.user.id)
         return context
 
@@ -87,7 +87,7 @@ class FilteringDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "channel"
 
     def get_context_data(self, **kwargs):
-        groups_queryset = ItemGroup.objects.filter(channel_exclusive=False)
+        groups_queryset = ItemGroup.objects.filter(user_id=self.request.user.id).filter(channel_exclusive=False)
         context = super(FilteringDetailView, self).get_context_data(**kwargs)
         context['trigger_groups'] = groups_queryset.filter(content_type="Trigger")
         context['replacement_groups'] = groups_queryset.filter(content_type="Replacement")
@@ -874,7 +874,7 @@ class TriggerGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         try:
-            trigger_groups = ItemGroup.objects.filter(content_type="Trigger")
+            trigger_groups = ItemGroup.objects.filter(user_id=self.request.user.id).filter(content_type="Trigger")
             for group in trigger_groups:
                 if group.name == request.POST['trigger_group_name']:
                     response_data = {'result': "duplicate"}
@@ -883,6 +883,7 @@ class TriggerGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
                 new_group = ItemGroup()
                 new_group.content_type = "Trigger"
                 new_group.name = request.POST['trigger_group_name']
+                new_group.user = request.user
                 new_group.save()
                 response_data = {'result': "ok", 'group_obj': model_to_dict(new_group)}
         except Exception, e:
@@ -903,7 +904,7 @@ class TriggerGroupUpdateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
         try:
-            trigger_groups = ItemGroup.objects.filter(content_type="Trigger").exclude(id=obj.id)
+            trigger_groups = ItemGroup.objects.filter(user_id=self.request.user.id).filter(content_type="Trigger").exclude(id=obj.id)
             for group in trigger_groups:
                 if group.name == request.POST['trigger_group_name']:
                     response_data = {'result': "duplicate"}
@@ -927,7 +928,7 @@ class TriggerGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
 
     def get_ajax(self, request, *args, **kwargs):
         json_list = []
-        group_list = self.get_queryset()
+        group_list = self.get_queryset().filter(user_id=self.request.user.id)
 
         for group in group_list:
             group_dict = model_to_dict(group)
@@ -1036,7 +1037,7 @@ class SetChannelGroupsView(CsrfExemptMixin, JSONResponseMixin,
 
 class ListChannelGroupsView(JSONResponseMixin, AjaxResponseMixin, DetailView):
     """
-    Given an item group, returns all channels associated with it
+    Given a channel, returns all groups associated with it
     """
     model = Channel
 
@@ -1093,7 +1094,7 @@ class ReplacementGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         try:
-            replacement_groups = ItemGroup.objects.filter(content_type="Replacement")
+            replacement_groups = ItemGroup.objects.filter(user_id=self.request.user.id).filter(content_type="Replacement")
             for group in replacement_groups:
                 if group.name == request.POST['replacement_group_name']:
                     response_data = {'result': "duplicate"}
@@ -1102,6 +1103,7 @@ class ReplacementGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
                 new_group = ItemGroup()
                 new_group.content_type = "Replacement"
                 new_group.name = request.POST['replacement_group_name']
+                new_group.user = self.request.user
                 new_group.save()
                 response_data = {'result': "ok", 'group_obj': model_to_dict(new_group)}
         except Exception, e:
@@ -1122,7 +1124,7 @@ class ReplacementGroupUpdateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
         try:
-            replacement_groups = ItemGroup.objects.filter(content_type="Replacement").exclude(id=obj.id)
+            replacement_groups = ItemGroup.objects.filter(user_id=self.request.user.id).filter(content_type="Replacement").exclude(id=obj.id)
             for group in replacement_groups:
                 if group.name == request.POST['replacement_group_name']:
                     response_data = {'result': "duplicate"}
@@ -1146,7 +1148,7 @@ class ReplacementGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
 
     def get_ajax(self, request, *args, **kwargs):
         json_list = []
-        group_list = self.get_queryset()
+        group_list = self.get_queryset().filter(user_id=self.request.user.id)
 
         for group in group_list:
             group_dict = model_to_dict(group)
@@ -1186,7 +1188,7 @@ class FilterGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         try:
-            filter_groups = ItemGroup.objects.filter(content_type="Filter")
+            filter_groups = ItemGroup.objects.filter(user_id=self.request.user.id).filter(content_type="Filter")
             for group in filter_groups:
                 if group.name == request.POST['filter_group_name']:
                     response_data = {'result': "duplicate"}
@@ -1195,6 +1197,7 @@ class FilterGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
                 new_group = ItemGroup()
                 new_group.content_type = "Filter"
                 new_group.name = request.POST['filter_group_name']
+                new_group.user = self.request.user
                 new_group.save()
                 response_data = {'result': "ok", 'group_obj': model_to_dict(new_group)}
         except Exception, e:
@@ -1215,7 +1218,7 @@ class FilterGroupUpdateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
         try:
-            filter_groups = ItemGroup.objects.filter(content_type="Filter").exclude(id=obj.id)
+            filter_groups = ItemGroup.objects.filter(user_id=self.request.user.id).filter(content_type="Filter").exclude(id=obj.id)
             for group in filter_groups:
                 if group.name == request.POST['filter_group_name']:
                     response_data = {'result': "duplicate"}
@@ -1239,7 +1242,7 @@ class FilterGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
 
     def get_ajax(self, request, *args, **kwargs):
         json_list = []
-        group_list = self.get_queryset()
+        group_list = self.get_queryset().filter(user_id=self.request.user.id)
 
         for group in group_list:
             group_dict = model_to_dict(group)
@@ -1279,7 +1282,7 @@ class BlockedUserGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
 
     def post_ajax(self, request, *args, **kwargs):
         try:
-            blocked_user_groups = ItemGroup.objects.filter(content_type="BlockedUser")
+            blocked_user_groups = ItemGroup.objects.filter(user_id=self.request.user.id).filter(content_type="BlockedUser")
             for group in blocked_user_groups:
                 if group.name == request.POST['blocked_user_group_name']:
                     response_data = {'result': "duplicate"}
@@ -1288,6 +1291,7 @@ class BlockedUserGroupCreateView(CsrfExemptMixin, JSONResponseMixin,
                 new_group = ItemGroup()
                 new_group.content_type = "BlockedUser"
                 new_group.name = request.POST['blocked_user_group_name']
+                new_group.user = self.request.user
                 new_group.save()
                 response_data = {'result': "ok", 'group_obj': model_to_dict(new_group)}
         except Exception, e:
@@ -1308,7 +1312,7 @@ class BlockedUserGroupUpdateView(CsrfExemptMixin, JSONResponseMixin,
     def post_ajax(self, request, *args, **kwargs):
         obj = self.get_object()
         try:
-            blocked_user_groups = ItemGroup.objects.filter(content_type="BlockedUser").exclude(id=obj.id)
+            blocked_user_groups = ItemGroup.objects.filter(user_id=self.request.user.id).filter(content_type="BlockedUser").exclude(id=obj.id)
             for group in blocked_user_groups:
                 if group.name == request.POST['blocked_user_group_name']:
                     response_data = {'result': "duplicate"}
@@ -1332,7 +1336,7 @@ class BlockedUserGroupListView(JSONResponseMixin, AjaxResponseMixin, ListView):
 
     def get_ajax(self, request, *args, **kwargs):
         json_list = []
-        group_list = self.get_queryset()
+        group_list = self.get_queryset().filter(user_id=self.request.user.id)
 
         for group in group_list:
             group_dict = model_to_dict(group)

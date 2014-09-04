@@ -49,7 +49,7 @@
         <div class="span11">
             <!--<h5></h5>-->
             <table>
-                <tr>
+                <tr> 
                     <td><label>Nombre del grupo:&nbsp;</label></td>
                     <td><input id="add_scheduled_tweet_group_name" type="text" class="span10" maxlength="64"></td>
                 </tr>
@@ -71,6 +71,19 @@
             <div> <!-- class="modal-body" -->
                 <div class="span8">
                     <table>
+                        <tr id="scheduled_tweet_status_row">
+                            <td>
+                                Status:
+                            </td>
+                            <td> 
+                                <a class="no_decoration" id="disable_scheduled_tweet_btn" title="Haga click para desactivar el tweet automático"><span class="label label-success">Activo</span></a>
+                                <a class="no_decoration" id="enable_scheduled_tweet_btn" title="Haga click para activar el tweet automático"><span class="label label-important">Inactivo</span></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
                         <tr>
                             <td class="td_right_padding"><label>Mensaje: </label>
                                 <span class="float_right" id="tweet_char_count"></span></td><td><textarea id="scheduled_tweet_text"></textarea></td>
